@@ -36,9 +36,12 @@ export async function downloadResumePdf(resumeData: ResumeData) {
     container.style.top = "0"
     container.style.left = "-10000px"
     container.style.width = "210mm"
+    container.style.height = "297mm"
     container.style.backgroundColor = "#ffffff"
     container.style.padding = "0"
     container.style.margin = "0"
+    container.style.overflow = "hidden"
+    container.style.boxSizing = "border-box"
     
     // Clone the element and all its styles
     const clone = existingElement.cloneNode(true) as HTMLElement
@@ -80,9 +83,14 @@ export async function downloadResumePdf(resumeData: ResumeData) {
     
     copyStyles(existingElement, clone)
     
-    // Ensure the clone has proper dimensions
+    // Ensure the clone has proper dimensions and no extra spacing
     clone.style.width = '210mm'
+    clone.style.height = 'auto'
     clone.style.backgroundColor = '#ffffff'
+    clone.style.margin = '0'
+    clone.style.padding = '0'
+    clone.style.boxSizing = 'border-box'
+    clone.style.display = 'block'
     
     container.appendChild(clone)
     document.body.appendChild(container)
@@ -90,17 +98,28 @@ export async function downloadResumePdf(resumeData: ResumeData) {
     // Wait for styles to be applied and rendering to complete
     await new Promise(resolve => setTimeout(resolve, 500))
     
-    console.log("[downloadResumePdf v2] Clone dimensions:", clone.offsetWidth, "x", clone.offsetHeight)
+    console.log("[downloadResumePdf v2] Clone dimensions:", {
+      offsetWidth: clone.offsetWidth,
+      offsetHeight: clone.offsetHeight,
+      scrollWidth: clone.scrollWidth,
+      scrollHeight: clone.scrollHeight,
+      margin: window.getComputedStyle(clone).margin,
+      padding: window.getComputedStyle(clone).padding
+    })
     console.log("[downloadResumePdf v2] Generating canvas...")
     
     const renderedCanvas = await html2canvas(clone, {
-      scale: 2,
+      scale: 3,
       useCORS: true,
       allowTaint: true,
       backgroundColor: "#ffffff",
       logging: false,
       width: clone.scrollWidth,
       height: clone.scrollHeight,
+      windowWidth: clone.scrollWidth,
+      windowHeight: clone.scrollHeight,
+      x: 0,
+      y: 0,
     })
     
     console.log("[downloadResumePdf v2] Canvas created:", renderedCanvas.width, "x", renderedCanvas.height)
@@ -108,40 +127,50 @@ export async function downloadResumePdf(resumeData: ResumeData) {
     // Clean up the temporary container
     container.remove()
     
-    // Create PDF
+    // Create PDF with no margins
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "mm",
-      format: "a4"
+      format: "a4",
+      compress: true,
     })
     
     const pdfWidth = pdf.internal.pageSize.getWidth()
     const pdfHeight = pdf.internal.pageSize.getHeight()
     
-    const imgData = renderedCanvas.toDataURL("image/jpeg", 0.95)
+    // Use PNG for better quality and transparency handling
+    const imgData = renderedCanvas.toDataURL("image/png", 1.0)
     
-    // Calculate dimensions to fit the page
-    const imgWidth = pdfWidth
-    const imgHeight = (renderedCanvas.height * imgWidth) / renderedCanvas.width
+    // Calculate dimensions to fill the page edge-to-edge
+    const canvasAspectRatio = renderedCanvas.width / renderedCanvas.height
+    const pdfAspectRatio = pdfWidth / pdfHeight
     
-    if (imgHeight <= pdfHeight) {
-      // Single page
-      pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight)
+    let imgWidth = pdfWidth
+    let imgHeight = pdfWidth / canvasAspectRatio
+    let xOffset = 0
+    let yOffset = 0
+    
+    // If image is taller than PDF page, fit by height
+    if (imgHeight > pdfHeight) {
+      imgHeight = pdfHeight
+      imgWidth = pdfHeight * canvasAspectRatio
+      xOffset = (pdfWidth - imgWidth) / 2
     } else {
-      // Multiple pages
-      let heightLeft = imgHeight
-      let position = 0
-      
-      pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight)
-      heightLeft -= pdfHeight
-      
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight
-        pdf.addPage()
-        pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight)
-        heightLeft -= pdfHeight
-      }
+      // Center vertically if image is shorter
+      yOffset = (pdfHeight - imgHeight) / 2
     }
+    
+    // Add image with calculated dimensions (no margins)
+    pdf.addImage(imgData, "PNG", xOffset, yOffset, imgWidth, imgHeight, undefined, "FAST")
+    
+    console.log("[downloadResumePdf v2] PDF dimensions:", {
+      pdfWidth,
+      pdfHeight,
+      imgWidth,
+      imgHeight,
+      xOffset,
+      yOffset
+    })
     
     const fileName = `${sanitizeFileName(resumeData.personalInfo.name)}.pdf`
     console.log("[downloadResumePdf v2] Saving as:", fileName)

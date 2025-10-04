@@ -631,10 +631,17 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
   return (
     <div className="min-h-screen flex flex-col bg-muted/30">
       {/* Hidden Resume Preview for PDF generation */}
-      <div style={{ position: 'fixed', left: '-9999px', top: '0' }}>
-        <div style={{ width: '210mm', backgroundColor: '#ffffff' }}>
-          <ResumePreview data={data} />
-        </div>
+      <div style={{ 
+        position: 'fixed', 
+        left: '-9999px', 
+        top: '0',
+        width: '210mm',
+        backgroundColor: '#ffffff',
+        margin: '0',
+        padding: '0',
+        boxSizing: 'border-box'
+      }}>
+        <ResumePreview data={data} />
       </div>
 
       {/* Progress Bar */}

@@ -200,8 +200,7 @@ export async function downloadResumePdf(resumeData: ResumeData) {
       throw new Error("Resume preview element not found or has zero dimensions")
     }
 
-    const scaleBase = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1
-    const scale = Math.max(2, Math.min(3, scaleBase))
+    const scale = 3 // Higher quality
 
     try {
       console.log("[downloadResumePdf] Starting html2canvas with scale:", scale)
@@ -212,17 +211,21 @@ export async function downloadResumePdf(resumeData: ResumeData) {
         useCORS: true,
         allowTaint: true,
         backgroundColor: "#ffffff",
-        logging: true,
+        logging: false,
         scrollX: 0,
         scrollY: 0,
         windowWidth: element.scrollWidth,
         windowHeight: element.scrollHeight,
+        x: 0,
+        y: 0,
         onclone: (clonedDoc) => {
           console.log("[downloadResumePdf] Document cloned for rendering")
           const clonedElement = clonedDoc.getElementById(element.id)
           if (clonedElement) {
             clonedElement.style.display = "block"
             clonedElement.style.position = "relative"
+            clonedElement.style.margin = "0"
+            clonedElement.style.padding = "0"
           }
         },
       })
@@ -241,30 +244,36 @@ export async function downloadResumePdf(resumeData: ResumeData) {
       }
 
       const orientation = "portrait"
-      const pdf = new jsPDF({ orientation, unit: "mm", format: "a4" })
+      const pdf = new jsPDF({ 
+        orientation, 
+        unit: "mm", 
+        format: "a4",
+        compress: true
+      })
 
       const pdfWidth = pdf.internal.pageSize.getWidth()
       const pdfHeight = pdf.internal.pageSize.getHeight()
       
       console.log("[downloadResumePdf] PDF dimensions:", pdfWidth, "x", pdfHeight)
 
-      // Calculate dimensions to fit within PDF page with margins
-      const margin = 10
-      const availableWidth = pdfWidth - (2 * margin)
-      const availableHeight = pdfHeight - (2 * margin)
-      
+      // Calculate dimensions to fill PDF page edge-to-edge (no margins)
       const imgAspectRatio = canvas.width / canvas.height
-      let imgWidth = availableWidth
-      let imgHeight = imgWidth / imgAspectRatio
+      const pdfAspectRatio = pdfWidth / pdfHeight
       
-      // If height exceeds available space, scale down
-      if (imgHeight > availableHeight) {
-        imgHeight = availableHeight
-        imgWidth = imgHeight * imgAspectRatio
+      let imgWidth = pdfWidth
+      let imgHeight = pdfWidth / imgAspectRatio
+      let xOffset = 0
+      let yOffset = 0
+      
+      // If image is taller than PDF, fit by height
+      if (imgHeight > pdfHeight) {
+        imgHeight = pdfHeight
+        imgWidth = pdfHeight * imgAspectRatio
+        xOffset = (pdfWidth - imgWidth) / 2
+      } else {
+        // Center vertically if shorter
+        yOffset = (pdfHeight - imgHeight) / 2
       }
-
-      const xOffset = (pdfWidth - imgWidth) / 2
-      const yOffset = margin
 
       console.log("[downloadResumePdf] Adding image to PDF:", {
         x: xOffset,

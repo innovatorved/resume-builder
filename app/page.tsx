@@ -16,7 +16,7 @@ export default function Home() {
   const [resumeData, setResumeData] = useState<ResumeData>({
     personalInfo: {
       name: "VED PRAKASH GUPTA",
-      title: "Cloud Developer",
+      title: "Cloud Engineer",
       phone: "+917007868719",
       email: "vedgupta0401@gmail.com",
       linkedin: "linkedin.com/in/innovatorved",
