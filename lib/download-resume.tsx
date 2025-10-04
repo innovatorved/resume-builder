@@ -4,94 +4,6 @@ import React from "react"
 import type { ResumeData } from "@/types/resume"
 import { ResumePreview } from "@/components/resume-preview"
 
-const COLOR_FALLBACKS: Record<string, string> = {
-  "--background": "#ffffff",
-  "--foreground": "#111827",
-  "--color-red-50": "#fef2f2",
-  "--color-red-300": "#fca5a5",
-  "--color-red-400": "#f87171",
-  "--color-red-600": "#dc2626",
-  "--color-blue-50": "#eff6ff",
-  "--color-blue-300": "#93c5fd",
-  "--color-blue-400": "#60a5fa",
-  "--color-blue-500": "#3b82f6",
-  "--color-blue-600": "#2563eb",
-  "--color-blue-700": "#1d4ed8",
-  "--color-gray-300": "#d1d5db",
-  "--color-gray-600": "#4b5563",
-  "--color-gray-700": "#374151",
-  "--color-gray-800": "#1f2937",
-  "--color-gray-900": "#111827",
-  "--color-border": "#e5e7eb",
-  "--color-white": "#ffffff",
-  "--color-black": "#000000",
-}
-
-const COLOR_PROPERTIES: Array<keyof CSSStyleDeclaration> = [
-  "color",
-  "backgroundColor",
-  "borderColor",
-  "borderTopColor",
-  "borderRightColor",
-  "borderBottomColor",
-  "borderLeftColor",
-  "outlineColor",
-  "caretColor",
-  "columnRuleColor",
-]
-
-let colorCanvasCtx: CanvasRenderingContext2D | null = null
-
-function getColorContext() {
-  if (colorCanvasCtx) return colorCanvasCtx
-  const canvas = document.createElement("canvas")
-  canvas.width = 1
-  canvas.height = 1
-  colorCanvasCtx = canvas.getContext("2d")
-  return colorCanvasCtx
-}
-
-function normalizeCssColor(value: string) {
-  if (!value || !value.includes("oklch")) return undefined
-  const ctx = getColorContext()
-  if (!ctx) return undefined
-  try {
-    ctx.fillStyle = "#000"
-    ctx.fillStyle = value
-    return ctx.fillStyle
-  } catch (error) {
-    console.warn("[downloadResumePdf] Unable to normalize color", value, error)
-    return undefined
-  }
-}
-
-function normalizeElementColors(element: HTMLElement) {
-  const computed = window.getComputedStyle(element)
-
-  COLOR_PROPERTIES.forEach((property) => {
-    const value = computed[property]
-    if (typeof value === "string" && value.includes("oklch")) {
-      const normalized = normalizeCssColor(value)
-      if (normalized) {
-        try {
-          ;(element.style as unknown as Record<string, string>)[property as string] = normalized
-        } catch {}
-      }
-    }
-  })
-
-  const backgroundImage = computed.backgroundImage
-  if (typeof backgroundImage === "string" && backgroundImage.includes("oklch")) {
-    element.style.backgroundImage = "none"
-  }
-
-  Array.from(element.children).forEach((child) => {
-    if (child instanceof HTMLElement) {
-      normalizeElementColors(child)
-    }
-  })
-}
-
 function sanitize(input: string | undefined) {
   if (!input) {
     return "resume"
@@ -112,47 +24,64 @@ async function ensurePreviewElement(resumeData: ResumeData) {
     return { element: existing, cleanup: undefined as (() => void) | undefined }
   }
 
-  const container = document.createElement("div")
-  container.id = "resume-preview-temp"
-  container.style.position = "fixed"
-  container.style.top = "-10000px"
-  container.style.left = "-10000px"
-  container.style.width = "210mm"
-  container.style.maxWidth = "none"
-  container.style.backgroundColor = "#ffffff"
-  container.style.pointerEvents = "none"
-  container.style.opacity = "0"
-  container.style.zIndex = "-1"
-  container.style.colorScheme = "light"
+  const iframe = document.createElement("iframe")
+  iframe.style.position = "fixed"
+  iframe.style.top = "-10000px"
+  iframe.style.left = "-10000px"
+  iframe.style.width = "210mm"
+  iframe.style.border = "none"
 
-  Object.entries(COLOR_FALLBACKS).forEach(([key, value]) => {
-    container.style.setProperty(key, value)
+  // The iframe needs to load before we can access its document
+  let iframePromiseResolve: (value: unknown) => void
+  const iframePromise = new Promise((resolve) => {
+    iframePromiseResolve = resolve
+  })
+  iframe.onload = iframePromiseResolve
+  document.body.appendChild(iframe)
+  await iframePromise
+
+  const iframeDoc = iframe.contentDocument
+  if (!iframeDoc) {
+    throw new Error("Could not access iframe document")
+  }
+
+  // Copy stylesheets from the main document to the iframe
+  const links = document.querySelectorAll('link[rel="stylesheet"]')
+  links.forEach((link) => {
+    iframeDoc.head.appendChild(link.cloneNode(true))
   })
 
-  document.body.appendChild(container)
+  // Copy style tags from the main document to the iframe
+  const styles = document.querySelectorAll("style")
+  styles.forEach((style) => {
+    iframeDoc.head.appendChild(style.cloneNode(true))
+  })
+
+  // The container for our React component inside the iframe
+  const container = iframeDoc.createElement("div")
+  iframeDoc.body.appendChild(container)
+  iframeDoc.body.style.margin = "0" // Reset body margin
 
   const { createRoot } = await import("react-dom/client")
   const root = createRoot(container)
 
+  // We need to wrap the preview in a div that sets the width,
+  // as the body of the iframe will be wider.
   root.render(
     <div style={{ width: "210mm" }}>
       <ResumePreview data={resumeData} />
-    </div>
+    </div>,
   )
 
-  await new Promise<void>((resolve) => {
-    requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
-  })
+  // Wait for styles and content to be applied.
+  // A small delay is often necessary for external resources like fonts.
+  await new Promise((resolve) => setTimeout(resolve, 500))
 
   const element = container.querySelector<HTMLElement>("#resume-preview") ?? container
 
-  if (element instanceof HTMLElement) {
-    normalizeElementColors(element)
-  }
-
   const cleanup = () => {
     root.unmount()
-    container.remove()
+    iframe.remove()
   }
 
   return { element, cleanup }
