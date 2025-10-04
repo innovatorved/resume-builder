@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { ArrowRight, ArrowLeft, Plus, Trash2, Check, Download } from "lucide-react"
 import type { ResumeData } from "@/types/resume"
-import { downloadResumePdf } from "@/lib/download-resume"
+import { downloadResumePdf } from "@/lib/download-resume-v2"
+import { ResumePreview } from "@/components/resume-preview"
 
 interface TypeformResumeBuilderProps {
   data: ResumeData
@@ -150,12 +151,16 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
   const handleDownloadPDF = async () => {
     try {
       setIsDownloading(true)
-      console.log("[v0] Starting PDF download...")
+      console.log("[TypeformResumeBuilder] Starting PDF download...")
 
       await downloadResumePdf(data)
+      
+      console.log("[TypeformResumeBuilder] PDF download completed successfully!")
+      alert("Resume downloaded successfully!")
     } catch (error) {
-      console.error("[v0] Error downloading resume:", error)
-      alert("Failed to download resume. Please try again.")
+      console.error("[TypeformResumeBuilder] Error downloading resume:", error)
+      const errorMessage = error instanceof Error ? error.message : "Unknown error"
+      alert(`Failed to download resume: ${errorMessage}\n\nPlease check the console for more details.`)
     } finally {
       setIsDownloading(false)
     }
@@ -625,6 +630,13 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
 
   return (
     <div className="min-h-screen flex flex-col bg-muted/30">
+      {/* Hidden Resume Preview for PDF generation */}
+      <div style={{ position: 'fixed', left: '-9999px', top: '0' }}>
+        <div style={{ width: '210mm', backgroundColor: '#ffffff' }}>
+          <ResumePreview data={data} />
+        </div>
+      </div>
+
       {/* Progress Bar */}
       <div className="fixed top-0 left-0 right-0 h-1 bg-muted z-50">
         <div

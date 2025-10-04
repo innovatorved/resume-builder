@@ -6,7 +6,7 @@ import { ResumePreview } from "@/components/resume-preview"
 import { Button } from "@/components/ui/button"
 import { Download, FileText, ArrowLeft, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { downloadResumePdf } from "@/lib/download-resume"
+import { downloadResumePdf } from "@/lib/download-resume-v2"
 import type { ResumeData } from "@/types/resume"
 
 export default function Home() {

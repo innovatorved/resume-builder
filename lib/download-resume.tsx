@@ -4,29 +4,6 @@ import React from "react"
 import type { ResumeData } from "@/types/resume"
 import { ResumePreview } from "@/components/resume-preview"
 
-const COLOR_FALLBACKS: Record<string, string> = {
-  "--background": "#ffffff",
-  "--foreground": "#111827",
-  "--color-red-50": "#fef2f2",
-  "--color-red-300": "#fca5a5",
-  "--color-red-400": "#f87171",
-  "--color-red-600": "#dc2626",
-  "--color-blue-50": "#eff6ff",
-  "--color-blue-300": "#93c5fd",
-  "--color-blue-400": "#60a5fa",
-  "--color-blue-500": "#3b82f6",
-  "--color-blue-600": "#2563eb",
-  "--color-blue-700": "#1d4ed8",
-  "--color-gray-300": "#d1d5db",
-  "--color-gray-600": "#4b5563",
-  "--color-gray-700": "#374151",
-  "--color-gray-800": "#1f2937",
-  "--color-gray-900": "#111827",
-  "--color-border": "#e5e7eb",
-  "--color-white": "#ffffff",
-  "--color-black": "#000000",
-}
-
 const COLOR_PROPERTIES: Array<keyof CSSStyleDeclaration> = [
   "color",
   "backgroundColor",
@@ -108,10 +85,55 @@ function sanitize(input: string | undefined) {
 
 async function ensurePreviewElement(resumeData: ResumeData) {
   const existing = document.getElementById("resume-preview") as HTMLElement | null
-  if (existing) {
-    return { element: existing, cleanup: undefined as (() => void) | undefined }
+  if (existing && existing.offsetWidth > 0) {
+    console.log("[ensurePreviewElement] Found existing preview element")
+    // Clone the existing element to ensure we get all computed styles
+    const clone = existing.cloneNode(true) as HTMLElement
+    clone.id = "resume-preview-clone"
+    
+    // Apply all computed styles inline
+    const applyComputedStyles = (source: HTMLElement, target: HTMLElement) => {
+      const computedStyle = window.getComputedStyle(source)
+      const targetStyle = target.style
+      
+      // Copy all computed styles
+      for (let i = 0; i < computedStyle.length; i++) {
+        const prop = computedStyle[i]
+        targetStyle.setProperty(prop, computedStyle.getPropertyValue(prop))
+      }
+      
+      // Recursively apply to children
+      const sourceChildren = Array.from(source.children) as HTMLElement[]
+      const targetChildren = Array.from(target.children) as HTMLElement[]
+      
+      sourceChildren.forEach((sourceChild, index) => {
+        if (targetChildren[index]) {
+          applyComputedStyles(sourceChild, targetChildren[index])
+        }
+      })
+    }
+    
+    applyComputedStyles(existing, clone)
+    
+    // Append clone to body temporarily
+    const tempContainer = document.createElement("div")
+    tempContainer.style.position = "fixed"
+    tempContainer.style.top = "-10000px"
+    tempContainer.style.left = "-10000px"
+    tempContainer.style.width = "210mm"
+    tempContainer.style.backgroundColor = "#ffffff"
+    tempContainer.appendChild(clone)
+    document.body.appendChild(tempContainer)
+    
+    const cleanup = () => {
+      tempContainer.remove()
+    }
+    
+    return { element: clone, cleanup }
   }
 
+  console.log("[ensurePreviewElement] Creating new preview element")
+  
   const container = document.createElement("div")
   container.id = "resume-preview-temp"
   container.style.position = "fixed"
@@ -119,15 +141,12 @@ async function ensurePreviewElement(resumeData: ResumeData) {
   container.style.left = "-10000px"
   container.style.width = "210mm"
   container.style.maxWidth = "none"
+  container.style.minHeight = "297mm"
   container.style.backgroundColor = "#ffffff"
   container.style.pointerEvents = "none"
   container.style.opacity = "0"
   container.style.zIndex = "-1"
   container.style.colorScheme = "light"
-
-  Object.entries(COLOR_FALLBACKS).forEach(([key, value]) => {
-    container.style.setProperty(key, value)
-  })
 
   document.body.appendChild(container)
 
@@ -135,22 +154,28 @@ async function ensurePreviewElement(resumeData: ResumeData) {
   const root = createRoot(container)
 
   root.render(
-    <div style={{ width: "210mm" }}>
+    <div style={{ width: "210mm", minHeight: "297mm", backgroundColor: "#ffffff" }}>
       <ResumePreview data={resumeData} />
     </div>
   )
 
+  // Wait longer for rendering and styles to be applied
   await new Promise<void>((resolve) => {
-    requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+    setTimeout(() => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+    }, 500)
   })
 
   const element = container.querySelector<HTMLElement>("#resume-preview") ?? container
+
+  console.log("[ensurePreviewElement] Element selected:", element.id, element.offsetWidth, "x", element.offsetHeight)
 
   if (element instanceof HTMLElement) {
     normalizeElementColors(element)
   }
 
   const cleanup = () => {
+    console.log("[ensurePreviewElement] Cleaning up temporary element")
     root.unmount()
     container.remove()
   }
@@ -159,50 +184,110 @@ async function ensurePreviewElement(resumeData: ResumeData) {
 }
 
 export async function downloadResumePdf(resumeData: ResumeData) {
-  const html2canvas = (await import("html2canvas")).default
-  const { jsPDF } = await import("jspdf")
-
-  const { element, cleanup } = await ensurePreviewElement(resumeData)
-
-  const scaleBase = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1
-  const scale = Math.min(3, Math.max(scaleBase, 2))
-
+  console.log("[downloadResumePdf] Starting PDF generation process...")
+  
   try {
-    const canvas = await html2canvas(element, {
-      scale,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-      logging: false,
-      scrollX: 0,
-      scrollY: 0,
-    })
+    const html2canvas = (await import("html2canvas-pro")).default
+    const { jsPDF } = await import("jspdf")
+    console.log("[downloadResumePdf] Libraries loaded successfully")
 
-    const imgData = canvas.toDataURL("image/png")
+    const { element, cleanup } = await ensurePreviewElement(resumeData)
 
-    const orientation = canvas.width >= canvas.height ? "landscape" : "portrait"
-    const pdf = new jsPDF({ orientation, unit: "mm", format: "a4" })
+    console.log("[downloadResumePdf] Element found:", element)
+    console.log("[downloadResumePdf] Element dimensions:", element.offsetWidth, "x", element.offsetHeight)
 
-    const pdfWidth = pdf.internal.pageSize.getWidth()
-    const pdfHeight = pdf.internal.pageSize.getHeight()
-    const ratio = canvas.height / canvas.width
-
-    let renderWidth = pdfWidth
-    let renderHeight = renderWidth * ratio
-
-    if (renderHeight > pdfHeight) {
-      renderHeight = pdfHeight
-      renderWidth = renderHeight / ratio
+    if (!element || element.offsetWidth === 0 || element.offsetHeight === 0) {
+      throw new Error("Resume preview element not found or has zero dimensions")
     }
 
-    const offsetX = (pdfWidth - renderWidth) / 2
-    const offsetY = (pdfHeight - renderHeight) / 2
+    const scaleBase = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1
+    const scale = Math.max(2, Math.min(3, scaleBase))
 
-    pdf.addImage(imgData, "PNG", offsetX, offsetY, renderWidth, renderHeight, undefined, "FAST")
+    try {
+      console.log("[downloadResumePdf] Starting html2canvas with scale:", scale)
+      console.log("[downloadResumePdf] Element computed styles:", window.getComputedStyle(element).backgroundColor)
+      
+      const canvas = await html2canvas(element, {
+        scale,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#ffffff",
+        logging: true,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight,
+        onclone: (clonedDoc) => {
+          console.log("[downloadResumePdf] Document cloned for rendering")
+          const clonedElement = clonedDoc.getElementById(element.id)
+          if (clonedElement) {
+            clonedElement.style.display = "block"
+            clonedElement.style.position = "relative"
+          }
+        },
+      })
 
-    const fileName = `${sanitize(resumeData.personalInfo.name)}.pdf`
-    pdf.save(fileName)
-  } finally {
-    cleanup?.()
+      console.log("[downloadResumePdf] Canvas created:", canvas.width, "x", canvas.height)
+
+      if (canvas.width === 0 || canvas.height === 0) {
+        throw new Error("Generated canvas has zero dimensions")
+      }
+
+      const imgData = canvas.toDataURL("image/png", 1.0)
+      console.log("[downloadResumePdf] Image data length:", imgData.length)
+
+      if (!imgData || imgData === "data:,") {
+        throw new Error("Failed to generate image data from canvas")
+      }
+
+      const orientation = "portrait"
+      const pdf = new jsPDF({ orientation, unit: "mm", format: "a4" })
+
+      const pdfWidth = pdf.internal.pageSize.getWidth()
+      const pdfHeight = pdf.internal.pageSize.getHeight()
+      
+      console.log("[downloadResumePdf] PDF dimensions:", pdfWidth, "x", pdfHeight)
+
+      // Calculate dimensions to fit within PDF page with margins
+      const margin = 10
+      const availableWidth = pdfWidth - (2 * margin)
+      const availableHeight = pdfHeight - (2 * margin)
+      
+      const imgAspectRatio = canvas.width / canvas.height
+      let imgWidth = availableWidth
+      let imgHeight = imgWidth / imgAspectRatio
+      
+      // If height exceeds available space, scale down
+      if (imgHeight > availableHeight) {
+        imgHeight = availableHeight
+        imgWidth = imgHeight * imgAspectRatio
+      }
+
+      const xOffset = (pdfWidth - imgWidth) / 2
+      const yOffset = margin
+
+      console.log("[downloadResumePdf] Adding image to PDF:", {
+        x: xOffset,
+        y: yOffset,
+        width: imgWidth,
+        height: imgHeight
+      })
+
+      pdf.addImage(imgData, "PNG", xOffset, yOffset, imgWidth, imgHeight, undefined, "FAST")
+
+      const fileName = `${sanitize(resumeData.personalInfo.name)}.pdf`
+      console.log("[downloadResumePdf] Saving as:", fileName)
+      pdf.save(fileName)
+      console.log("[downloadResumePdf] PDF saved successfully!")
+    } catch (error) {
+      console.error("[downloadResumePdf] Error during PDF generation:", error)
+      throw error
+    } finally {
+      cleanup?.()
+    }
+  } catch (error) {
+    console.error("[downloadResumePdf] Fatal error:", error)
+    throw error
   }
 }
 

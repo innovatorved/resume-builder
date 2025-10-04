@@ -9,9 +9,21 @@ export function ResumePreview({ data }: ResumePreviewProps) {
     <div
       id="resume-preview"
       className="bg-white text-gray-800"
-      style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif' }}
+      style={{ 
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif',
+        width: '100%',
+        minHeight: '297mm',
+        backgroundColor: '#ffffff',
+        color: '#1f2937'
+      }}
     >
-      <div className="max-w-[210mm] mx-auto p-12 grid grid-cols-[1fr_2fr] gap-5">
+      <div className="max-w-[210mm] mx-auto p-12 grid grid-cols-[1fr_2fr] gap-5" style={{
+        maxWidth: '210mm',
+        padding: '48px',
+        display: 'grid',
+        gridTemplateColumns: '1fr 2fr',
+        gap: '20px'
+      }}>
         {/* Header - Full Width */}
         <div className="col-span-2 mb-1 border-b border-gray-300 pb-1">
           <h1 className="text-2xl font-bold text-gray-900 mb-0.5 tracking-wide">{data.personalInfo.name}</h1>
