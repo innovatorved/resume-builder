@@ -187,52 +187,64 @@ export default function Home() {
 
   if (showForm) {
     return (
-      <div className="min-h-screen bg-background">
-        <TypeformResumeBuilder
-          data={resumeData}
-          onChange={setResumeData}
-          onComplete={() => setShowForm(false)}
-        />
-      </div>
+      <TypeformResumeBuilder
+        data={resumeData}
+        onChange={setResumeData}
+        onComplete={() => setShowForm(false)}
+      />
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-slate-900 dark:via-slate-800 dark:to-blue-950">
       {/* Header */}
-      <header className="border-b bg-card sticky top-0 z-40">
+      <header className="border-b border-gray-200/50 dark:border-gray-700/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg sticky top-0 z-40 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button onClick={() => setShowForm(true)} variant="outline" size="sm">
+              <Button
+                onClick={() => setShowForm(true)}
+                variant="outline"
+                size="sm"
+                className="border-2 border-gray-300 dark:border-gray-600 hover:border-blue-600 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-slate-800 transition-all"
+              >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Edit
               </Button>
               <div className="flex items-center gap-2">
-                <FileText className="h-6 w-6 text-primary" />
-                <h1 className="text-xl font-bold text-primary">Resume Preview</h1>
+                <div className="p-2 bg-blue-700 rounded-lg">
+                  <FileText className="h-5 w-5 text-white" />
+                </div>
+                <h1 className="text-xl font-bold text-blue-700 dark:text-blue-500">
+                  Resume Preview
+                </h1>
               </div>
             </div>
             <Button
               onClick={handleDownloadPDF}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+              className="bg-blue-700 hover:bg-blue-800 text-white shadow-lg shadow-blue-500/30 dark:shadow-blue-900/50 font-semibold"
               size="lg"
               disabled={isDownloading}
             >
               {isDownloading ? (
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Preparing...
+                </>
               ) : (
-                <Download className="mr-2 h-5 w-5" />
+                <>
+                  <Download className="mr-2 h-5 w-5" />
+                  Download PDF
+                </>
               )}
-              {isDownloading ? "Preparing..." : "Download PDF"}
             </Button>
           </div>
         </div>
       </header>
 
       {/* Preview */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-2xl overflow-hidden">
+      <main className="container mx-auto px-4 py-8 md:py-12">
+        <div className="max-w-4xl mx-auto bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200/50 dark:border-gray-700/50">
           <ResumePreview data={resumeData} />
         </div>
       </main>
