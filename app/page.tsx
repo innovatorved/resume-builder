@@ -34,9 +34,9 @@ export default function Home() {
         endDate: "Present",
         description: "Cloud Engineering Company specializing in cloud solutions",
         responsibilities: [
-          "Working on a Microsoft Azure Cloud project with a focus on Infrastructure as a Service (IaaS), optimizing and managing cloud infrastructure",
-          "Implementing and deploying scalable, secure, and efficient cloud solutions on Azure",
-          "Collaborating with teams to design and deploy cloud architectures aligned with business needs",
+          "Working on a Microsoft Azure Cloud project with a focus on Infrastructure as a Service (IaaS), optimizing and managing Cloud infrastructure",
+          "Implementing and deploying scalable, secure, and efficient Cloud solutions on Azure",
+          "Collaborating with teams to design and deploy Cloud architectures aligned with business needs",
           "Providing solutions for clients by designing, deploying, and managing Azure IaaS environments tailored to their specific needs",
         ],
       },
@@ -108,7 +108,7 @@ export default function Home() {
           "Azure Identities and Governance, Storage Management, Azure Compute Resources, Virtual Networking, Azure Monitoring",
       },
       {
-        title: "Associate Cloud Engineer",
+        title: "Google Cloud Certified Associate Cloud Engineer",
         issuer: "Google Cloud",
         date: "Oct 2024",
         link: "https://www.credly.com/badges/34a38859-04f5-4548-a543-e871e740db36/",

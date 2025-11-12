@@ -47,12 +47,12 @@ export function ResumePreview({ data }: ResumePreviewProps) {
           >
             <span>{data.personalInfo.phone}</span>
             <span>
-              <a href={`mailto:${data.personalInfo.email}`} className="text-blue-600 no-underline">
+              Email: <a href={`mailto:${data.personalInfo.email}`} className="text-blue-600 no-underline">
                 {data.personalInfo.email}
               </a>
             </span>
             <span>
-              <a
+              LinkedIn: <a
                 href={`https://${data.personalInfo.linkedin}`}
                 className="text-blue-600 no-underline"
               >
@@ -162,7 +162,7 @@ export function ResumePreview({ data }: ResumePreviewProps) {
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        View Certificate
+                        View Credential
                       </a>
                     </div>
                   )}
