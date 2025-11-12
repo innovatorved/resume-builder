@@ -111,6 +111,44 @@ export async function downloadResumePdf(resumeData: ResumeData) {
       margin: window.getComputedStyle(clone).margin,
       padding: window.getComputedStyle(clone).padding,
     });
+
+    const cloneRect = clone.getBoundingClientRect();
+    const linkAnnotations = Array.from(
+      clone.querySelectorAll<HTMLAnchorElement>("a[href]")
+    )
+      .map((anchor) => {
+        const href = anchor.getAttribute("href")?.trim();
+
+        if (!href || href === "#") {
+          return null;
+        }
+
+        const rect = anchor.getBoundingClientRect();
+
+        if (rect.width === 0 || rect.height === 0) {
+          return null;
+        }
+
+        return {
+          href,
+          left: rect.left - cloneRect.left,
+          top: rect.top - cloneRect.top,
+          width: rect.width,
+          height: rect.height,
+        };
+      })
+      .filter((entry): entry is {
+        href: string;
+        left: number;
+        top: number;
+        width: number;
+        height: number;
+      } => Boolean(entry));
+
+    console.log(
+      "[downloadResumePdf v2] Captured anchor annotations:",
+      linkAnnotations.length
+    );
     console.log("[downloadResumePdf v2] Generating canvas...");
 
     const renderedCanvas = await html2canvas(clone, {
@@ -181,6 +219,25 @@ export async function downloadResumePdf(resumeData: ResumeData) {
       xOffset,
       yOffset,
     });
+
+    if (linkAnnotations.length > 0 && cloneRect.width > 0 && cloneRect.height > 0) {
+      const widthRatio = imgWidth / cloneRect.width;
+      const heightRatio = imgHeight / cloneRect.height;
+
+      linkAnnotations.forEach((annotation) => {
+        const linkX = xOffset + annotation.left * widthRatio;
+        const linkY = yOffset + annotation.top * heightRatio;
+        const linkWidth = annotation.width * widthRatio;
+        const linkHeight = annotation.height * heightRatio;
+
+        pdf.link(linkX, linkY, linkWidth, linkHeight, { url: annotation.href });
+      });
+
+      console.log(
+        "[downloadResumePdf v2] Added link annotations to PDF:",
+        linkAnnotations.length
+      );
+    }
 
     const fileName = `${sanitizeFileName(resumeData.personalInfo.name)}.pdf`;
     console.log("[downloadResumePdf v2] Saving as:", fileName);
