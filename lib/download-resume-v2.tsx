@@ -113,9 +113,7 @@ export async function downloadResumePdf(resumeData: ResumeData) {
     });
 
     const cloneRect = clone.getBoundingClientRect();
-    const linkAnnotations = Array.from(
-      clone.querySelectorAll<HTMLAnchorElement>("a[href]")
-    )
+    const linkAnnotations = Array.from(clone.querySelectorAll<HTMLAnchorElement>("a[href]"))
       .map((anchor) => {
         const href = anchor.getAttribute("href")?.trim();
 
@@ -137,18 +135,19 @@ export async function downloadResumePdf(resumeData: ResumeData) {
           height: rect.height,
         };
       })
-      .filter((entry): entry is {
-        href: string;
-        left: number;
-        top: number;
-        width: number;
-        height: number;
-      } => Boolean(entry));
+      .filter(
+        (
+          entry
+        ): entry is {
+          href: string;
+          left: number;
+          top: number;
+          width: number;
+          height: number;
+        } => Boolean(entry)
+      );
 
-    console.log(
-      "[downloadResumePdf v2] Captured anchor annotations:",
-      linkAnnotations.length
-    );
+    console.log("[downloadResumePdf v2] Captured anchor annotations:", linkAnnotations.length);
     console.log("[downloadResumePdf v2] Generating canvas...");
 
     const renderedCanvas = await html2canvas(clone, {
@@ -233,10 +232,7 @@ export async function downloadResumePdf(resumeData: ResumeData) {
         pdf.link(linkX, linkY, linkWidth, linkHeight, { url: annotation.href });
       });
 
-      console.log(
-        "[downloadResumePdf v2] Added link annotations to PDF:",
-        linkAnnotations.length
-      );
+      console.log("[downloadResumePdf v2] Added link annotations to PDF:", linkAnnotations.length);
     }
 
     const fileName = `${sanitizeFileName(resumeData.personalInfo.name)}.pdf`;

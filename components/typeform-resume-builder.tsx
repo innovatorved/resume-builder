@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { ArrowRight, ArrowLeft, Plus, Trash2, Check, Download } from "lucide-react";
 import type { ResumeData } from "@/types/resume";
 import { downloadResumePdf } from "@/lib/download-resume-v2";
+import { DOWNLOAD_BUTTON_BASE_CLASSES } from "@/lib/utils";
 import { ResumePreview } from "@/components/resume-preview";
 
 interface TypeformResumeBuilderProps {
@@ -738,7 +739,7 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
                 onClick={handleDownloadPDF}
                 disabled={isDownloading}
                 size="lg"
-                className="bg-blue-700 hover:bg-blue-800 text-white shadow-xl shadow-blue-500/40 dark:shadow-blue-900/60 py-7 px-10 text-lg font-semibold transition-all hover:scale-105 hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className={`${DOWNLOAD_BUTTON_BASE_CLASSES} bg-blue-700 hover:bg-blue-800 text-white shadow-xl shadow-blue-500/40 dark:shadow-blue-900/60 hover:scale-105 hover:shadow-2xl transition-transform disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100`}
               >
                 {isDownloading ? (
                   <>

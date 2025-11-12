@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Download, FileText, ArrowLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { downloadResumePdf } from "@/lib/download-resume-v2";
+import { DOWNLOAD_BUTTON_BASE_CLASSES } from "@/lib/utils";
 import type { ResumeData } from "@/types/resume";
 
 export default function Home() {
@@ -222,7 +223,7 @@ export default function Home() {
             </div>
             <Button
               onClick={handleDownloadPDF}
-              className="bg-blue-700 hover:bg-blue-800 text-white shadow-lg shadow-blue-500/30 dark:shadow-blue-900/50 font-semibold"
+              className={`${DOWNLOAD_BUTTON_BASE_CLASSES} bg-blue-700 hover:bg-blue-800 text-white shadow-xl shadow-blue-500/40 dark:shadow-blue-900/60 disabled:cursor-not-allowed disabled:opacity-50`}
               size="lg"
               disabled={isDownloading}
             >
@@ -245,7 +246,9 @@ export default function Home() {
       {/* Preview */}
       <main className="container mx-auto px-4 py-8 md:py-12">
         <div className="max-w-4xl mx-auto bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200/50 dark:border-gray-700/50">
-          <ResumePreview data={resumeData} />
+          <div className="p-6">
+            <ResumePreview data={resumeData} />
+          </div>
         </div>
       </main>
     </div>

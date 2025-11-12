@@ -18,13 +18,13 @@ export function ResumePreview({ data }: ResumePreviewProps) {
       }}
     >
       <div
-        className="max-w-[210mm] mx-auto px-4 py-3 grid grid-cols-[1fr_2fr] gap-5"
+        className="max-w-[210mm] mx-auto px-4 py-4 grid grid-cols-[1fr_2fr] gap-5"
         style={{
           maxWidth: "210mm",
           paddingLeft: "16px",
           paddingRight: "16px",
-          paddingTop: "12px",
-          paddingBottom: "12px",
+          paddingTop: "16px",
+          paddingBottom: "16px",
           display: "grid",
           gridTemplateColumns: "1fr 2fr",
           gap: "20px",
