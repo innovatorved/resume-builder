@@ -1,56 +1,56 @@
 export interface PersonalInfo {
-  name: string
-  title: string
-  phone: string
-  email: string
-  linkedin: string
-  location: string
+  name: string;
+  title: string;
+  phone: string;
+  email: string;
+  linkedin: string;
+  location: string;
 }
 
 export interface Experience {
-  title: string
-  company: string
-  location: string
-  startDate: string
-  endDate: string
-  description: string
-  responsibilities: string[]
+  title: string;
+  company: string;
+  location: string;
+  startDate: string;
+  endDate: string;
+  description: string;
+  responsibilities: string[];
 }
 
 export interface Education {
-  degree: string
-  institution: string
-  location: string
-  startDate: string
-  endDate: string
+  degree: string;
+  institution: string;
+  location: string;
+  startDate: string;
+  endDate: string;
 }
 
 export interface Certification {
-  title: string
-  issuer: string
-  date: string
+  title: string;
+  issuer: string;
+  date: string;
+  link?: string;
+  skills?: string;
 }
 
 export interface Project {
-  title: string
-  startDate: string
-  endDate: string
-  description: string
-  technologies: string
+  title: string;
+  description: string;
+  technologies: string;
 }
 
 export interface Language {
-  name: string
-  level: string
+  name: string;
+  level: string;
 }
 
 export interface ResumeData {
-  personalInfo: PersonalInfo
-  summary: string
-  experience: Experience[]
-  education: Education[]
-  skills: string[]
-  certifications: Certification[]
-  projects: Project[]
-  languages: Language[]
+  personalInfo: PersonalInfo;
+  summary: string;
+  experience: Experience[];
+  education: Education[];
+  skills: string[];
+  certifications: Certification[];
+  projects: Project[];
+  languages: Language[];
 }

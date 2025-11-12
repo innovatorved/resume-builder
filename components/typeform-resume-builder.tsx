@@ -1,35 +1,35 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card } from "@/components/ui/card"
-import { ArrowRight, ArrowLeft, Plus, Trash2, Check, Download } from "lucide-react"
-import type { ResumeData } from "@/types/resume"
-import { downloadResumePdf } from "@/lib/download-resume-v2"
-import { ResumePreview } from "@/components/resume-preview"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
+import { ArrowRight, ArrowLeft, Plus, Trash2, Check, Download } from "lucide-react";
+import type { ResumeData } from "@/types/resume";
+import { downloadResumePdf } from "@/lib/download-resume-v2";
+import { ResumePreview } from "@/components/resume-preview";
 
 interface TypeformResumeBuilderProps {
-  data: ResumeData
-  onChange: (data: ResumeData) => void
-  onComplete: () => void
+  data: ResumeData;
+  onChange: (data: ResumeData) => void;
+  onComplete: () => void;
 }
 
 export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformResumeBuilderProps) {
-  const [currentStep, setCurrentStep] = useState(0)
-  const [isDownloading, setIsDownloading] = useState(false)
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isDownloading, setIsDownloading] = useState(false);
 
-  const totalSteps = 9
+  const totalSteps = 9;
 
   const updatePersonalInfo = (field: string, value: string) => {
     onChange({
       ...data,
       personalInfo: { ...data.personalInfo, [field]: value },
-    })
-  }
+    });
+  };
 
   const addExperience = () => {
     onChange({
@@ -46,125 +46,133 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
           responsibilities: [""],
         },
       ],
-    })
-  }
+    });
+  };
 
   const updateExperience = (index: number, field: string, value: string | string[]) => {
-    const newExperience = [...data.experience]
-    newExperience[index] = { ...newExperience[index], [field]: value }
-    onChange({ ...data, experience: newExperience })
-  }
+    const newExperience = [...data.experience];
+    newExperience[index] = { ...newExperience[index], [field]: value };
+    onChange({ ...data, experience: newExperience });
+  };
 
   const removeExperience = (index: number) => {
-    onChange({ ...data, experience: data.experience.filter((_, i) => i !== index) })
-  }
+    onChange({ ...data, experience: data.experience.filter((_, i) => i !== index) });
+  };
 
   const addEducation = () => {
     onChange({
       ...data,
-      education: [...data.education, { degree: "", institution: "", location: "", startDate: "", endDate: "" }],
-    })
-  }
+      education: [
+        ...data.education,
+        { degree: "", institution: "", location: "", startDate: "", endDate: "" },
+      ],
+    });
+  };
 
   const updateEducation = (index: number, field: string, value: string) => {
-    const newEducation = [...data.education]
-    newEducation[index] = { ...newEducation[index], [field]: value }
-    onChange({ ...data, education: newEducation })
-  }
+    const newEducation = [...data.education];
+    newEducation[index] = { ...newEducation[index], [field]: value };
+    onChange({ ...data, education: newEducation });
+  };
 
   const removeEducation = (index: number) => {
-    onChange({ ...data, education: data.education.filter((_, i) => i !== index) })
-  }
+    onChange({ ...data, education: data.education.filter((_, i) => i !== index) });
+  };
 
   const addCertification = () => {
     onChange({
       ...data,
-      certifications: [...data.certifications, { title: "", issuer: "", date: "" }],
-    })
-  }
+      certifications: [
+        ...data.certifications,
+        { title: "", issuer: "", date: "", link: "", skills: "" },
+      ],
+    });
+  };
 
   const updateCertification = (index: number, field: string, value: string) => {
-    const newCertifications = [...data.certifications]
-    newCertifications[index] = { ...newCertifications[index], [field]: value }
-    onChange({ ...data, certifications: newCertifications })
-  }
+    const newCertifications = [...data.certifications];
+    newCertifications[index] = { ...newCertifications[index], [field]: value };
+    onChange({ ...data, certifications: newCertifications });
+  };
 
   const removeCertification = (index: number) => {
-    onChange({ ...data, certifications: data.certifications.filter((_, i) => i !== index) })
-  }
+    onChange({ ...data, certifications: data.certifications.filter((_, i) => i !== index) });
+  };
 
   const addProject = () => {
     onChange({
       ...data,
-      projects: [...data.projects, { title: "", startDate: "", endDate: "", description: "", technologies: "" }],
-    })
-  }
+      projects: [...data.projects, { title: "", description: "", technologies: "" }],
+    });
+  };
 
   const updateProject = (index: number, field: string, value: string) => {
-    const newProjects = [...data.projects]
-    newProjects[index] = { ...newProjects[index], [field]: value }
-    onChange({ ...data, projects: newProjects })
-  }
+    const newProjects = [...data.projects];
+    newProjects[index] = { ...newProjects[index], [field]: value };
+    onChange({ ...data, projects: newProjects });
+  };
 
   const removeProject = (index: number) => {
-    onChange({ ...data, projects: data.projects.filter((_, i) => i !== index) })
-  }
+    onChange({ ...data, projects: data.projects.filter((_, i) => i !== index) });
+  };
 
   const addLanguage = () => {
     onChange({
       ...data,
       languages: [...data.languages, { name: "", level: "" }],
-    })
-  }
+    });
+  };
 
   const updateLanguage = (index: number, field: string, value: string) => {
-    const newLanguages = [...data.languages]
-    newLanguages[index] = { ...newLanguages[index], [field]: value }
-    onChange({ ...data, languages: newLanguages })
-  }
+    const newLanguages = [...data.languages];
+    newLanguages[index] = { ...newLanguages[index], [field]: value };
+    onChange({ ...data, languages: newLanguages });
+  };
 
   const removeLanguage = (index: number) => {
-    onChange({ ...data, languages: data.languages.filter((_, i) => i !== index) })
-  }
+    onChange({ ...data, languages: data.languages.filter((_, i) => i !== index) });
+  };
 
   const nextStep = () => {
     if (currentStep < totalSteps - 1) {
-      setCurrentStep(currentStep + 1)
+      setCurrentStep(currentStep + 1);
     } else {
-      onComplete()
+      onComplete();
     }
-  }
+  };
 
   const prevStep = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1)
+      setCurrentStep(currentStep - 1);
     }
-  }
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      nextStep()
+      e.preventDefault();
+      nextStep();
     }
-  }
+  };
 
   const handleDownloadPDF = async () => {
     try {
-      setIsDownloading(true)
-      console.log("[TypeformResumeBuilder] Starting PDF download...")
+      setIsDownloading(true);
+      console.log("[TypeformResumeBuilder] Starting PDF download...");
 
-      await downloadResumePdf(data)
-      
-      console.log("[TypeformResumeBuilder] PDF download completed successfully!")
-      alert("Resume downloaded successfully!")
+      await downloadResumePdf(data);
+
+      console.log("[TypeformResumeBuilder] PDF download completed successfully!");
+      alert("Resume downloaded successfully!");
     } catch (error) {
-      console.error("[TypeformResumeBuilder] Error downloading resume:", error)
-      const errorMessage = error instanceof Error ? error.message : "Unknown error"
-      alert(`Failed to download resume: ${errorMessage}\n\nPlease check the console for more details.`)
+      console.error("[TypeformResumeBuilder] Error downloading resume:", error);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      alert(
+        `Failed to download resume: ${errorMessage}\n\nPlease check the console for more details.`
+      );
     } finally {
-      setIsDownloading(false)
+      setIsDownloading(false);
     }
-  }
+  };
 
   const renderStep = () => {
     switch (currentStep) {
@@ -172,7 +180,9 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Let&apos;s start with your basics</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+                Let&apos;s start with your basics
+              </h2>
               <p className="text-base text-muted-foreground">Tell us about yourself</p>
             </div>
             <div className="space-y-4">
@@ -244,14 +254,18 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
               </div>
             </div>
           </div>
-        )
+        );
 
       case 1:
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Your professional summary</h2>
-              <p className="text-base text-muted-foreground">Write a brief overview of your experience and skills</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+                Your professional summary
+              </h2>
+              <p className="text-base text-muted-foreground">
+                Write a brief overview of your experience and skills
+              </p>
             </div>
             <div className="space-y-2">
               <Textarea
@@ -264,13 +278,15 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
               <p className="text-xs text-muted-foreground">Press Shift + Enter for new line</p>
             </div>
           </div>
-        )
+        );
 
       case 2:
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Work experience</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+                Work experience
+              </h2>
               <p className="text-base text-muted-foreground">Add your professional experience</p>
             </div>
             <div className="space-y-4">
@@ -279,7 +295,11 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
                   <div className="flex justify-between items-start">
                     <h3 className="text-base font-bold text-foreground">Experience {index + 1}</h3>
                     {data.experience.length > 1 && (
-                      <Button onClick={() => removeExperience(index)} size="sm" variant="destructive">
+                      <Button
+                        onClick={() => removeExperience(index)}
+                        size="sm"
+                        variant="destructive"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
@@ -327,7 +347,9 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
                     />
                     <Textarea
                       value={exp.responsibilities.join("\n")}
-                      onChange={(e) => updateExperience(index, "responsibilities", e.target.value.split("\n"))}
+                      onChange={(e) =>
+                        updateExperience(index, "responsibilities", e.target.value.split("\n"))
+                      }
                       className="text-sm py-2 border-2 min-h-[100px]"
                       placeholder="Key responsibilities (one per line)"
                     />
@@ -345,14 +367,16 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
               </Button>
             </div>
           </div>
-        )
+        );
 
       case 3:
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div>
               <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Education</h2>
-              <p className="text-base text-muted-foreground">Tell us about your educational background</p>
+              <p className="text-base text-muted-foreground">
+                Tell us about your educational background
+              </p>
             </div>
             <div className="space-y-4">
               {data.education.map((edu, index) => (
@@ -360,7 +384,11 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
                   <div className="flex justify-between items-start">
                     <h3 className="text-base font-bold text-foreground">Education {index + 1}</h3>
                     {data.education.length > 1 && (
-                      <Button onClick={() => removeEducation(index)} size="sm" variant="destructive">
+                      <Button
+                        onClick={() => removeEducation(index)}
+                        size="sm"
+                        variant="destructive"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
@@ -412,19 +440,23 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
               </Button>
             </div>
           </div>
-        )
+        );
 
       case 4:
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div>
               <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Your skills</h2>
-              <p className="text-base text-muted-foreground">List your technical and professional skills</p>
+              <p className="text-base text-muted-foreground">
+                List your technical and professional skills
+              </p>
             </div>
             <div className="space-y-2">
               <Textarea
                 value={data.skills.join(", ")}
-                onChange={(e) => onChange({ ...data, skills: e.target.value.split(",").map((s) => s.trim()) })}
+                onChange={(e) =>
+                  onChange({ ...data, skills: e.target.value.split(",").map((s) => s.trim()) })
+                }
                 className="text-base py-3 border-2 focus:border-primary min-h-[150px]"
                 placeholder="JavaScript, React, Node.js, Python, SQL, Docker..."
                 autoFocus
@@ -432,22 +464,32 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
               <p className="text-xs text-muted-foreground">Separate skills with commas</p>
             </div>
           </div>
-        )
+        );
 
       case 5:
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Certifications</h2>
-              <p className="text-base text-muted-foreground">Add your professional certifications</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+                Certifications
+              </h2>
+              <p className="text-base text-muted-foreground">
+                Add your professional certifications
+              </p>
             </div>
             <div className="space-y-4">
               {data.certifications.map((cert, index) => (
                 <Card key={index} className="p-4 border-2 space-y-3">
                   <div className="flex justify-between items-start">
-                    <h3 className="text-base font-bold text-foreground">Certification {index + 1}</h3>
+                    <h3 className="text-base font-bold text-foreground">
+                      Certification {index + 1}
+                    </h3>
                     {data.certifications.length > 1 && (
-                      <Button onClick={() => removeCertification(index)} size="sm" variant="destructive">
+                      <Button
+                        onClick={() => removeCertification(index)}
+                        size="sm"
+                        variant="destructive"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
@@ -471,6 +513,18 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
                       className="text-base py-2 border-2"
                       placeholder="Date (e.g., Jan 2024)"
                     />
+                    <Input
+                      value={cert.link || ""}
+                      onChange={(e) => updateCertification(index, "link", e.target.value)}
+                      className="text-base py-2 border-2"
+                      placeholder="Certificate Link (optional)"
+                    />
+                    <Input
+                      value={cert.skills || ""}
+                      onChange={(e) => updateCertification(index, "skills", e.target.value)}
+                      className="text-base py-2 border-2"
+                      placeholder="Skills from this certification (optional, comma separated)"
+                    />
                   </div>
                 </Card>
               ))}
@@ -485,7 +539,7 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
               </Button>
             </div>
           </div>
-        )
+        );
 
       case 6:
         return (
@@ -512,20 +566,6 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
                       className="text-base py-2 border-2"
                       placeholder="Project Title"
                     />
-                    <div className="flex gap-2">
-                      <Input
-                        value={project.startDate}
-                        onChange={(e) => updateProject(index, "startDate", e.target.value)}
-                        className="text-base py-2 border-2"
-                        placeholder="Start (MM/YYYY)"
-                      />
-                      <Input
-                        value={project.endDate}
-                        onChange={(e) => updateProject(index, "endDate", e.target.value)}
-                        className="text-base py-2 border-2"
-                        placeholder="End"
-                      />
-                    </div>
                     <Textarea
                       value={project.description}
                       onChange={(e) => updateProject(index, "description", e.target.value)}
@@ -541,13 +581,18 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
                   </div>
                 </Card>
               ))}
-              <Button onClick={addProject} variant="outline" size="default" className="w-full border-2 bg-transparent">
+              <Button
+                onClick={addProject}
+                variant="outline"
+                size="default"
+                className="w-full border-2 bg-transparent"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Another Project
               </Button>
             </div>
           </div>
-        )
+        );
 
       case 7:
         return (
@@ -582,13 +627,18 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
                   </div>
                 </Card>
               ))}
-              <Button onClick={addLanguage} variant="outline" size="default" className="w-full border-2 bg-transparent">
+              <Button
+                onClick={addLanguage}
+                variant="outline"
+                size="default"
+                className="w-full border-2 bg-transparent"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Another Language
               </Button>
             </div>
           </div>
-        )
+        );
 
       case 8:
         return (
@@ -621,26 +671,28 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
               </Button>
             </div>
           </div>
-        )
+        );
 
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-muted/30">
       {/* Hidden Resume Preview for PDF generation */}
-      <div style={{ 
-        position: 'fixed', 
-        left: '-9999px', 
-        top: '0',
-        width: '210mm',
-        backgroundColor: '#ffffff',
-        margin: '0',
-        padding: '0',
-        boxSizing: 'border-box'
-      }}>
+      <div
+        style={{
+          position: "fixed",
+          left: "-9999px",
+          top: "0",
+          width: "210mm",
+          backgroundColor: "#ffffff",
+          margin: "0",
+          padding: "0",
+          boxSizing: "border-box",
+        }}
+      >
         <ResumePreview data={data} />
       </div>
 
@@ -654,7 +706,9 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-4 py-16">
-        <div className="w-full max-w-2xl bg-background rounded-lg shadow-lg p-6 md:p-8">{renderStep()}</div>
+        <div className="w-full max-w-2xl bg-background rounded-lg shadow-lg p-6 md:p-8">
+          {renderStep()}
+        </div>
       </div>
 
       {/* Navigation */}
@@ -662,7 +716,12 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             {currentStep > 0 && (
-              <Button onClick={prevStep} variant="outline" size="default" className="border-2 bg-transparent">
+              <Button
+                onClick={prevStep}
+                variant="outline"
+                size="default"
+                className="border-2 bg-transparent"
+              >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back
               </Button>
@@ -671,12 +730,16 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
               Step {currentStep + 1} of {totalSteps}
             </span>
           </div>
-          <Button onClick={nextStep} size="default" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+          <Button
+            onClick={nextStep}
+            size="default"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+          >
             {currentStep === totalSteps - 1 ? "View Resume" : "Next"}
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }

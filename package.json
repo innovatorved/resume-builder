@@ -6,7 +6,11 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "lint:biome": "biome lint --write .",
+    "check": "biome check --write ."
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
@@ -65,6 +69,7 @@
     "zod": "3.25.67"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.0.5",
     "@tailwindcss/postcss": "^4.1.9",
     "@types/node": "^22",
     "@types/react": "^19",

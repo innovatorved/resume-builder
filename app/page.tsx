@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { TypeformResumeBuilder } from "@/components/typeform-resume-builder"
-import { ResumePreview } from "@/components/resume-preview"
-import { Button } from "@/components/ui/button"
-import { Download, FileText, ArrowLeft, Loader2 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { downloadResumePdf } from "@/lib/download-resume-v2"
-import type { ResumeData } from "@/types/resume"
+import { useState } from "react";
+import { TypeformResumeBuilder } from "@/components/typeform-resume-builder";
+import { ResumePreview } from "@/components/resume-preview";
+import { Button } from "@/components/ui/button";
+import { Download, FileText, ArrowLeft, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { downloadResumePdf } from "@/lib/download-resume-v2";
+import type { ResumeData } from "@/types/resume";
 
 export default function Home() {
-  const [showForm, setShowForm] = useState(true)
-  const [isDownloading, setIsDownloading] = useState(false)
-  const { toast } = useToast()
+  const [showForm, setShowForm] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const { toast } = useToast();
   const [resumeData, setResumeData] = useState<ResumeData>({
     personalInfo: {
       name: "VED PRAKASH GUPTA",
@@ -64,62 +64,88 @@ export default function Home() {
       "TypeScript",
       "Docker",
       "Kubernetes",
+      "DevOps",
+      "CI/CD",
+      "GitHub Actions",
+      "Azure DevOps",
+      "Jenkins",
+      "Terraform",
+      "Ansible",
       "IAM",
       "Azure",
       "Azure IaaS",
+      "Container Orchestration",
+      "Microservices",
       "HTML",
       "Python",
       "MongoDB",
       "PostgreSQL",
       "Redis",
       "Git",
-      "GitHub Actions",
       "Azure AD",
       "GCP",
       "IAC",
       "SQL",
       "RESTful API",
+      "Helm",
+      "Docker Compose",
     ],
     certifications: [
-      {
-        title: "Microsoft Certified: Azure Administrator Associate",
-        issuer: "Microsoft",
-        date: "Apr 2025",
-      },
       {
         title: "Microsoft Certified: Azure Fundamentals",
         issuer: "Microsoft",
         date: "May 2025",
+        link: "https://learn.microsoft.com/api/credentials/share/en-in/innovatorved/6511623ED859592E?sharingId",
+        skills: "Cloud Computing, Azure Services, Pricing, SLAs, Governance",
+      },
+      {
+        title: "Microsoft Certified: Azure Administrator Associate",
+        issuer: "Microsoft",
+        date: "Apr 2025",
+        link: "https://learn.microsoft.com/en-in/users/innovatorved/credentials/6c94bf7cd6e82766",
+        skills:
+          "Azure Identities and Governance, Storage Management, Azure Compute Resources, Virtual Networking, Azure Monitoring",
       },
       {
         title: "Associate Cloud Engineer",
         issuer: "Google Cloud",
         date: "Oct 2024",
+        link: "https://www.credly.com/badges/34a38859-04f5-4548-a543-e871e740db36/",
+        skills:
+          "Cloud Architecture, Cloud Computing, Cloud Security, Cloud Storage, Compute Engine, GCP, IAM, IaC, Networking, Pub/Sub, SQL",
       },
       {
         title: "GitHub Foundations",
         issuer: "GitHub",
         date: "Nov 2024",
+        link: "https://www.credly.com/badges/616b1e3c-7b47-464b-ad2f-5d9d04d07985/public_url",
+        skills:
+          "Repository Management, Collaborative Workflows, CI/CD, DevOps, Version Control, Project Management",
       },
       {
         title: "ReactJS: Zero to Hero",
         issuer: "QA Ltd",
         date: "Aug 2024",
+        link: "https://certificates.platform.qa.com/4c2ab58979101bc6a8e277c746325c2c35702052.pdf",
+        skills:
+          "React Components, Props, State Management, Hooks, Routing, Performance Optimization",
       },
     ],
     projects: [
       {
+        title: "Subtitle - Open-source Subtitle Generation",
+        description:
+          "Open-source subtitle generation tool for seamless content translation. Built a self-hosted, AI-powered solution using OpenAI's Whisper model with multilingual support. Features include automatic subtitle generation, multiple output formats (VTT, SRT, LRC), and support for 20+ Whisper models. Successfully gained 426+ GitHub stars and active community adoption.",
+        technologies: "Python, Whisper AI, FFmpeg, Machine Learning, Shell Scripting",
+      },
+      {
         title: "Autoapplys.com",
-        startDate: "01/2021",
-        endDate: "12/2021",
         description:
           "AutoApplys is designed to streamline the job application process, allowing users to create job profiles and automate submissions. Led the development of a web-based platform automating job application processes, reducing manual efforts and time.",
         technologies: "Prisma, JavaScript, MongoDB, TypeScript, React.js, Next.js",
       },
       {
         title: "whisper.api",
-        startDate: "01/2023",
-        endDate: "Present",
         description:
           "An open-source project that integrates speech-to-text functionality into applications. Developed an easy-to-use RESTful API that processes audio input into transcribed text via OpenAI's Whisper model. Managed the functionality to handle audio files and provided accurate transcription output.",
         technologies: "Python, Whisper, ASR",
@@ -135,36 +161,40 @@ export default function Home() {
         level: "Proficient",
       },
     ],
-  })
+  });
 
   const handleDownloadPDF = async () => {
-    setIsDownloading(true)
+    setIsDownloading(true);
 
     try {
-      await downloadResumePdf(resumeData)
+      await downloadResumePdf(resumeData);
 
       toast({
         title: "Resume downloaded",
         description: "Your PDF has been generated with the latest updates.",
-      })
+      });
     } catch (error) {
-  console.error("[download] Failed to generate resume PDF", error)
+      console.error("[download] Failed to generate resume PDF", error);
       toast({
         title: "Download failed",
         description: "We couldn't generate your resume PDF. Please try again shortly.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsDownloading(false)
+      setIsDownloading(false);
     }
-  }
+  };
 
   if (showForm) {
     return (
       <div className="min-h-screen bg-background">
-        <TypeformResumeBuilder data={resumeData} onChange={setResumeData} onComplete={() => setShowForm(false)} />
+        <TypeformResumeBuilder
+          data={resumeData}
+          onChange={setResumeData}
+          onComplete={() => setShowForm(false)}
+        />
       </div>
-    )
+    );
   }
 
   return (
@@ -189,7 +219,11 @@ export default function Home() {
               size="lg"
               disabled={isDownloading}
             >
-              {isDownloading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Download className="mr-2 h-5 w-5" />}
+              {isDownloading ? (
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              ) : (
+                <Download className="mr-2 h-5 w-5" />
+              )}
               {isDownloading ? "Preparing..." : "Download PDF"}
             </Button>
           </div>
@@ -203,5 +237,5 @@ export default function Home() {
         </div>
       </main>
     </div>
-  )
+  );
 }
