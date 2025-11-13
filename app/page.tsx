@@ -25,6 +25,8 @@ import {
   Trash2,
   FileJson,
   Eye,
+  Copy,
+  Check,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { downloadResumePdf } from "@/lib/download-resume-v2";
@@ -229,6 +231,21 @@ export default function Home() {
     } finally {
       setIsDownloading(null);
     }
+  };
+
+  const handleCopyResume = (resume: SavedResume) => {
+    const copiedResume: SavedResume = {
+      id: Date.now().toString(),
+      name: `Copy of ${resume.name}`,
+      data: JSON.parse(JSON.stringify(resume.data)), // Deep clone
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setSavedResumes([...savedResumes, copiedResume]);
+    toast({
+      title: "Resume copied",
+      description: `Created "${copiedResume.name}". You can now edit it.`,
+    });
   };
 
   // Form View
@@ -502,12 +519,12 @@ export default function Home() {
             {savedResumes.map((resume) => (
               <Card
                 key={resume.id}
-                className="p-6 hover:shadow-xl transition-shadow border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500"
+                className="group p-6 hover:shadow-xl transition-shadow border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     {editingName === resume.id ? (
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 items-center">
                         <Input
                           value={newName}
                           onChange={(e) => setNewName(e.target.value)}
@@ -521,6 +538,21 @@ export default function Home() {
                             }
                           }}
                         />
+                        <Button
+                          size="sm"
+                          onClick={() => renameResume(resume.id, newName)}
+                          className="bg-green-600 hover:bg-green-700 flex-shrink-0"
+                        >
+                          <Check className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingName(null)}
+                          className="flex-shrink-0"
+                        >
+                          ✕
+                        </Button>
                       </div>
                     ) : (
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -530,7 +562,8 @@ export default function Home() {
                             setEditingName(resume.id);
                             setNewName(resume.name);
                           }}
-                          className="opacity-0 group-hover:opacity-100 hover:text-blue-600 transition-opacity"
+                          className="opacity-0 group-hover:opacity-100 hover:text-blue-600 transition-all p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                          title="Edit name"
                         >
                           <Edit2 className="h-4 w-4" />
                         </button>
@@ -583,6 +616,14 @@ export default function Home() {
                         <Download className="mr-2 h-4 w-4" />
                       )}
                       Download
+                    </Button>
+                    <Button
+                      onClick={() => handleCopyResume(resume)}
+                      variant="outline"
+                      className="border-blue-500 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                      title="Copy resume"
+                    >
+                      <Copy className="h-4 w-4" />
                     </Button>
                     <Button
                       onClick={() => {
