@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,18 +12,34 @@ import type { ResumeData } from "@/types/resume";
 import { downloadResumePdf } from "@/lib/download-resume-v2";
 import { DOWNLOAD_BUTTON_BASE_CLASSES } from "@/lib/utils";
 import { ResumePreview } from "@/components/resume-preview";
+import { draftManager } from "@/lib/draft-manager";
 
 interface TypeformResumeBuilderProps {
   data: ResumeData;
   onChange: (data: ResumeData) => void;
   onComplete: () => void;
+  onBack?: () => void;
 }
 
-export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformResumeBuilderProps) {
+export function TypeformResumeBuilder({
+  data,
+  onChange,
+  onComplete,
+  onBack,
+}: TypeformResumeBuilderProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
 
   const totalSteps = 9;
+
+  // Auto-save draft whenever data changes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      draftManager.saveDraft(data);
+    }, 1000); // Debounce for 1 second
+
+    return () => clearTimeout(timeoutId);
+  }, [data]);
 
   const updatePersonalInfo = (field: string, value: string) => {
     onChange({
@@ -764,6 +780,27 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-slate-900 dark:via-slate-800 dark:to-blue-950">
+      {/* Top Bar with Exit Button */}
+      <div className="fixed top-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 z-40">
+        <div className="max-w-3xl mx-auto flex items-center justify-between px-4 sm:px-6 py-3">
+          <div className="text-sm font-medium text-gray-600 dark:text-gray-400">Resume Builder</div>
+          {onBack && (
+            <Button
+              onClick={() => {
+                draftManager.saveDraft(data);
+                onBack();
+              }}
+              variant="ghost"
+              size="sm"
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Save & Exit
+            </Button>
+          )}
+        </div>
+      </div>
+
       {/* Hidden Resume Preview for PDF generation */}
       <div
         style={{
@@ -781,7 +818,7 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
       </div>
 
       {/* Progress Bar */}
-      <div className="fixed top-0 left-0 right-0 h-1 bg-black/5 dark:bg-white/5 z-50">
+      <div className="fixed top-14 left-0 right-0 h-1 bg-black/5 dark:bg-white/5 z-50">
         <div
           className="h-full bg-blue-700 transition-all duration-500 ease-out"
           style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
@@ -789,7 +826,7 @@ export function TypeformResumeBuilder({ data, onChange, onComplete }: TypeformRe
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-20 md:py-24">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-20 md:py-24 mt-14">
         <div className="w-full max-w-3xl">{renderStep()}</div>
       </div>
 
