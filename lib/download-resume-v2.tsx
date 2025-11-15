@@ -20,33 +20,48 @@ export async function downloadResumePdf(resumeData: ResumeData) {
   try {
     const html2canvas = (await import("html2canvas-pro")).default;
     const { jsPDF } = await import("jspdf");
+    const { ResumePreview } = await import("@/components/resume-preview");
+    const React = await import("react");
+    const ReactDOM = await import("react-dom/client");
 
-    // Find the existing resume preview element
-    const existingElement = document.getElementById("resume-preview");
-
-    if (!existingElement) {
-      throw new Error("Resume preview element not found. Please view the resume first.");
-    }
-
-    console.log(
-      "[downloadResumePdf v2] Found element:",
-      existingElement.offsetWidth,
-      "x",
-      existingElement.offsetHeight
-    );
-
-    // Create a temporary container with the element
+    // Create a temporary container for rendering
     const container = document.createElement("div");
     container.style.position = "fixed";
     container.style.top = "0";
     container.style.left = "-10000px";
     container.style.width = "210mm";
-    container.style.height = "297mm";
+    container.style.height = "auto";
     container.style.backgroundColor = "#ffffff";
     container.style.padding = "0";
     container.style.margin = "0";
-    container.style.overflow = "hidden";
+    container.style.overflow = "visible";
     container.style.boxSizing = "border-box";
+    document.body.appendChild(container);
+
+    // Render the ResumePreview component into the container
+    const root = ReactDOM.createRoot(container);
+    const previewElement = React.createElement(ResumePreview, { data: resumeData });
+
+    // Wait for rendering to complete
+    await new Promise<void>((resolve) => {
+      root.render(previewElement);
+      // Give React time to render and styles to apply
+      setTimeout(resolve, 500);
+    });
+
+    // Get the rendered element
+    const existingElement = container.querySelector("#resume-preview") as HTMLElement;
+
+    if (!existingElement) {
+      throw new Error("Failed to render resume preview for download.");
+    }
+
+    console.log(
+      "[downloadResumePdf v2] Rendered element:",
+      existingElement.offsetWidth,
+      "x",
+      existingElement.offsetHeight
+    );
 
     // Clone the element and all its styles
     const clone = existingElement.cloneNode(true) as HTMLElement;
@@ -97,11 +112,19 @@ export async function downloadResumePdf(resumeData: ResumeData) {
     clone.style.boxSizing = "border-box";
     clone.style.display = "block";
 
-    container.appendChild(clone);
-    document.body.appendChild(container);
+    // Create a separate container for the clone to avoid React unmount issues
+    const cloneContainer = document.createElement("div");
+    cloneContainer.style.position = "fixed";
+    cloneContainer.style.top = "0";
+    cloneContainer.style.left = "-10000px";
+    cloneContainer.style.width = "210mm";
+    cloneContainer.style.height = "auto";
+    cloneContainer.style.backgroundColor = "#ffffff";
+    cloneContainer.appendChild(clone);
+    document.body.appendChild(cloneContainer);
 
     // Wait for styles to be applied and rendering to complete
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     console.log("[downloadResumePdf v2] Clone dimensions:", {
       offsetWidth: clone.offsetWidth,
@@ -171,8 +194,10 @@ export async function downloadResumePdf(resumeData: ResumeData) {
       renderedCanvas.height
     );
 
-    // Clean up the temporary container
+    // Clean up both containers
+    root.unmount();
     container.remove();
+    cloneContainer.remove();
 
     // Create PDF with no margins
     const pdf = new jsPDF({
