@@ -2,22 +2,22 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { PrismaClient } from "@prisma/client";
 
-console.log('[AUTH] Initializing auth system...');
-console.log('[AUTH] Environment check:', {
+console.log("[AUTH] Initializing auth system...");
+console.log("[AUTH] Environment check:", {
   nodeEnv: process.env.NODE_ENV,
   hasDatabaseUrl: !!process.env.DATABASE_URL,
-  databaseUrlPrefix: process.env.DATABASE_URL?.substring(0, 20) + '...',
-  betterAuthUrl: process.env.NEXT_PUBLIC_BETTER_AUTH_URL || 'not set',
+  databaseUrlPrefix: process.env.DATABASE_URL?.substring(0, 20) + "...",
+  betterAuthUrl: process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "not set",
 });
 
 const prisma = new PrismaClient();
-console.log('[AUTH] PrismaClient initialized');
+console.log("[AUTH] PrismaClient initialized");
 
 const trustedOrigins = process.env.NEXT_PUBLIC_BETTER_AUTH_URL
   ? [process.env.NEXT_PUBLIC_BETTER_AUTH_URL]
   : ["http://localhost:3000"];
 
-console.log('[AUTH] Trusted origins:', trustedOrigins);
+console.log("[AUTH] Trusted origins:", trustedOrigins);
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -42,6 +42,6 @@ export const auth = betterAuth({
   trustedOrigins,
 });
 
-console.log('[AUTH] betterAuth configured successfully');
+console.log("[AUTH] betterAuth configured successfully");
 
 export type Session = typeof auth.$Infer.Session;

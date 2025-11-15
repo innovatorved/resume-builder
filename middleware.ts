@@ -2,52 +2,56 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  console.log('[MIDDLEWARE] Request received:', {
+  console.log("[MIDDLEWARE] Request received:", {
     pathname: request.nextUrl.pathname,
     method: request.method,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 
-  const sessionToken = request.cookies.get("better-auth.session_token");
+  // In production (HTTPS), Better Auth uses __Secure- prefix
+  const sessionToken =
+    request.cookies.get("__Secure-better-auth.session_token") ||
+    request.cookies.get("better-auth.session_token");
   const { pathname } = request.nextUrl;
 
-  console.log('[MIDDLEWARE] Session check:', {
+  console.log("[MIDDLEWARE] Session check:", {
     hasSessionToken: !!sessionToken,
-    sessionTokenValue: sessionToken?.value?.substring(0, 20) + '...', // Log first 20 chars only
-    pathname
+    sessionTokenValue: sessionToken?.value?.substring(0, 20) + "...", // Log first 20 chars only
+    pathname,
+    cookieName: sessionToken?.name,
   });
 
   // Public routes that don't require authentication
   const publicRoutes = ["/login", "/register"];
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
 
-  console.log('[MIDDLEWARE] Route check:', {
+  console.log("[MIDDLEWARE] Route check:", {
     pathname,
     isPublicRoute,
-    publicRoutes
+    publicRoutes,
   });
 
   // Auth API routes should always be accessible
   if (pathname.startsWith("/api/auth")) {
-    console.log('[MIDDLEWARE] Auth API route - allowing access');
+    console.log("[MIDDLEWARE] Auth API route - allowing access");
     return NextResponse.next();
   }
 
   // If user is not authenticated and trying to access protected route
   if (!sessionToken && !isPublicRoute) {
-    console.log('[MIDDLEWARE] Redirecting to login - no session token and protected route');
+    console.log("[MIDDLEWARE] Redirecting to login - no session token and protected route");
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
   }
 
   // If user is authenticated and trying to access login/register
   if (sessionToken && isPublicRoute) {
-    console.log('[MIDDLEWARE] Redirecting to home - authenticated user on public route');
+    console.log("[MIDDLEWARE] Redirecting to home - authenticated user on public route");
     const homeUrl = new URL("/", request.url);
     return NextResponse.redirect(homeUrl);
   }
 
-  console.log('[MIDDLEWARE] Allowing request to proceed');
+  console.log("[MIDDLEWARE] Allowing request to proceed");
   return NextResponse.next();
 }
 
