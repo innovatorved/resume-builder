@@ -111,7 +111,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-2xl">
         {/* Logo/Header - Always visible */}
         <div className="flex flex-col items-center mb-12 animate-in fade-in slide-in-from-top-4 duration-500">
-          <div className="p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-xl mb-4">
+          <div className="p-4 bg-white dark:bg-slate-800 shadow-xl mb-4">
             <Image
               src="/refresh.svg"
               alt="Resume Builder"
@@ -134,7 +134,7 @@ export default function RegisterPage() {
           {["name", "email", "password", "confirm"].map((step, index) => (
             <div
               key={step}
-              className={`h-2 rounded-full transition-all duration-300 ${
+              className={`h-2  transition-all duration-300 ${
                 getStepNumber(currentStep) === index
                   ? "w-16 bg-blue-600"
                   : getStepNumber(currentStep) > index
@@ -164,7 +164,7 @@ export default function RegisterPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="John Doe"
-                className="h-14 text-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-600 dark:focus:border-blue-500 rounded-xl bg-white dark:bg-slate-800 transition-all"
+                className="h-14 text-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-600 dark:focus:border-blue-500  bg-white dark:bg-slate-800 transition-all"
                 autoFocus
                 required
               />
@@ -180,7 +180,7 @@ export default function RegisterPage() {
               <Button
                 type="submit"
                 size="lg"
-                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all rounded-xl px-8 h-12 text-base font-semibold group"
+                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all  px-8 h-12 text-base font-semibold group"
                 disabled={!name.trim()}
               >
                 Continue
@@ -215,7 +215,7 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="h-14 text-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-600 dark:focus:border-blue-500 rounded-xl bg-white dark:bg-slate-800 transition-all"
+                className="h-14 text-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-600 dark:focus:border-blue-500  bg-white dark:bg-slate-800 transition-all"
                 autoFocus
                 required
               />
@@ -227,7 +227,7 @@ export default function RegisterPage() {
                 variant="ghost"
                 size="lg"
                 onClick={handleBack}
-                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors group rounded-xl"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors group "
               >
                 <ArrowLeft className="mr-2 h-5 w-5 group-hover:-translate-x-1 transition-transform" />
                 Back
@@ -235,7 +235,7 @@ export default function RegisterPage() {
               <Button
                 type="submit"
                 size="lg"
-                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all rounded-xl px-8 h-12 text-base font-semibold group"
+                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all  px-8 h-12 text-base font-semibold group"
                 disabled={!email}
               >
                 Continue
@@ -269,14 +269,14 @@ export default function RegisterPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter a secure password"
-                className="h-14 text-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-600 dark:focus:border-blue-500 rounded-xl bg-white dark:bg-slate-800 transition-all"
+                className="h-14 text-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-600 dark:focus:border-blue-500  bg-white dark:bg-slate-800 transition-all"
                 autoFocus
                 required
               />
               {password && (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700  overflow-hidden">
                       <div
                         className={`h-full transition-all duration-300 ${
                           passwordStrength === "strong"
@@ -301,7 +301,7 @@ export default function RegisterPage() {
                 variant="ghost"
                 size="lg"
                 onClick={handleBack}
-                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors group rounded-xl"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors group "
               >
                 <ArrowLeft className="mr-2 h-5 w-5 group-hover:-translate-x-1 transition-transform" />
                 Back
@@ -309,7 +309,7 @@ export default function RegisterPage() {
               <Button
                 type="submit"
                 size="lg"
-                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all rounded-xl px-8 h-12 text-base font-semibold group"
+                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all  px-8 h-12 text-base font-semibold group"
                 disabled={password.length < 8}
               >
                 Continue
@@ -342,7 +342,7 @@ export default function RegisterPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm your password"
-                  className="h-14 text-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-600 dark:focus:border-blue-500 rounded-xl bg-white dark:bg-slate-800 transition-all"
+                  className="h-14 text-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-600 dark:focus:border-blue-500  bg-white dark:bg-slate-800 transition-all"
                   autoFocus
                   required
                   disabled={isLoading}
@@ -362,7 +362,7 @@ export default function RegisterPage() {
                 variant="ghost"
                 size="lg"
                 onClick={handleBack}
-                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors group rounded-xl"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors group "
                 disabled={isLoading}
               >
                 <ArrowLeft className="mr-2 h-5 w-5 group-hover:-translate-x-1 transition-transform" />
@@ -371,7 +371,7 @@ export default function RegisterPage() {
               <Button
                 type="submit"
                 size="lg"
-                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all rounded-xl px-8 h-12 text-base font-semibold"
+                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all  px-8 h-12 text-base font-semibold"
                 disabled={!confirmPassword || password !== confirmPassword || isLoading}
               >
                 {isLoading ? (

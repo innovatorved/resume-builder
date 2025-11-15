@@ -341,7 +341,7 @@ export function TypeformResumeBuilder({
               {data.experience.map((exp, index) => (
                 <div
                   key={index}
-                  className="p-6 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50 space-y-4 shadow-sm"
+                  className="p-6 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm  border border-gray-200/50 dark:border-gray-700/50 space-y-4 shadow-sm"
                 >
                   <div className="flex justify-between items-start">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -438,7 +438,7 @@ export function TypeformResumeBuilder({
               {data.education.map((edu, index) => (
                 <div
                   key={index}
-                  className="p-6 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50 space-y-4 shadow-sm"
+                  className="p-6 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm  border border-gray-200/50 dark:border-gray-700/50 space-y-4 shadow-sm"
                 >
                   <div className="flex justify-between items-start">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -547,7 +547,7 @@ export function TypeformResumeBuilder({
               {data.certifications.map((cert, index) => (
                 <div
                   key={index}
-                  className="p-6 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50 space-y-4 shadow-sm"
+                  className="p-6 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm  border border-gray-200/50 dark:border-gray-700/50 space-y-4 shadow-sm"
                 >
                   <div className="flex justify-between items-start">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -626,7 +626,7 @@ export function TypeformResumeBuilder({
               {data.projects.map((project, index) => (
                 <div
                   key={index}
-                  className="p-6 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50 space-y-4 shadow-sm"
+                  className="p-6 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm  border border-gray-200/50 dark:border-gray-700/50 space-y-4 shadow-sm"
                 >
                   <div className="flex justify-between items-start">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -693,7 +693,7 @@ export function TypeformResumeBuilder({
               {data.languages.map((lang, index) => (
                 <div
                   key={index}
-                  className="p-6 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-sm"
+                  className="p-6 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm  border border-gray-200/50 dark:border-gray-700/50 shadow-sm"
                 >
                   <div className="flex items-start gap-4">
                     <div className="flex-1 space-y-4">
@@ -740,7 +740,7 @@ export function TypeformResumeBuilder({
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="text-center space-y-8">
-              <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-blue-700 shadow-lg shadow-blue-500/30 animate-in zoom-in duration-700">
+              <div className="inline-flex items-center justify-center w-24 h-24 bg-blue-700 shadow-lg shadow-blue-500/30 animate-in zoom-in duration-700">
                 <Check className="h-12 w-12 text-white" />
               </div>
               <div className="space-y-4">
@@ -759,7 +759,7 @@ export function TypeformResumeBuilder({
               >
                 {isDownloading ? (
                   <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3" />
+                    <div className="animate-spin  h-5 w-5 border-b-2 border-white mr-3" />
                     <span className="animate-pulse">Generating your resume...</span>
                   </>
                 ) : (

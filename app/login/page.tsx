@@ -72,7 +72,7 @@ export default function LoginPage() {
       <div className="w-full max-w-2xl">
         {/* Logo/Header - Always visible */}
         <div className="flex flex-col items-center mb-12 animate-in fade-in slide-in-from-top-4 duration-500">
-          <div className="p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-xl mb-4">
+          <div className="p-4 bg-white dark:bg-slate-800 shadow-xl mb-4">
             <Image
               src="/refresh.svg"
               alt="Resume Builder"
@@ -93,12 +93,12 @@ export default function LoginPage() {
         {/* Progress indicator */}
         <div className="flex items-center justify-center gap-2 mb-12">
           <div
-            className={`h-2 rounded-full transition-all duration-300 ${
+            className={`h-2  transition-all duration-300 ${
               currentStep === "email" ? "w-16 bg-blue-600" : "w-8 bg-blue-300"
             }`}
           />
           <div
-            className={`h-2 rounded-full transition-all duration-300 ${
+            className={`h-2  transition-all duration-300 ${
               currentStep === "password" ? "w-16 bg-blue-600" : "w-8 bg-gray-300 dark:bg-gray-600"
             }`}
           />
@@ -123,7 +123,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="h-14 text-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-600 dark:focus:border-blue-500 rounded-xl bg-white dark:bg-slate-800 transition-all"
+                className="h-14 text-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-600 dark:focus:border-blue-500  bg-white dark:bg-slate-800 transition-all"
                 autoFocus
                 onKeyPress={handleKeyPress}
                 required
@@ -140,7 +140,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 size="lg"
-                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all rounded-xl px-8 h-12 text-base font-semibold group"
+                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all px-8 h-12 text-base font-semibold group"
                 disabled={!email}
               >
                 Continue
@@ -173,7 +173,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
-                className="h-14 text-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-600 dark:focus:border-blue-500 rounded-xl bg-white dark:bg-slate-800 transition-all"
+                className="h-14 text-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-600 dark:focus:border-blue-500  bg-white dark:bg-slate-800 transition-all"
                 autoFocus
                 required
                 disabled={isLoading}
@@ -186,7 +186,7 @@ export default function LoginPage() {
                 variant="ghost"
                 size="lg"
                 onClick={handleBack}
-                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors group rounded-xl"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors group "
                 disabled={isLoading}
               >
                 <ArrowLeft className="mr-2 h-5 w-5 group-hover:-translate-x-1 transition-transform" />
@@ -195,7 +195,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 size="lg"
-                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all rounded-xl px-8 h-12 text-base font-semibold"
+                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all  px-8 h-12 text-base font-semibold"
                 disabled={!password || isLoading}
               >
                 {isLoading ? (

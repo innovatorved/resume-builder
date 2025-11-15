@@ -39,7 +39,7 @@ export function AuthNav() {
 
   return (
     <div className="flex items-center gap-3">
-      <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-slate-800 rounded-lg border border-blue-200 dark:border-slate-700">
+      <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-slate-800 border border-blue-200 dark:border-slate-700">
         <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
           {session.user?.name || session.user?.email}

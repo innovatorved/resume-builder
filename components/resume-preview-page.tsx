@@ -79,7 +79,7 @@ export function ResumePreviewPage({ resume }: ResumePreviewPageProps) {
       </header>
 
       <main className="container mx-auto px-4 py-8 md:py-12">
-        <div className="max-w-4xl mx-auto bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200/50 dark:border-gray-700/50">
+        <div className="max-w-4xl mx-auto bg-white dark:bg-slate-900 shadow-2xl overflow-hidden border border-gray-200/50 dark:border-gray-700/50">
           <div className="p-6">
             <ResumePreview data={resume.data} />
           </div>

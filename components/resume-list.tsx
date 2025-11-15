@@ -215,7 +215,7 @@ export function ResumeList({ initialResumes }: ResumeListProps) {
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-white dark:bg-slate-800 rounded-xl shadow-lg">
+              <div className="p-3 bg-white dark:bg-slate-800 shadow-lg">
                 <Image
                   src="/refresh.svg"
                   alt="Resume Builder"
@@ -255,9 +255,9 @@ export function ResumeList({ initialResumes }: ResumeListProps) {
                         <FileJson className="h-4 w-4 text-blue-600" />
                         Upload JSON File
                       </label>
-                      <div className="border-2 border-dashed border-blue-300 dark:border-blue-700 rounded-lg p-6 bg-blue-50 dark:bg-blue-950/20 hover:border-blue-500 dark:hover:border-blue-500 transition-colors">
+                      <div className="border-2 border-dashed border-blue-300 dark:border-blue-700 p-6 bg-blue-50 dark:bg-blue-950/20 hover:border-blue-500 dark:hover:border-blue-500 transition-colors">
                         <div className="flex flex-col items-center justify-center text-center space-y-3">
-                          <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                          <div className="p-3 bg-blue-100 dark:bg-blue-900/30">
                             <FileJson className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                           </div>
                           <div>
@@ -344,7 +344,7 @@ export function ResumeList({ initialResumes }: ResumeListProps) {
       <main className="container mx-auto px-4 py-8">
         {resumes.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="p-6 bg-blue-50 dark:bg-slate-800 rounded-full mb-6">
+            <div className="p-6 bg-blue-50 dark:bg-slate-800 mb-6">
               <Image
                 src="/refresh.svg"
                 alt="No resumes"
