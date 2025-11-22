@@ -6,13 +6,13 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
 import { ArrowRight, ArrowLeft, Plus, Trash2, Check, Download } from "lucide-react";
 import type { ResumeData } from "@/types/resume";
 import { downloadResumePdf } from "@/lib/download-resume-v2";
 import { DOWNLOAD_BUTTON_BASE_CLASSES } from "@/lib/utils";
 import { ResumePreview } from "@/components/resume-preview";
 import { draftManager } from "@/lib/draft-manager";
+import { ResumeChat } from "@/components/resume-chat";
 
 interface TypeformResumeBuilderProps {
   data: ResumeData;
@@ -782,7 +782,7 @@ export function TypeformResumeBuilder({
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-slate-900 dark:via-slate-800 dark:to-blue-950">
       {/* Top Bar with Exit Button */}
       <div className="fixed top-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 z-40">
-        <div className="max-w-3xl mx-auto flex items-center justify-between px-4 sm:px-6 py-3">
+        <div className="w-full flex items-center justify-between px-4 sm:px-6 py-3">
           <div className="text-sm font-medium text-gray-600 dark:text-gray-400">Resume Builder</div>
           {onBack && (
             <Button
@@ -825,38 +825,50 @@ export function TypeformResumeBuilder({
         />
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-20 md:py-24 mt-14">
-        <div className="w-full max-w-3xl">{renderStep()}</div>
-      </div>
+      {/* Main Content with Side-by-Side Layout */}
+      <div className="flex-1 flex mt-14 overflow-hidden h-[calc(100vh-3.5rem)]">
+        {/* Left Side: Form Builder (Scrollable) */}
+        <div className="flex-1 overflow-y-auto">
+            <div className="flex items-center justify-center min-h-full px-4 sm:px-6 lg:px-8 py-20 md:py-24">
+                <div className="w-full max-w-3xl pb-24"> {/* Added padding bottom for nav */}
+                    {renderStep()}
+                </div>
+            </div>
 
-      {/* Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50 p-4 sm:p-6 shadow-lg">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {currentStep > 0 && (
-              <Button
-                onClick={prevStep}
-                variant="outline"
-                size="default"
-                className="border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 hover:border-gray-400 dark:hover:border-gray-500 transition-all font-medium"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
-              </Button>
-            )}
-            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
-              {currentStep + 1} / {totalSteps}
-            </span>
-          </div>
-          <Button
-            onClick={nextStep}
-            size="default"
-            className="bg-blue-700 hover:bg-blue-800 text-white shadow-lg shadow-blue-500/30 dark:shadow-blue-900/50 font-semibold px-6 py-5 transition-all hover:shadow-xl hover:scale-105"
-          >
-            {currentStep === totalSteps - 1 ? "View Resume" : "Next"}
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
+            {/* Navigation (Sticky within the left column) */}
+            <div className="sticky bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50 p-4 sm:p-6 shadow-lg z-30">
+                <div className="max-w-3xl mx-auto flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    {currentStep > 0 && (
+                    <Button
+                        onClick={prevStep}
+                        variant="outline"
+                        size="default"
+                        className="border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 hover:border-gray-400 dark:hover:border-gray-500 transition-all font-medium"
+                    >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Back
+                    </Button>
+                    )}
+                    <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
+                    {currentStep + 1} / {totalSteps}
+                    </span>
+                </div>
+                <Button
+                    onClick={nextStep}
+                    size="default"
+                    className="bg-blue-700 hover:bg-blue-800 text-white shadow-lg shadow-blue-500/30 dark:shadow-blue-900/50 font-semibold px-6 py-5 transition-all hover:shadow-xl hover:scale-105"
+                >
+                    {currentStep === totalSteps - 1 ? "View Resume" : "Next"}
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+                </div>
+            </div>
+        </div>
+
+        {/* Right Side: AI Chat (Fixed width) */}
+        <div className="w-[400px] border-l border-gray-200 dark:border-gray-800 hidden lg:block h-full">
+            <ResumeChat resumeData={data} onUpdate={onChange} />
         </div>
       </div>
     </div>
