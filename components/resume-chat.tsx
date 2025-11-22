@@ -148,7 +148,7 @@ export function ResumeChat({ resumeData, onUpdate }: ResumeChatProps) {
           />
           <Button
             type="submit"
-            disabled={isLoading || !input.trim()}
+            disabled={isLoading || !(input || '').trim()}
             className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20"
           >
             <Send className="w-4 h-4" />
