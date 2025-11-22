@@ -56,20 +56,7 @@ export function ResumeChat({ resumeData, onUpdate }: ResumeChatProps) {
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-l border-gray-200 dark:border-gray-800 shadow-xl">
-      {/* Header */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-800 bg-blue-50/50 dark:bg-slate-900/50 backdrop-blur-md">
-        <div className="flex items-center gap-2">
-          <div className="p-2 bg-blue-600 rounded-lg shadow-lg shadow-blue-500/20">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">AI Assistant</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Powered by Gemini 2.5</p>
-          </div>
-        </div>
-      </div>
-
+    <div className="flex flex-col h-full bg-white dark:bg-slate-900">
       {/* Messages */}
       <div className="flex-1 overflow-hidden relative bg-gray-50/50 dark:bg-slate-950/50">
         <div
