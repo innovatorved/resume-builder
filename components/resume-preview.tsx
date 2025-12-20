@@ -6,15 +6,16 @@ interface ResumePreviewProps {
 
 export function ResumePreview({ data }: ResumePreviewProps) {
   return (
-    <div
+    <article
       id="resume-preview"
       className="bg-white text-gray-800"
       style={{
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif',
-        width: "100%",
+        width: "210mm",
         minHeight: "297mm",
         backgroundColor: "#ffffff",
         color: "#1f2937",
+        boxSizing: "border-box", // Ensure padding doesn't affect width
       }}
     >
       <div
@@ -31,7 +32,7 @@ export function ResumePreview({ data }: ResumePreviewProps) {
         }}
       >
         {/* Header - Full Width */}
-        <div className="col-span-2 mb-1 border-b border-gray-300 pb-1">
+        <header className="col-span-2 mb-1 border-b border-gray-300 pb-1">
           <h1
             className="text-3xl font-bold text-gray-900 mb-0.5 tracking-wide"
             style={{ fontSize: "24px" }}
@@ -41,8 +42,8 @@ export function ResumePreview({ data }: ResumePreviewProps) {
           <div className="text-base text-gray-600 mb-2" style={{ fontSize: "14px" }}>
             {data.personalInfo.title}
           </div>
-          <div
-            className="flex flex-wrap gap-3 text-[10px] text-gray-700"
+          <address
+            className="flex flex-wrap gap-3 text-[10px] text-gray-700 not-italic"
             style={{ fontSize: "10px" }}
           >
             <span>{data.personalInfo.phone}</span>
@@ -62,15 +63,16 @@ export function ResumePreview({ data }: ResumePreviewProps) {
               </a>
             </span>
             <span>{data.personalInfo.location}</span>
-          </div>
-        </div>
+          </address>
+        </header>
 
         {/* Left Column */}
         <div className="flex flex-col gap-[18px]">
           {/* Education */}
           {data.education.length > 0 && (
-            <section>
+            <section aria-labelledby="education-heading">
               <h2
+                id="education-heading"
                 className="text-[12px] font-bold uppercase text-gray-900 mb-2 tracking-widest"
                 style={{ fontSize: "12px" }}
               >
@@ -98,30 +100,34 @@ export function ResumePreview({ data }: ResumePreviewProps) {
 
           {/* Languages */}
           {data.languages.length > 0 && (
-            <section>
+            <section aria-labelledby="languages-heading">
               <h2
+                id="languages-heading"
                 className="text-[12px] font-bold uppercase text-gray-900 mb-2 tracking-widest"
                 style={{ fontSize: "12px" }}
               >
                 Languages
               </h2>
-              {data.languages.map((lang, index) => (
-                <div
-                  key={index}
-                  className="flex justify-between text-[11px] mb-1.5"
-                  style={{ fontSize: "11px" }}
-                >
-                  <span className="font-semibold text-gray-900">{lang.name}</span>
-                  <span className="text-gray-600">{lang.level}</span>
-                </div>
-              ))}
+              <ul className="list-none pl-0 m-0">
+                {data.languages.map((lang, index) => (
+                  <li
+                    key={index}
+                    className="flex justify-between text-[11px] mb-1.5"
+                    style={{ fontSize: "11px" }}
+                  >
+                    <span className="font-semibold text-gray-900">{lang.name}</span>
+                    <span className="text-gray-600">{lang.level}</span>
+                  </li>
+                ))}
+              </ul>
             </section>
           )}
 
           {/* Skills */}
           {data.skills.length > 0 && (
-            <section>
+            <section aria-labelledby="skills-heading">
               <h2
+                id="skills-heading"
                 className="text-[12px] font-bold uppercase text-gray-900 mb-2 tracking-widest"
                 style={{ fontSize: "12px" }}
               >
@@ -138,8 +144,9 @@ export function ResumePreview({ data }: ResumePreviewProps) {
 
           {/* Certifications */}
           {data.certifications.length > 0 && (
-            <section>
+            <section aria-labelledby="certifications-heading">
               <h2
+                id="certifications-heading"
                 className="text-[12px] font-bold uppercase text-gray-900 mb-2 tracking-widest"
                 style={{ fontSize: "12px" }}
               >
@@ -184,8 +191,9 @@ export function ResumePreview({ data }: ResumePreviewProps) {
         <div className="flex flex-col gap-[18px]">
           {/* Summary */}
           {data.summary && (
-            <section>
+            <section aria-labelledby="summary-heading">
               <h2
+                id="summary-heading"
                 className="text-[12px] font-bold uppercase text-gray-900 mb-2 tracking-widest"
                 style={{ fontSize: "12px" }}
               >
@@ -199,15 +207,16 @@ export function ResumePreview({ data }: ResumePreviewProps) {
 
           {/* Experience */}
           {data.experience.length > 0 && (
-            <section>
+            <section aria-labelledby="experience-heading">
               <h2
+                id="experience-heading"
                 className="text-[12px] font-bold uppercase text-gray-900 mb-2 tracking-widest"
                 style={{ fontSize: "12px" }}
               >
                 Experience
               </h2>
               {data.experience.map((exp, index) => (
-                <div key={index} className="mb-4">
+                <article key={index} className="mb-4">
                   <div className="mb-0.5">
                     <div
                       className="text-[13px] font-semibold text-gray-900"
@@ -227,12 +236,12 @@ export function ResumePreview({ data }: ResumePreviewProps) {
                     </div>
                   </div>
                   {exp.description && (
-                    <div
+                    <p
                       className="text-[10px] text-gray-600 italic mb-1.5"
                       style={{ fontSize: "10px" }}
                     >
                       {exp.description}
-                    </div>
+                    </p>
                   )}
                   {exp.responsibilities.length > 0 && exp.responsibilities[0] && (
                     <ul className="list-none pl-0">
@@ -250,22 +259,23 @@ export function ResumePreview({ data }: ResumePreviewProps) {
                         ))}
                     </ul>
                   )}
-                </div>
+                </article>
               ))}
             </section>
           )}
 
           {/* Projects */}
           {data.projects.length > 0 && (
-            <section>
+            <section aria-labelledby="projects-heading">
               <h2
+                id="projects-heading"
                 className="text-[12px] font-bold uppercase text-gray-900 mb-2 tracking-widest"
                 style={{ fontSize: "12px" }}
               >
                 Projects
               </h2>
               {data.projects.map((project, index) => (
-                <div key={index} className="mb-3">
+                <article key={index} className="mb-3">
                   <div
                     className="text-[12px] font-semibold text-gray-900"
                     style={{ fontSize: "12px" }}
@@ -273,24 +283,24 @@ export function ResumePreview({ data }: ResumePreviewProps) {
                     {project.title}
                   </div>
                   {project.description && (
-                    <div
+                    <p
                       className="text-[11px] text-gray-700 mb-0.5 leading-snug"
                       style={{ fontSize: "11px" }}
                     >
                       {project.description}
-                    </div>
+                    </p>
                   )}
                   {project.technologies && (
                     <div className="text-[10px] text-blue-600" style={{ fontSize: "10px" }}>
                       {project.technologies}
                     </div>
                   )}
-                </div>
+                </article>
               ))}
             </section>
           )}
         </div>
       </div>
-    </div>
+    </article>
   );
 }

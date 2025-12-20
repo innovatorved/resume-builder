@@ -122,3 +122,16 @@
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  @page {
+    margin: 0;
+    size: A4;
+  }
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  /* Hide non-print elements if they don't have a specific class (optional, but good practice) */
+  /* For this specific task, we rely on the iframe isolation so we don't need to hide body elements */
+}

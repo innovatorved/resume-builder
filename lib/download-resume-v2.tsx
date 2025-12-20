@@ -15,153 +15,106 @@ function sanitizeFileName(input: string | undefined): string {
 }
 
 export async function downloadResumePdf(resumeData: ResumeData) {
-  console.log("[downloadResumePdf v2] Starting ATS-compatible PDF generation...");
+  console.log("[downloadResumePdf v2] Starting native browser print...");
 
   try {
-    const html2canvas = (await import("html2canvas-pro")).default;
-    const { jsPDF } = await import("jspdf");
     const { ResumePreview } = await import("@/components/resume-preview");
     const React = await import("react");
     const ReactDOM = await import("react-dom/client");
 
-    // Create a temporary container for rendering
-    const container = document.createElement("div");
-    container.style.position = "fixed";
-    container.style.top = "0";
-    container.style.left = "-10000px";
-    container.style.width = "210mm";
-    container.style.height = "auto";
-    container.style.backgroundColor = "#ffffff";
-    container.style.padding = "0";
-    container.style.margin = "0";
-    container.style.overflow = "visible";
-    container.style.boxSizing = "border-box";
-    document.body.appendChild(container);
+    // Create a hidden iframe
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "absolute";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "none";
+    document.body.appendChild(iframe);
 
-    // Render the ResumePreview component
-    const root = ReactDOM.createRoot(container);
-    const previewElement = React.createElement(ResumePreview, { data: resumeData });
-
-    await new Promise<void>((resolve) => {
-      root.render(previewElement);
-      setTimeout(resolve, 500);
-    });
-
-    const existingElement = container.querySelector("#resume-preview") as HTMLElement;
-
-    if (!existingElement) {
-      throw new Error("Failed to render resume preview for download.");
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      throw new Error("Could not access iframe document");
     }
 
-    // Create PDF with A4 size
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "mm",
-      format: "a4",
-      compress: true,
-    });
-
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-
-    // First, extract all text content in reading order for ATS
-    const extractTextContent = (element: HTMLElement): string[] => {
-      const lines: string[] = [];
-
-      // Helper to recursively get text
-      const getText = (node: HTMLElement) => {
-        // Get direct text content
-        const textContent = Array.from(node.childNodes)
-          .filter((child) => child.nodeType === Node.TEXT_NODE)
-          .map((child) => child.textContent?.trim())
-          .filter((text) => text && text.length > 0)
-          .join(" ");
-
-        if (textContent) {
-          lines.push(textContent);
-        }
-
-        // Process children
-        Array.from(node.children).forEach((child) => {
-          if (child instanceof HTMLElement) {
-            getText(child);
-          }
+    // Copy styles from the main document to the iframe
+    // This ensures Tailwind and other global styles are applied
+    const stylePromises = Array.from(document.querySelectorAll('link[rel="stylesheet"], style')).map((styleNode) => {
+      if (styleNode.tagName === 'LINK') {
+        const link = styleNode as HTMLLinkElement;
+        // Wait for external stylesheets to load? simpler to just clone
+        return new Promise<void>((resolve) => {
+          const newLink = doc.createElement('link');
+          newLink.rel = 'stylesheet';
+          newLink.href = link.href;
+          newLink.onload = () => resolve();
+          newLink.onerror = () => resolve(); // proceed even if fails
+          doc.head.appendChild(newLink);
         });
-      };
-
-      getText(element);
-      return lines;
-    };
-
-    const textLines = extractTextContent(existingElement);
-
-    // Add invisible text layer at the bottom of the page
-    // This will be extracted by ATS but not visible
-    pdf.setFontSize(1); // Tiny font
-    pdf.setTextColor(255, 255, 255); // White text on white background
-    let textY = pdfHeight - 2;
-
-    for (const line of textLines) {
-      if (line.trim()) {
-        pdf.text(line, 0.1, textY);
-        textY -= 0.5;
-        if (textY < 0) break; // Stop if we run out of space
+      } else {
+        const newStyle = styleNode.cloneNode(true);
+        doc.head.appendChild(newStyle);
+        return Promise.resolve();
       }
-    }
-
-    // Add the background canvas image
-    const clone = existingElement.cloneNode(true) as HTMLElement;
-    const cloneContainer = document.createElement("div");
-    cloneContainer.style.position = "fixed";
-    cloneContainer.style.top = "0";
-    cloneContainer.style.left = "-10000px";
-    cloneContainer.style.width = "210mm";
-    cloneContainer.style.height = "auto";
-    cloneContainer.style.backgroundColor = "#ffffff";
-    cloneContainer.appendChild(clone);
-    document.body.appendChild(cloneContainer);
-
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    const renderedCanvas = await html2canvas(clone, {
-      scale: 3,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: "#ffffff",
-      logging: false,
-      width: clone.scrollWidth,
-      height: clone.scrollHeight,
     });
 
-    const imgData = renderedCanvas.toDataURL("image/png", 1.0);
-    const canvasAspectRatio = renderedCanvas.width / renderedCanvas.height;
+    // Also add explicit print styles to force background printing
+    const printStyle = doc.createElement("style");
+    printStyle.textContent = `
+      @page {
+        size: A4;
+        margin: 0;
+      }
+      @media print {
+        body {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        html, body {
+            width: 210mm;
+            height: 297mm;   
+            overflow: hidden;
+        }
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        background: white;
+        width: 210mm;
+        min-height: 297mm;
+      }
+    `;
+    doc.head.appendChild(printStyle);
 
-    let imgWidth = pdfWidth;
-    let imgHeight = pdfWidth / canvasAspectRatio;
-    let xOffset = 0;
-    let yOffset = 0;
 
-    if (imgHeight > pdfHeight) {
-      imgHeight = pdfHeight;
-      imgWidth = pdfHeight * canvasAspectRatio;
-      xOffset = (pdfWidth - imgWidth) / 2;
-    } else {
-      yOffset = (pdfHeight - imgHeight) / 2;
-    }
+    // Create a root for the React component
+    const rootEl = doc.createElement("div");
+    rootEl.id = "print-root";
+    doc.body.appendChild(rootEl);
 
-    // Add background image
-    pdf.addImage(imgData, "PNG", xOffset, yOffset, imgWidth, imgHeight, undefined, "FAST");
+    const root = ReactDOM.createRoot(rootEl);
 
-    // Cleanup
-    root.unmount();
-    container.remove();
-    cloneContainer.remove();
+    // Render the resume
+    await new Promise<void>((resolve) => {
+      root.render(React.createElement(ResumePreview, { data: resumeData }));
+      // Give it a moment to render and for styles to apply
+      // We wait for styles + a small timeout
+      Promise.all(stylePromises).then(() => {
+        setTimeout(resolve, 500);
+      });
+    });
 
-    const fileName = `${sanitizeFileName(resumeData.personalInfo.name)}.pdf`;
-    console.log("[downloadResumePdf v2] Saving ATS-compatible PDF as:", fileName);
-    pdf.save(fileName);
+    // Print
+    iframe.contentWindow?.focus();
+    iframe.contentWindow?.print();
 
-    console.log("[downloadResumePdf v2] ATS-compatible PDF saved successfully!");
+    // Cleanup (optional, maybe wait a bit or listen for afterprint)
+    // For now, we remove it after a delay to ensure print dialog doesn't break
+    setTimeout(() => {
+      root.unmount();
+      document.body.removeChild(iframe);
+    }, 1000); // 1 second delay might be enough for the dialog to open
+
+    console.log("[downloadResumePdf v2] Print dialog triggered.");
+
   } catch (error) {
     console.error("[downloadResumePdf v2] Error:", error);
     throw error;
