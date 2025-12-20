@@ -3,18 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "prisma generate --schema=./prisma/schema.prisma && next build",
+    "build": "bun x prisma generate --schema=./prisma/schema.prisma && next build",
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start",
-    "format": "biome format --write .",
-    "format:check": "biome format .",
-    "lint:biome": "biome lint --write .",
-    "check": "biome check --write .",
-    "db:generate": "prisma generate --schema=./prisma/schema.prisma",
-    "db:push": "prisma db push --schema=./prisma/schema.prisma",
-    "db:migrate": "prisma migrate dev --schema=./prisma/schema.prisma",
-    "db:studio": "prisma studio --schema=./prisma/schema.prisma"
+    "format": "bun x biome format --write .",
+    "format:check": "bun x biome format .",
+    "lint:biome": "bun x biome lint --write .",
+    "check": "bun x biome check --write .",
+    "db:generate": "bun x prisma generate --schema=./prisma/schema.prisma",
+    "db:push": "bun x prisma db push --schema=./prisma/schema.prisma",
+    "db:migrate": "bun x prisma migrate dev --schema=./prisma/schema.prisma",
+    "db:studio": "bun x prisma studio --schema=./prisma/schema.prisma"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
