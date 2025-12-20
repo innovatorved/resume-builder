@@ -11,7 +11,7 @@ export interface Experience {
   title: string;
   company: string;
   location: string;
-  startDate: string;
+  startDate?: string;
   endDate: string;
   description: string;
   responsibilities: string[];
@@ -21,7 +21,7 @@ export interface Education {
   degree: string;
   institution: string;
   location: string;
-  startDate: string;
+  startDate?: string;
   endDate: string;
 }
 

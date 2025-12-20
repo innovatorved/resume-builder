@@ -1,0 +1,117 @@
+{
+  "personalInfo": {
+    "name": "VED PRAKASH GUPTA",
+    "title": "Cloud Engineer",
+    "phone": "+917007868719",
+    "email": "vedgupta0401@gmail.com",
+    "linkedin": "linkedin.com/in/innovatorved",
+    "location": "Hyderabad, India"
+  },
+  "summary": "Results-driven Senior Data Engineer and Cloud Architect with over 5 years of technical expertise. Specialized in building end-to-end data pipelines using Azure Data Factory and Databricks. Expert in Python (PySpark, Pandas) and SQL for converting raw data into actionable insights. Proven track record in managing containerized applications with Kubernetes and automating DevOps workflows via GitHub Actions and Jenkins. Committed to delivering high-quality, scalable cloud solutions in Agile environments.",
+  "experience": [
+    {
+      "title": "Cloud Engineer",
+      "company": "LTIMindtree",
+      "location": "Hyderabad, India",
+      "startDate": "03/2024",
+      "endDate": "Present",
+      "description": "Leading Data Engineering and Cloud Infrastructure projects within the Microsoft Azure ecosystem.",
+      "responsibilities": [
+        "Analyzing raw data and developing complex datasets to generate business insights for decision making.",
+        "Designing and validating data models and building systems to manage and convert transactional raw data into usable structures.",
+        "Implementing and deploying scalable, secure, and efficient Cloud solutions using Azure Data Factory and Azure Databricks.",
+        "Leading the migration and upgrade of data pipelines utilizing PySpark, Spark, and Big Data technologies like Kafka and Hive.",
+        "Managing containerized applications in a Kubernetes-enabled environment, ensuring high availability and performance.",
+        "Developing internal training, processes, and best practices for DevOps using GitHub Actions and Jenkins.",
+        "Collaborating with Data Scientists and Project Managers to deliver projects on time and within budget, including providing accurate work estimates for pre-sales activities.",
+        "Crosstraining Junior Data Engineers and providing technical guidance on challenging assignments."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Bachelor of Technology - BTech",
+      "institution": "Galgotias College of Engineering and Technology",
+      "location": "India",
+      "startDate": "08/2020",
+      "endDate": "05/2023"
+    },
+    {
+      "degree": "Diploma",
+      "institution": "Government Polytechnic Bahraich",
+      "location": "Bahraich, India",
+      "startDate": "01/2017",
+      "endDate": "01/2020"
+    }
+  ],
+  "skills": [
+    "Python (PyData, Pandas, NumPy, PySpark)",
+    "SQL (MS SQL, OracleDB, Teradata, PostgreSQL)",
+    "Azure Data Factory",
+    "Azure Databricks",
+    "Big Data (Spark, Pig, Hive, Scoop, Kafka)",
+    "DevOps (GitHub Actions, Jenkins, Azure DevOps)",
+    "Kubernetes (CKAD standards)",
+    "Docker & Container Orchestration",
+    "API Management (Apigee X, Apigee Edge, Swagger/OpenAPI)",
+    "REST Services & Microservices",
+    "Cloud Platforms (Azure IaaS, GCP)",
+    "Infrastructure as Code (Terraform, Ansible)",
+    "Agile/Scrum Methodology",
+    "CI/CD Pipelines",
+    "Microsoft Project & Visio"
+  ],
+  "certifications": [
+    {
+      "title": "Microsoft Certified: Azure Administrator Associate",
+      "issuer": "Microsoft",
+      "date": "Apr 2025",
+      "skills": "Azure Identities, Storage, Compute Resources, Virtual Networking, Monitoring"
+    },
+    {
+      "title": "Google Cloud Certified Associate Cloud Engineer",
+      "issuer": "Google Cloud",
+      "date": "Oct 2024",
+      "skills": "Cloud Architecture, GCP, IAM, IaC, Networking, SQL"
+    },
+    {
+      "title": "Microsoft Certified: Azure Fundamentals",
+      "issuer": "Microsoft",
+      "date": "May 2025",
+      "skills": "Cloud Computing, Azure Services, Governance, SLAs"
+    },
+    {
+      "title": "GitHub Foundations",
+      "issuer": "GitHub",
+      "date": "Nov 2024",
+      "skills": "CI/CD, DevOps, Version Control, Project Management"
+    }
+  ],
+  "projects": [
+    {
+      "title": "Subtitle - Open-source Data Pipeline",
+      "description": "Built a self-hosted, AI-powered data processing solution using OpenAI's Whisper model. Engineered pipelines to handle raw audio data and convert it into structured metadata (VTT, SRT) for analytics. Gained 426+ GitHub stars.",
+      "technologies": "Python, PySpark, Whisper AI, Machine Learning, Shell Scripting"
+    },
+    {
+      "title": "whisper.api & REST Integration",
+      "description": "Developed a production-ready RESTful API for speech-to-text functionality. Integrated API proxies and created Swagger/OpenAPI specifications to ensure standard-compliant API management.",
+      "technologies": "Python, RESTful API, Swagger, ASR, API Gateway"
+    },
+    {
+      "title": "Autoapplys.com",
+      "description": "Led development of a web platform automating job application processes. Managed complex data schemas and integrated automated workflows to reduce manual effort.",
+      "technologies": "Prisma, JavaScript, MongoDB, TypeScript, React.js, Next.js"
+    }
+  ],
+  "languages": [
+    {
+      "name": "Hindi",
+      "level": "Native"
+    },
+    {
+      "name": "English",
+      "level": "Proficient"
+    }
+  ]
+}

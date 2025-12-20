@@ -61,28 +61,35 @@ export default function RegisterPage() {
       return;
     }
 
-    setIsLoading(true);
-
     try {
-      await signUp.email({
+      const { error } = await signUp.email({
         email,
         password,
         name,
       });
+
+      if (error) {
+        console.error("Registration error:", error);
+        toast({
+          title: "Registration failed",
+          description: error.message || "An error occurred. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       toast({
         title: "Account created!",
         description: "Welcome to Resume Builder. Redirecting...",
       });
 
-      setTimeout(() => {
-        router.push("/");
-      }, 1000);
+      router.push("/");
+      router.refresh();
     } catch (error: any) {
-      console.error("Registration error:", error);
+      console.error("Unexpected registration error:", error);
       toast({
         title: "Registration failed",
-        description: error?.message || "An error occurred. Please try again.",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
     } finally {

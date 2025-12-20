@@ -88,7 +88,8 @@ export function ResumePreview({ data }: ResumePreviewProps) {
                     {edu.institution}
                   </div>
                   <div className="text-[10px] text-gray-600" style={{ fontSize: "10px" }}>
-                    {edu.startDate} - {edu.endDate} {edu.location}
+                    {edu.startDate ? `${edu.startDate} - ` : ""}
+                    {edu.endDate} {edu.location}
                   </div>
                 </div>
               ))}
@@ -221,7 +222,8 @@ export function ResumePreview({ data }: ResumePreviewProps) {
                       {exp.company}
                     </div>
                     <div className="text-[10px] text-gray-600" style={{ fontSize: "10px" }}>
-                      {exp.startDate} - {exp.endDate} • {exp.location}
+                      {exp.startDate ? `${exp.startDate} - ` : ""}
+                      {exp.endDate} • {exp.location}
                     </div>
                   </div>
                   {exp.description && (

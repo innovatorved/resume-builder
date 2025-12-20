@@ -1,4 +1,4 @@
-import { z } from "zod";
+import z from "zod";
 
 // Personal Info Schema
 export const personalInfoSchema = z.object({
@@ -15,7 +15,7 @@ export const experienceSchema = z.object({
   title: z.string().min(1, "Job title is required"),
   company: z.string().min(1, "Company is required"),
   location: z.string().min(1, "Location is required"),
-  startDate: z.string().min(1, "Start date is required"),
+  startDate: z.string().optional(),
   endDate: z.string().min(1, "End date is required"),
   description: z.string().optional(),
   responsibilities: z.array(z.string()).default([]),
@@ -26,7 +26,7 @@ export const educationSchema = z.object({
   degree: z.string().min(1, "Degree is required"),
   institution: z.string().min(1, "Institution is required"),
   location: z.string().min(1, "Location is required"),
-  startDate: z.string().min(1, "Start date is required"),
+  startDate: z.string().optional(),
   endDate: z.string().min(1, "End date is required"),
 });
 

@@ -32,10 +32,20 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      await signIn.email({
+      const { error } = await signIn.email({
         email,
         password,
       });
+
+      if (error) {
+        console.error("Login error:", error);
+        toast({
+          title: "Login failed",
+          description: error.message || "Invalid email or password. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       toast({
         title: "Welcome back!",
@@ -43,11 +53,12 @@ export default function LoginPage() {
       });
 
       router.push("/");
+      router.refresh();
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Unexpected login error:", error);
       toast({
         title: "Login failed",
-        description: "Invalid email or password. Please try again.",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
     } finally {

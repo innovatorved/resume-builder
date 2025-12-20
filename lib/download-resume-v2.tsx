@@ -67,40 +67,40 @@ export async function downloadResumePdf(resumeData: ResumeData) {
     // First, extract all text content in reading order for ATS
     const extractTextContent = (element: HTMLElement): string[] => {
       const lines: string[] = [];
-      
+
       // Helper to recursively get text
       const getText = (node: HTMLElement) => {
         // Get direct text content
         const textContent = Array.from(node.childNodes)
-          .filter(child => child.nodeType === Node.TEXT_NODE)
-          .map(child => child.textContent?.trim())
-          .filter(text => text && text.length > 0)
+          .filter((child) => child.nodeType === Node.TEXT_NODE)
+          .map((child) => child.textContent?.trim())
+          .filter((text) => text && text.length > 0)
           .join(" ");
-        
+
         if (textContent) {
           lines.push(textContent);
         }
-        
+
         // Process children
-        Array.from(node.children).forEach(child => {
+        Array.from(node.children).forEach((child) => {
           if (child instanceof HTMLElement) {
             getText(child);
           }
         });
       };
-      
+
       getText(element);
       return lines;
     };
 
     const textLines = extractTextContent(existingElement);
-    
+
     // Add invisible text layer at the bottom of the page
     // This will be extracted by ATS but not visible
     pdf.setFontSize(1); // Tiny font
     pdf.setTextColor(255, 255, 255); // White text on white background
     let textY = pdfHeight - 2;
-    
+
     for (const line of textLines) {
       if (line.trim()) {
         pdf.text(line, 0.1, textY);
@@ -121,7 +121,7 @@ export async function downloadResumePdf(resumeData: ResumeData) {
     cloneContainer.appendChild(clone);
     document.body.appendChild(cloneContainer);
 
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     const renderedCanvas = await html2canvas(clone, {
       scale: 3,
@@ -135,7 +135,7 @@ export async function downloadResumePdf(resumeData: ResumeData) {
 
     const imgData = renderedCanvas.toDataURL("image/png", 1.0);
     const canvasAspectRatio = renderedCanvas.width / renderedCanvas.height;
-    
+
     let imgWidth = pdfWidth;
     let imgHeight = pdfWidth / canvasAspectRatio;
     let xOffset = 0;

@@ -380,7 +380,7 @@ export function TypeformResumeBuilder({
                       />
                       <div className="flex gap-2">
                         <Input
-                          value={exp.startDate}
+                          value={exp.startDate || ""}
                           onChange={(e) => updateExperience(index, "startDate", e.target.value)}
                           className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
                           placeholder="Start (MM/YYYY)"
@@ -476,7 +476,7 @@ export function TypeformResumeBuilder({
                     />
                     <div className="flex gap-4">
                       <Input
-                        value={edu.startDate}
+                        value={edu.startDate || ""}
                         onChange={(e) => updateEducation(index, "startDate", e.target.value)}
                         className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
                         placeholder="Start (MM/YYYY)"
