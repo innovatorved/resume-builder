@@ -3,10 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, Lock, User, ArrowRight, ArrowLeft, Loader2, Check } from "lucide-react";
+import { ArrowRight, ArrowLeft, Loader2, Check } from "lucide-react";
 import { signUp } from "@/lib/auth-client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -80,7 +79,7 @@ export default function RegisterPage() {
 
       toast({
         title: "Account created!",
-        description: "Welcome to Resume Builder. Redirecting...",
+        description: "Welcome to Resume Builder. Redirecting…",
       });
 
       router.push("/");
@@ -113,42 +112,53 @@ export default function RegisterPage() {
     return steps.indexOf(step);
   };
 
+  const stepLabels: Record<string, string> = {
+    name: "Name",
+    email: "Email",
+    password: "Password",
+    confirm: "Confirm",
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-slate-900 dark:via-slate-800 dark:to-blue-950 flex items-center justify-center p-4 overflow-hidden">
-      <div className="w-full max-w-2xl">
-        {/* Logo/Header - Always visible */}
-        <div className="flex flex-col items-center mb-12 animate-in fade-in slide-in-from-top-4 duration-500">
-          <div className="p-4 bg-white dark:bg-slate-800 shadow-xl mb-4">
-            <Image
-              src="/refresh.svg"
-              alt="Resume Builder"
-              width={40}
-              height={40}
-              style={{
-                filter:
-                  "brightness(0) saturate(100%) invert(40%) sepia(100%) saturate(2500%) hue-rotate(195deg) brightness(95%) contrast(90%)",
-              }}
-            />
-          </div>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Create Account</h1>
-          <p className="text-gray-600 dark:text-gray-400 text-center text-lg">
-            Join Resume Builder in a few easy steps
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 overflow-hidden">
+      <div className="w-full max-w-lg">
+        {/* Header */}
+        <div className="mb-16 animate-in fade-in slide-in-from-top-4 duration-500">
+          <p className="text-sm font-medium tracking-widest uppercase text-muted-foreground mb-6">
+            Resume Builder
           </p>
+          <h1
+            className="font-semibold text-5xl md:text-6xl text-foreground mb-3 tracking-tight"
+            style={{ fontFamily: "var(--font-sans-heading)" }}
+          >
+            Create account
+          </h1>
+          <p className="text-muted-foreground text-lg">Join in a few easy steps.</p>
         </div>
 
-        {/* Progress indicator */}
-        <div className="flex items-center justify-center gap-2 mb-12">
+        {/* Progress lines */}
+        <div className="flex items-center gap-3 mb-12">
           {["name", "email", "password", "confirm"].map((step, index) => (
-            <div
-              key={step}
-              className={`h-2  transition-all duration-300 ${
-                getStepNumber(currentStep) === index
-                  ? "w-16 bg-blue-600"
-                  : getStepNumber(currentStep) > index
-                    ? "w-8 bg-blue-400"
-                    : "w-8 bg-gray-300 dark:bg-gray-600"
-              }`}
-            />
+            <div key={step} className="flex flex-col items-start gap-1.5 flex-1">
+              <div
+                className={`h-0.5 w-full transition-all duration-500 ease-out ${
+                  getStepNumber(currentStep) === index
+                    ? "bg-primary"
+                    : getStepNumber(currentStep) > index
+                      ? "bg-primary/40"
+                      : "bg-border"
+                }`}
+              />
+              <span
+                className={`text-[10px] uppercase tracking-widest transition-colors ${
+                  getStepNumber(currentStep) >= index
+                    ? "text-foreground"
+                    : "text-muted-foreground/50"
+                }`}
+              >
+                {stepLabels[step]}
+              </span>
+            </div>
           ))}
         </div>
 
@@ -160,38 +170,37 @@ export default function RegisterPage() {
               : "opacity-0 -translate-x-full absolute pointer-events-none"
           }`}
         >
-          <form onSubmit={handleNameNext} className="space-y-8">
+          <form onSubmit={handleNameNext} className="space-y-10">
             <div className="space-y-4">
-              <div className="flex items-center gap-3 text-gray-900 dark:text-white">
-                <User className="h-6 w-6 text-blue-600" />
-                <h2 className="text-3xl font-semibold">What's your name?</h2>
-              </div>
+              <label className="text-sm font-medium tracking-wide text-foreground uppercase">
+                Your name
+              </label>
               <Input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="John Doe"
-                className="h-14 text-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-600 dark:focus:border-blue-500  bg-white dark:bg-slate-800 transition-all"
+                className="h-14 text-lg border-0 border-b-2 border-border rounded-none bg-transparent focus:border-primary focus-visible:ring-0 transition-colors placeholder:text-muted-foreground/50"
                 autoFocus
                 required
               />
             </div>
 
-            <div className="flex items-center justify-between pt-4">
+            <div className="flex items-center justify-between">
               <Link
                 href="/login"
-                className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm font-medium"
+                className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium underline underline-offset-4 decoration-border hover:decoration-foreground"
               >
-                Already have an account? Sign in
+                Already have an account?
               </Link>
               <Button
                 type="submit"
                 size="lg"
-                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all  px-8 h-12 text-base font-semibold group"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 h-12 text-base font-medium group transition-all"
                 disabled={!name.trim()}
               >
                 Continue
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
           </form>
@@ -207,46 +216,45 @@ export default function RegisterPage() {
                 : "opacity-0 translate-x-full absolute pointer-events-none"
           }`}
         >
-          <form onSubmit={handleEmailNext} className="space-y-8">
+          <form onSubmit={handleEmailNext} className="space-y-10">
             <div className="space-y-4">
-              <div className="flex items-center gap-3 text-gray-900 dark:text-white">
-                <Mail className="h-6 w-6 text-blue-600" />
-                <h2 className="text-3xl font-semibold">What's your email?</h2>
-              </div>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">
-                Hi <span className="font-semibold text-gray-900 dark:text-white">{name}</span>,
-                we'll use this to create your account
+              <label className="text-sm font-medium tracking-wide text-foreground uppercase">
+                Email address
+              </label>
+              <p className="text-muted-foreground text-sm">
+                Hi <span className="font-medium text-foreground">{name}</span>, we'll use this to
+                create your account.
               </p>
               <Input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="h-14 text-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-600 dark:focus:border-blue-500  bg-white dark:bg-slate-800 transition-all"
+                className="h-14 text-lg border-0 border-b-2 border-border rounded-none bg-transparent focus:border-primary focus-visible:ring-0 transition-colors placeholder:text-muted-foreground/50"
                 autoFocus
                 required
               />
             </div>
 
-            <div className="flex items-center justify-between pt-4">
+            <div className="flex items-center justify-between">
               <Button
                 type="button"
                 variant="ghost"
                 size="lg"
                 onClick={handleBack}
-                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors group "
+                className="text-muted-foreground hover:text-foreground transition-colors group"
               >
-                <ArrowLeft className="mr-2 h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+                <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                 Back
               </Button>
               <Button
                 type="submit"
                 size="lg"
-                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all  px-8 h-12 text-base font-semibold group"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 h-12 text-base font-medium group transition-all"
                 disabled={!email}
               >
                 Continue
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
           </form>
@@ -262,39 +270,36 @@ export default function RegisterPage() {
                 : "opacity-0 translate-x-full absolute pointer-events-none"
           }`}
         >
-          <form onSubmit={handlePasswordNext} className="space-y-8">
+          <form onSubmit={handlePasswordNext} className="space-y-10">
             <div className="space-y-4">
-              <div className="flex items-center gap-3 text-gray-900 dark:text-white">
-                <Lock className="h-6 w-6 text-blue-600" />
-                <h2 className="text-3xl font-semibold">Create a password</h2>
-              </div>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">
-                Must be at least 8 characters long
-              </p>
+              <label className="text-sm font-medium tracking-wide text-foreground uppercase">
+                Create a password
+              </label>
+              <p className="text-muted-foreground text-sm">Must be at least 8 characters long.</p>
               <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter a secure password"
-                className="h-14 text-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-600 dark:focus:border-blue-500  bg-white dark:bg-slate-800 transition-all"
+                className="h-14 text-lg border-0 border-b-2 border-border rounded-none bg-transparent focus:border-primary focus-visible:ring-0 transition-colors placeholder:text-muted-foreground/50"
                 autoFocus
                 required
               />
               {password && (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700  overflow-hidden">
+                <div className="space-y-2 pt-2">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-0.5 bg-border overflow-hidden">
                       <div
-                        className={`h-full transition-all duration-300 ${
+                        className={`h-full transition-all duration-500 ease-out ${
                           passwordStrength === "strong"
-                            ? "bg-green-500 w-full"
+                            ? "bg-accent-foreground w-full"
                             : passwordStrength === "medium"
-                              ? "bg-yellow-500 w-2/3"
-                              : "bg-red-500 w-1/3"
+                              ? "bg-chart-3 w-2/3"
+                              : "bg-destructive w-1/3"
                         }`}
                       />
                     </div>
-                    <span className="text-xs text-gray-600 dark:text-gray-400 capitalize font-medium min-w-[60px]">
+                    <span className="text-xs text-muted-foreground capitalize font-medium min-w-[50px]">
                       {passwordStrength}
                     </span>
                   </div>
@@ -302,25 +307,25 @@ export default function RegisterPage() {
               )}
             </div>
 
-            <div className="flex items-center justify-between pt-4">
+            <div className="flex items-center justify-between">
               <Button
                 type="button"
                 variant="ghost"
                 size="lg"
                 onClick={handleBack}
-                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors group "
+                className="text-muted-foreground hover:text-foreground transition-colors group"
               >
-                <ArrowLeft className="mr-2 h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+                <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                 Back
               </Button>
               <Button
                 type="submit"
                 size="lg"
-                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all  px-8 h-12 text-base font-semibold group"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 h-12 text-base font-medium group transition-all"
                 disabled={password.length < 8}
               >
                 Continue
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
           </form>
@@ -334,14 +339,13 @@ export default function RegisterPage() {
               : "opacity-0 translate-x-full absolute pointer-events-none"
           }`}
         >
-          <form onSubmit={handleConfirmSubmit} className="space-y-8">
+          <form onSubmit={handleConfirmSubmit} className="space-y-10">
             <div className="space-y-4">
-              <div className="flex items-center gap-3 text-gray-900 dark:text-white">
-                <Check className="h-6 w-6 text-blue-600" />
-                <h2 className="text-3xl font-semibold">Confirm your password</h2>
-              </div>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">
-                Re-enter your password to make sure it's correct
+              <label className="text-sm font-medium tracking-wide text-foreground uppercase">
+                Confirm password
+              </label>
+              <p className="text-muted-foreground text-sm">
+                Re-enter your password to make sure it's correct.
               </p>
               <div className="relative">
                 <Input
@@ -349,47 +353,47 @@ export default function RegisterPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm your password"
-                  className="h-14 text-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-600 dark:focus:border-blue-500  bg-white dark:bg-slate-800 transition-all"
+                  className="h-14 text-lg border-0 border-b-2 border-border rounded-none bg-transparent focus:border-primary focus-visible:ring-0 transition-colors placeholder:text-muted-foreground/50"
                   autoFocus
                   required
                   disabled={isLoading}
                 />
                 {confirmPassword && password === confirmPassword && (
-                  <Check className="absolute right-4 top-4 h-6 w-6 text-green-500" />
+                  <Check className="absolute right-0 top-4 h-5 w-5 text-accent-foreground" />
                 )}
               </div>
               {confirmPassword && password !== confirmPassword && (
-                <p className="text-red-500 text-sm">Passwords don't match</p>
+                <p className="text-destructive text-sm">Passwords don't match</p>
               )}
             </div>
 
-            <div className="flex items-center justify-between pt-4">
+            <div className="flex items-center justify-between">
               <Button
                 type="button"
                 variant="ghost"
                 size="lg"
                 onClick={handleBack}
-                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors group "
+                className="text-muted-foreground hover:text-foreground transition-colors group"
                 disabled={isLoading}
               >
-                <ArrowLeft className="mr-2 h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+                <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                 Back
               </Button>
               <Button
                 type="submit"
                 size="lg"
-                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all  px-8 h-12 text-base font-semibold"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 h-12 text-base font-medium transition-all"
                 disabled={!confirmPassword || password !== confirmPassword || isLoading}
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Creating account...
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating account…
                   </>
                 ) : (
                   <>
                     Create Account
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </>
                 )}
               </Button>
@@ -398,7 +402,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-12">
+        <p className="text-center text-xs text-muted-foreground mt-20">
           By creating an account, you agree to our Terms of Service and Privacy Policy
         </p>
       </div>

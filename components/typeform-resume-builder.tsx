@@ -6,10 +6,9 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
 import { ArrowRight, ArrowLeft, Plus, Trash2, Check, Download } from "lucide-react";
 import type { ResumeData } from "@/types/resume";
-import { downloadResumePdf } from "@/lib/download-resume-v2";
+import { downloadResumeLatex, downloadCompiledPdf } from "@/lib/latex-generator";
 import { DOWNLOAD_BUTTON_BASE_CLASSES } from "@/lib/utils";
 import { ResumePreview } from "@/components/resume-preview";
 import { draftManager } from "@/lib/draft-manager";
@@ -32,11 +31,23 @@ export function TypeformResumeBuilder({
 
   const totalSteps = 9;
 
+  const stepLabels = [
+    "Basics",
+    "Summary",
+    "Experience",
+    "Education",
+    "Skills",
+    "Certifications",
+    "Projects",
+    "Languages",
+    "Complete",
+  ];
+
   // Auto-save draft whenever data changes
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       draftManager.saveDraft(data);
-    }, 1000); // Debounce for 1 second
+    }, 1000);
 
     return () => clearTimeout(timeoutId);
   }, [data]);
@@ -174,77 +185,85 @@ export function TypeformResumeBuilder({
   const handleDownloadPDF = async () => {
     try {
       setIsDownloading(true);
-      console.log("[TypeformResumeBuilder] Starting PDF download...");
+      console.log("[TypeformResumeBuilder] Starting PDF compilation...");
 
-      await downloadResumePdf(data);
+      await downloadCompiledPdf(data);
 
-      console.log("[TypeformResumeBuilder] PDF download completed successfully!");
+      console.log("[TypeformResumeBuilder] PDF compilation completed successfully!");
       alert("Resume downloaded successfully!");
     } catch (error) {
-      console.error("[TypeformResumeBuilder] Error downloading resume:", error);
+      console.error("[TypeformResumeBuilder] Error compiling resume:", error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       alert(
-        `Failed to download resume: ${errorMessage}\n\nPlease check the console for more details.`
+        `Failed to compile resume: ${errorMessage}\n\nPlease check the console for more details.`
       );
     } finally {
       setIsDownloading(false);
     }
   };
 
+  // Shared input class for underline-style inputs
+  const inputClass =
+    "text-lg py-5 border-0 border-b-2 border-border rounded-none bg-transparent focus:border-primary focus-visible:ring-0 transition-colors placeholder:text-muted-foreground/50";
+
+  const textareaClass =
+    "text-lg py-4 border-0 border-b-2 border-border rounded-none bg-transparent focus:border-primary focus-visible:ring-0 transition-colors min-h-[160px] resize-none placeholder:text-muted-foreground/50";
+
   const renderStep = () => {
     switch (currentStep) {
       case 0:
         return (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="space-y-3">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
-                Let&apos;s start with your basics
+              <h2
+                className="text-4xl md:text-5xl text-foreground font-semibold tracking-tight"
+                style={{ fontFamily: "var(--font-sans-heading)" }}
+              >
+                Let's start with your basics
               </h2>
-              <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300">
-                Tell us about yourself
-              </p>
+              <p className="text-lg text-muted-foreground">Tell us about yourself.</p>
             </div>
             <div className="space-y-6">
-              <div className="space-y-3">
-                <label className="text-base font-medium text-gray-900 dark:text-white">
+              <div className="space-y-2">
+                <label className="text-xs font-medium tracking-widest uppercase text-muted-foreground">
                   Full Name *
                 </label>
                 <Input
                   value={data.personalInfo.name}
                   onChange={(e) => updatePersonalInfo("name", e.target.value)}
                   onKeyPress={handleKeyPress}
-                  className="text-lg py-6 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0 transition-colors"
+                  className={inputClass}
                   placeholder="John Doe"
                   autoFocus
                 />
               </div>
-              <div className="space-y-3">
-                <label className="text-base font-medium text-gray-900 dark:text-white">
+              <div className="space-y-2">
+                <label className="text-xs font-medium tracking-widest uppercase text-muted-foreground">
                   Job Title *
                 </label>
                 <Input
                   value={data.personalInfo.title}
                   onChange={(e) => updatePersonalInfo("title", e.target.value)}
                   onKeyPress={handleKeyPress}
-                  className="text-lg py-6 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0 transition-colors"
+                  className={inputClass}
                   placeholder="Software Developer"
                 />
               </div>
               <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <label className="text-base font-medium text-gray-900 dark:text-white">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium tracking-widest uppercase text-muted-foreground">
                     Phone *
                   </label>
                   <Input
                     value={data.personalInfo.phone}
                     onChange={(e) => updatePersonalInfo("phone", e.target.value)}
                     onKeyPress={handleKeyPress}
-                    className="text-lg py-6 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0 transition-colors"
+                    className={inputClass}
                     placeholder="+1234567890"
                   />
                 </div>
-                <div className="space-y-3">
-                  <label className="text-base font-medium text-gray-900 dark:text-white">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium tracking-widest uppercase text-muted-foreground">
                     Email *
                   </label>
                   <Input
@@ -252,39 +271,39 @@ export function TypeformResumeBuilder({
                     value={data.personalInfo.email}
                     onChange={(e) => updatePersonalInfo("email", e.target.value)}
                     onKeyPress={handleKeyPress}
-                    className="text-lg py-6 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0 transition-colors"
+                    className={inputClass}
                     placeholder="john@example.com"
                   />
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <label className="text-base font-medium text-gray-900 dark:text-white">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium tracking-widest uppercase text-muted-foreground">
                     LinkedIn
                   </label>
                   <Input
                     value={data.personalInfo.linkedin}
                     onChange={(e) => updatePersonalInfo("linkedin", e.target.value)}
                     onKeyPress={handleKeyPress}
-                    className="text-lg py-6 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0 transition-colors"
+                    className={inputClass}
                     placeholder="linkedin.com/in/johndoe"
                   />
                 </div>
-                <div className="space-y-3">
-                  <label className="text-base font-medium text-gray-900 dark:text-white">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium tracking-widest uppercase text-muted-foreground">
                     Location *
                   </label>
                   <Input
                     value={data.personalInfo.location}
                     onChange={(e) => updatePersonalInfo("location", e.target.value)}
                     onKeyPress={handleKeyPress}
-                    className="text-lg py-6 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0 transition-colors"
+                    className={inputClass}
                     placeholder="New York, USA"
                   />
                 </div>
               </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2 pt-4">
-                <kbd className="px-2 py-1 text-xs font-semibold bg-gray-100 dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded">
+              <p className="text-sm text-muted-foreground flex items-center gap-2 pt-2">
+                <kbd className="px-2 py-0.5 text-xs font-medium bg-muted border border-border rounded">
                   Enter
                 </kbd>
                 to continue
@@ -295,29 +314,32 @@ export function TypeformResumeBuilder({
 
       case 1:
         return (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="space-y-3">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
-                Your professional summary
+              <h2
+                className="text-4xl md:text-5xl text-foreground font-semibold tracking-tight"
+                style={{ fontFamily: "var(--font-sans-heading)" }}
+              >
+                Professional summary
               </h2>
-              <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300">
-                Write a brief overview of your experience and skills
+              <p className="text-lg text-muted-foreground">
+                A brief overview of your experience and skills.
               </p>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Textarea
                 value={data.summary}
                 onChange={(e) => onChange({ ...data, summary: e.target.value })}
-                className="text-lg py-4 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0 transition-colors min-h-[200px] resize-none"
-                placeholder="A passionate and driven professional with expertise in..."
+                className={textareaClass}
+                placeholder="A passionate and driven professional with expertise in…"
                 autoFocus
               />
-              <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                <kbd className="px-2 py-1 text-xs font-semibold bg-gray-100 dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded">
+              <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                <kbd className="px-2 py-0.5 text-xs font-medium bg-muted border border-border rounded">
                   Shift
                 </kbd>
                 +
-                <kbd className="px-2 py-1 text-xs font-semibold bg-gray-100 dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded">
+                <kbd className="px-2 py-0.5 text-xs font-medium bg-muted border border-border rounded">
                   Enter
                 </kbd>
                 for new line
@@ -328,67 +350,63 @@ export function TypeformResumeBuilder({
 
       case 2:
         return (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="space-y-3">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
+              <h2
+                className="text-4xl md:text-5xl text-foreground font-semibold tracking-tight"
+                style={{ fontFamily: "var(--font-sans-heading)" }}
+              >
                 Work experience
               </h2>
-              <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300">
-                Add your professional experience
-              </p>
+              <p className="text-lg text-muted-foreground">Add your professional experience.</p>
             </div>
-            <div className="space-y-6">
+            <div className="space-y-8">
               {data.experience.map((exp, index) => (
-                <div
-                  key={index}
-                  className="p-6 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm  border border-gray-200/50 dark:border-gray-700/50 space-y-4 shadow-sm"
-                >
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <div key={index} className="pb-8 border-b border-border last:border-0 space-y-5">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-medium tracking-widest uppercase text-muted-foreground">
                       Experience {index + 1}
-                    </h3>
+                    </span>
                     {data.experience.length > 1 && (
-                      <Button
+                      <button
                         onClick={() => removeExperience(index)}
-                        size="sm"
-                        variant="destructive"
-                        className="bg-red-500 hover:bg-red-600"
+                        className="text-muted-foreground hover:text-destructive transition-colors p-1"
                       >
                         <Trash2 className="h-4 w-4" />
-                      </Button>
+                      </button>
                     )}
                   </div>
                   <div className="space-y-4">
                     <Input
                       value={exp.title}
                       onChange={(e) => updateExperience(index, "title", e.target.value)}
-                      className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
+                      className={inputClass}
                       placeholder="Job Title"
                     />
                     <Input
                       value={exp.company}
                       onChange={(e) => updateExperience(index, "company", e.target.value)}
-                      className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
+                      className={inputClass}
                       placeholder="Company Name"
                     />
                     <div className="grid md:grid-cols-2 gap-4">
                       <Input
                         value={exp.location}
                         onChange={(e) => updateExperience(index, "location", e.target.value)}
-                        className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
+                        className={inputClass}
                         placeholder="Location"
                       />
-                      <div className="flex gap-2">
+                      <div className="flex gap-3">
                         <Input
                           value={exp.startDate || ""}
                           onChange={(e) => updateExperience(index, "startDate", e.target.value)}
-                          className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
+                          className={inputClass}
                           placeholder="Start (MM/YYYY)"
                         />
                         <Input
                           value={exp.endDate}
                           onChange={(e) => updateExperience(index, "endDate", e.target.value)}
-                          className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
+                          className={inputClass}
                           placeholder="End"
                         />
                       </div>
@@ -396,7 +414,7 @@ export function TypeformResumeBuilder({
                     <Input
                       value={exp.description}
                       onChange={(e) => updateExperience(index, "description", e.target.value)}
-                      className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
+                      className={inputClass}
                       placeholder="Brief company description"
                     />
                     <Textarea
@@ -404,363 +422,343 @@ export function TypeformResumeBuilder({
                       onChange={(e) =>
                         updateExperience(index, "responsibilities", e.target.value.split("\n"))
                       }
-                      className="text-base py-4 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0 min-h-[120px] resize-none"
+                      className={`${textareaClass} min-h-[120px]`}
                       placeholder="Key responsibilities (one per line)"
                     />
                   </div>
                 </div>
               ))}
-              <Button
+              <button
                 onClick={addExperience}
-                variant="outline"
-                size="default"
-                className="w-full py-6 border-2 border-dashed border-gray-300 dark:border-gray-600 bg-white/30 dark:bg-slate-800/30 hover:bg-white/60 dark:hover:bg-slate-800/60 hover:border-blue-600 dark:hover:border-blue-500 transition-all"
+                className="w-full py-5 border-2 border-dashed border-border text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all flex items-center justify-center gap-2 text-sm font-medium"
               >
-                <Plus className="h-5 w-5 mr-2" />
+                <Plus className="h-4 w-4" />
                 Add Another Experience
-              </Button>
+              </button>
             </div>
           </div>
         );
 
       case 3:
         return (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="space-y-3">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
+              <h2
+                className="text-4xl md:text-5xl text-foreground font-semibold tracking-tight"
+                style={{ fontFamily: "var(--font-sans-heading)" }}
+              >
                 Education
               </h2>
-              <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300">
-                Tell us about your educational background
-              </p>
+              <p className="text-lg text-muted-foreground">Your educational background.</p>
             </div>
-            <div className="space-y-6">
+            <div className="space-y-8">
               {data.education.map((edu, index) => (
-                <div
-                  key={index}
-                  className="p-6 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm  border border-gray-200/50 dark:border-gray-700/50 space-y-4 shadow-sm"
-                >
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <div key={index} className="pb-8 border-b border-border last:border-0 space-y-5">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-medium tracking-widest uppercase text-muted-foreground">
                       Education {index + 1}
-                    </h3>
+                    </span>
                     {data.education.length > 1 && (
-                      <Button
+                      <button
                         onClick={() => removeEducation(index)}
-                        size="sm"
-                        variant="destructive"
-                        className="bg-red-500 hover:bg-red-600"
+                        className="text-muted-foreground hover:text-destructive transition-colors p-1"
                       >
                         <Trash2 className="h-4 w-4" />
-                      </Button>
+                      </button>
                     )}
                   </div>
                   <div className="space-y-4">
                     <Input
                       value={edu.degree}
                       onChange={(e) => updateEducation(index, "degree", e.target.value)}
-                      className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
+                      className={inputClass}
                       placeholder="Degree (e.g., Bachelor of Science)"
                     />
                     <Input
                       value={edu.institution}
                       onChange={(e) => updateEducation(index, "institution", e.target.value)}
-                      className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
+                      className={inputClass}
                       placeholder="Institution Name"
                     />
                     <Input
                       value={edu.location}
                       onChange={(e) => updateEducation(index, "location", e.target.value)}
-                      className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
+                      className={inputClass}
                       placeholder="Location"
                     />
                     <div className="flex gap-4">
                       <Input
                         value={edu.startDate || ""}
                         onChange={(e) => updateEducation(index, "startDate", e.target.value)}
-                        className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
+                        className={inputClass}
                         placeholder="Start (MM/YYYY)"
                       />
                       <Input
                         value={edu.endDate}
                         onChange={(e) => updateEducation(index, "endDate", e.target.value)}
-                        className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
+                        className={inputClass}
                         placeholder="End (MM/YYYY)"
                       />
                     </div>
                   </div>
                 </div>
               ))}
-              <Button
+              <button
                 onClick={addEducation}
-                variant="outline"
-                size="default"
-                className="w-full py-6 border-2 border-dashed border-gray-300 dark:border-gray-600 bg-white/30 dark:bg-slate-800/30 hover:bg-white/60 dark:hover:bg-slate-800/60 hover:border-blue-600 dark:hover:border-blue-500 transition-all"
+                className="w-full py-5 border-2 border-dashed border-border text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all flex items-center justify-center gap-2 text-sm font-medium"
               >
-                <Plus className="h-5 w-5 mr-2" />
+                <Plus className="h-4 w-4" />
                 Add Another Education
-              </Button>
+              </button>
             </div>
           </div>
         );
 
       case 4:
         return (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="space-y-3">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
+              <h2
+                className="text-4xl md:text-5xl text-foreground font-semibold tracking-tight"
+                style={{ fontFamily: "var(--font-sans-heading)" }}
+              >
                 Your skills
               </h2>
-              <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300">
-                List your technical and professional skills
+              <p className="text-lg text-muted-foreground">
+                List your technical and professional skills.
               </p>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Textarea
                 value={data.skills.join(", ")}
                 onChange={(e) =>
                   onChange({ ...data, skills: e.target.value.split(",").map((s) => s.trim()) })
                 }
-                className="text-lg py-4 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0 transition-colors min-h-[180px] resize-none"
-                placeholder="JavaScript, React, Node.js, Python, SQL, Docker..."
+                className={textareaClass}
+                placeholder="JavaScript, React, Node.js, Python, SQL, Docker…"
                 autoFocus
               />
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                💡 Separate skills with commas
-              </p>
+              <p className="text-sm text-muted-foreground">Separate skills with commas.</p>
             </div>
           </div>
         );
 
       case 5:
         return (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="space-y-3">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
+              <h2
+                className="text-4xl md:text-5xl text-foreground font-semibold tracking-tight"
+                style={{ fontFamily: "var(--font-sans-heading)" }}
+              >
                 Certifications
               </h2>
-              <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300">
-                Add your professional certifications
+              <p className="text-lg text-muted-foreground">
+                Professional certifications you've earned.
               </p>
             </div>
-            <div className="space-y-6">
+            <div className="space-y-8">
               {data.certifications.map((cert, index) => (
-                <div
-                  key={index}
-                  className="p-6 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm  border border-gray-200/50 dark:border-gray-700/50 space-y-4 shadow-sm"
-                >
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <div key={index} className="pb-8 border-b border-border last:border-0 space-y-5">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-medium tracking-widest uppercase text-muted-foreground">
                       Certification {index + 1}
-                    </h3>
+                    </span>
                     {data.certifications.length > 1 && (
-                      <Button
+                      <button
                         onClick={() => removeCertification(index)}
-                        size="sm"
-                        variant="destructive"
-                        className="bg-red-500 hover:bg-red-600"
+                        className="text-muted-foreground hover:text-destructive transition-colors p-1"
                       >
                         <Trash2 className="h-4 w-4" />
-                      </Button>
+                      </button>
                     )}
                   </div>
                   <div className="space-y-4">
                     <Input
                       value={cert.title}
                       onChange={(e) => updateCertification(index, "title", e.target.value)}
-                      className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
+                      className={inputClass}
                       placeholder="Certification Title"
                     />
                     <Input
                       value={cert.issuer}
                       onChange={(e) => updateCertification(index, "issuer", e.target.value)}
-                      className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
+                      className={inputClass}
                       placeholder="Issuing Organization"
                     />
                     <Input
                       value={cert.date}
                       onChange={(e) => updateCertification(index, "date", e.target.value)}
-                      className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
+                      className={inputClass}
                       placeholder="Date (e.g., Jan 2024)"
                     />
                     <Input
                       value={cert.link || ""}
                       onChange={(e) => updateCertification(index, "link", e.target.value)}
-                      className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
+                      className={inputClass}
                       placeholder="Certificate Link (optional)"
                     />
                     <Input
                       value={cert.skills || ""}
                       onChange={(e) => updateCertification(index, "skills", e.target.value)}
-                      className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
-                      placeholder="Skills from this certification (optional, comma separated)"
+                      className={inputClass}
+                      placeholder="Related skills (optional, comma separated)"
                     />
                   </div>
                 </div>
               ))}
-              <Button
+              <button
                 onClick={addCertification}
-                variant="outline"
-                size="default"
-                className="w-full py-6 border-2 border-dashed border-gray-300 dark:border-gray-600 bg-white/30 dark:bg-slate-800/30 hover:bg-white/60 dark:hover:bg-slate-800/60 hover:border-blue-600 dark:hover:border-blue-500 transition-all"
+                className="w-full py-5 border-2 border-dashed border-border text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all flex items-center justify-center gap-2 text-sm font-medium"
               >
-                <Plus className="h-5 w-5 mr-2" />
+                <Plus className="h-4 w-4" />
                 Add Another Certification
-              </Button>
+              </button>
             </div>
           </div>
         );
 
       case 6:
         return (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="space-y-3">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
+              <h2
+                className="text-4xl md:text-5xl text-foreground font-semibold tracking-tight"
+                style={{ fontFamily: "var(--font-sans-heading)" }}
+              >
                 Projects
               </h2>
-              <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300">
-                Showcase your notable projects
-              </p>
+              <p className="text-lg text-muted-foreground">Showcase your notable projects.</p>
             </div>
-            <div className="space-y-6">
+            <div className="space-y-8">
               {data.projects.map((project, index) => (
-                <div
-                  key={index}
-                  className="p-6 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm  border border-gray-200/50 dark:border-gray-700/50 space-y-4 shadow-sm"
-                >
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <div key={index} className="pb-8 border-b border-border last:border-0 space-y-5">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-medium tracking-widest uppercase text-muted-foreground">
                       Project {index + 1}
-                    </h3>
+                    </span>
                     {data.projects.length > 1 && (
-                      <Button
+                      <button
                         onClick={() => removeProject(index)}
-                        size="sm"
-                        variant="destructive"
-                        className="bg-red-500 hover:bg-red-600"
+                        className="text-muted-foreground hover:text-destructive transition-colors p-1"
                       >
                         <Trash2 className="h-4 w-4" />
-                      </Button>
+                      </button>
                     )}
                   </div>
                   <div className="space-y-4">
                     <Input
                       value={project.title}
                       onChange={(e) => updateProject(index, "title", e.target.value)}
-                      className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
+                      className={inputClass}
                       placeholder="Project Title"
                     />
                     <Textarea
                       value={project.description}
                       onChange={(e) => updateProject(index, "description", e.target.value)}
-                      className="text-base py-4 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0 min-h-[100px] resize-none"
+                      className={`${textareaClass} min-h-[100px]`}
                       placeholder="Project description"
                     />
                     <Input
                       value={project.technologies}
                       onChange={(e) => updateProject(index, "technologies", e.target.value)}
-                      className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
+                      className={inputClass}
                       placeholder="Technologies used (e.g., React, Node.js)"
                     />
                   </div>
                 </div>
               ))}
-              <Button
+              <button
                 onClick={addProject}
-                variant="outline"
-                size="default"
-                className="w-full py-6 border-2 border-dashed border-gray-300 dark:border-gray-600 bg-white/30 dark:bg-slate-800/30 hover:bg-white/60 dark:hover:bg-slate-800/60 hover:border-blue-600 dark:hover:border-blue-500 transition-all"
+                className="w-full py-5 border-2 border-dashed border-border text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all flex items-center justify-center gap-2 text-sm font-medium"
               >
-                <Plus className="h-5 w-5 mr-2" />
+                <Plus className="h-4 w-4" />
                 Add Another Project
-              </Button>
+              </button>
             </div>
           </div>
         );
 
       case 7:
         return (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="space-y-3">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
+              <h2
+                className="text-4xl md:text-5xl text-foreground font-semibold tracking-tight"
+                style={{ fontFamily: "var(--font-sans-heading)" }}
+              >
                 Languages
               </h2>
-              <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300">
-                What languages do you speak?
-              </p>
+              <p className="text-lg text-muted-foreground">What languages do you speak?</p>
             </div>
             <div className="space-y-6">
               {data.languages.map((lang, index) => (
-                <div
-                  key={index}
-                  className="p-6 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm  border border-gray-200/50 dark:border-gray-700/50 shadow-sm"
-                >
+                <div key={index} className="pb-6 border-b border-border last:border-0">
                   <div className="flex items-start gap-4">
                     <div className="flex-1 space-y-4">
                       <Input
                         value={lang.name}
                         onChange={(e) => updateLanguage(index, "name", e.target.value)}
-                        className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
+                        className={inputClass}
                         placeholder="Language (e.g., English)"
                       />
                       <Input
                         value={lang.level}
                         onChange={(e) => updateLanguage(index, "level", e.target.value)}
-                        className="text-base py-5 border-0 border-b-2 border-gray-300 dark:border-gray-600 rounded-none bg-transparent focus:border-blue-700 dark:focus:border-blue-500 focus-visible:ring-0"
-                        placeholder="Proficiency (e.g., Native, Fluent, Proficient)"
+                        className={inputClass}
+                        placeholder="Proficiency (e.g., Native, Fluent)"
                       />
                     </div>
                     {data.languages.length > 1 && (
-                      <Button
+                      <button
                         onClick={() => removeLanguage(index)}
-                        size="sm"
-                        variant="destructive"
-                        className="bg-red-500 hover:bg-red-600"
+                        className="text-muted-foreground hover:text-destructive transition-colors p-1 mt-5"
                       >
                         <Trash2 className="h-4 w-4" />
-                      </Button>
+                      </button>
                     )}
                   </div>
                 </div>
               ))}
-              <Button
+              <button
                 onClick={addLanguage}
-                variant="outline"
-                size="default"
-                className="w-full py-6 border-2 border-dashed border-gray-300 dark:border-gray-600 bg-white/30 dark:bg-slate-800/30 hover:bg-white/60 dark:hover:bg-slate-800/60 hover:border-blue-600 dark:hover:border-blue-500 transition-all"
+                className="w-full py-5 border-2 border-dashed border-border text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all flex items-center justify-center gap-2 text-sm font-medium"
               >
-                <Plus className="h-5 w-5 mr-2" />
+                <Plus className="h-4 w-4" />
                 Add Another Language
-              </Button>
+              </button>
             </div>
           </div>
         );
 
       case 8:
         return (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="text-center space-y-8">
-              <div className="inline-flex items-center justify-center w-24 h-24 bg-blue-700 shadow-lg shadow-blue-500/30 animate-in zoom-in duration-700">
-                <Check className="h-12 w-12 text-white" />
-              </div>
               <div className="space-y-4">
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
-                  All done! 🎉
+                <p className="text-sm font-medium tracking-widest uppercase text-primary animate-in fade-in duration-700">
+                  All done
+                </p>
+                <h2
+                  className="text-4xl md:text-5xl text-foreground font-semibold tracking-tight"
+                  style={{ fontFamily: "var(--font-sans-heading)" }}
+                >
+                  Your resume is ready
                 </h2>
-                <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-lg mx-auto">
-                  Your professional resume is ready. Click below to view and download it.
+                <p className="text-lg text-muted-foreground max-w-md mx-auto">
+                  Click below to download it as a beautifully typeset PDF.
                 </p>
               </div>
               <Button
                 onClick={handleDownloadPDF}
                 disabled={isDownloading}
                 size="lg"
-                className={`${DOWNLOAD_BUTTON_BASE_CLASSES} bg-blue-700 hover:bg-blue-800 text-white shadow-xl shadow-blue-500/40 dark:shadow-blue-900/60 hover:scale-105 hover:shadow-2xl transition-transform disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100`}
+                className={`${DOWNLOAD_BUTTON_BASE_CLASSES} bg-primary hover:bg-primary/90 text-primary-foreground transition-all disabled:cursor-not-allowed disabled:opacity-50`}
               >
                 {isDownloading ? (
                   <>
-                    <div className="animate-spin  h-5 w-5 border-b-2 border-white mr-3" />
-                    <span className="animate-pulse">Generating your resume...</span>
+                    <div className="animate-spin h-5 w-5 border-b-2 border-primary-foreground mr-3" />
+                    <span className="animate-pulse">Generating your resume…</span>
                   </>
                 ) : (
                   <>
@@ -779,24 +777,27 @@ export function TypeformResumeBuilder({
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-slate-900 dark:via-slate-800 dark:to-blue-950">
-      {/* Top Bar with Exit Button */}
-      <div className="fixed top-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 z-40">
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Top Bar */}
+      <div className="fixed top-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-b border-border z-40">
         <div className="max-w-3xl mx-auto flex items-center justify-between px-4 sm:px-6 py-3">
-          <div className="text-sm font-medium text-gray-600 dark:text-gray-400">Resume Builder</div>
+          <span
+            className="text-sm font-medium text-foreground"
+            style={{ fontFamily: "var(--font-sans-heading)" }}
+          >
+            Resume Builder
+          </span>
           {onBack && (
-            <Button
+            <button
               onClick={() => {
                 draftManager.saveDraft(data);
                 onBack();
               }}
-              variant="ghost"
-              size="sm"
-              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <ArrowLeft className="h-3.5 w-3.5" />
               Save & Exit
-            </Button>
+            </button>
           )}
         </div>
       </div>
@@ -818,9 +819,9 @@ export function TypeformResumeBuilder({
       </div>
 
       {/* Progress Bar */}
-      <div className="fixed top-14 left-0 right-0 h-1 bg-black/5 dark:bg-white/5 z-50">
+      <div className="fixed top-[49px] left-0 right-0 h-0.5 bg-border z-50">
         <div
-          className="h-full bg-blue-700 transition-all duration-500 ease-out"
+          className="h-full bg-primary transition-all duration-500 ease-out"
           style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
         />
       </div>
@@ -831,28 +832,31 @@ export function TypeformResumeBuilder({
       </div>
 
       {/* Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50 p-4 sm:p-6 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border p-4 sm:p-6">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {currentStep > 0 && (
               <Button
                 onClick={prevStep}
                 variant="outline"
                 size="default"
-                className="border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 hover:border-gray-400 dark:hover:border-gray-500 transition-all font-medium"
+                className="border-border hover:bg-muted hover:border-foreground/20 transition-all font-medium"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back
               </Button>
             )}
-            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
+            <span className="text-xs font-medium tracking-widest uppercase text-muted-foreground">
               {currentStep + 1} / {totalSteps}
+              <span className="hidden sm:inline ml-2 normal-case tracking-normal">
+                — {stepLabels[currentStep]}
+              </span>
             </span>
           </div>
           <Button
             onClick={nextStep}
             size="default"
-            className="bg-blue-700 hover:bg-blue-800 text-white shadow-lg shadow-blue-500/30 dark:shadow-blue-900/50 font-semibold px-6 py-5 transition-all hover:shadow-xl hover:scale-105"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6 py-5 transition-all"
           >
             {currentStep === totalSteps - 1 ? "View Resume" : "Next"}
             <ArrowRight className="h-4 w-4 ml-2" />

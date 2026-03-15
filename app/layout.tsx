@@ -6,9 +6,9 @@ import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Resume Builder - Create Professional Resumes",
+  title: "Resume Builder — Craft Your Story",
   description:
-    "Build and customize professional resumes with ease. Create, edit, and download your perfect resume.",
+    "Build polished, professional resumes with an intuitive editor. Create, refine, and download your resume as a beautifully typeset PDF.",
   icons: {
     icon: [
       { url: "/refresh.svg", type: "image/svg+xml" },
@@ -26,7 +26,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
         {children}
         <Toaster />
         <Analytics />

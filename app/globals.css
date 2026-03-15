@@ -4,75 +4,75 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Updated to Typeform-inspired color palette with fallbacks compatible with html2canvas */
-  --background: #f9fafb;
-  --foreground: #111827;
+  /* Salesforce Lightning-inspired professional palette */
+  --background: #f7f9fb;
+  --foreground: #16325c;
   --card: #ffffff;
-  --card-foreground: #111827;
+  --card-foreground: #16325c;
   --popover: #ffffff;
-  --popover-foreground: #111827;
-  --primary: #6366f1;
-  --primary-foreground: #f9fafb;
-  --secondary: #f97316;
-  --secondary-foreground: #111827;
-  --muted: #f3f4f6;
-  --muted-foreground: #6b7280;
-  --accent: #eef2ff;
-  --accent-foreground: #1f2937;
-  --destructive: #ef4444;
-  --destructive-foreground: #fef2f2;
-  --border: #e5e7eb;
-  --input: #d1d5db;
-  --ring: #4338ca;
-  --chart-1: #f59e0b;
-  --chart-2: #0ea5e9;
-  --chart-3: #6366f1;
-  --chart-4: #22c55e;
-  --chart-5: #ec4899;
-  --radius: 0rem;
-  --sidebar: #f8fafc;
-  --sidebar-foreground: #111827;
-  --sidebar-primary: #6366f1;
-  --sidebar-primary-foreground: #f8fafc;
-  --sidebar-accent: #e0e7ff;
-  --sidebar-accent-foreground: #1f2937;
-  --sidebar-border: #e2e8f0;
-  --sidebar-ring: #4338ca;
+  --popover-foreground: #16325c;
+  --primary: #0176d3;
+  --primary-foreground: #ffffff;
+  --secondary: #e8edf3;
+  --secondary-foreground: #16325c;
+  --muted: #f0f3f7;
+  --muted-foreground: #706e6b;
+  --accent: #e8f4fd;
+  --accent-foreground: #014486;
+  --destructive: #c23934;
+  --destructive-foreground: #ffffff;
+  --border: #d8dde6;
+  --input: #d8dde6;
+  --ring: #0176d3;
+  --chart-1: #0176d3;
+  --chart-2: #2e844a;
+  --chart-3: #e87d0d;
+  --chart-4: #7c8e9e;
+  --chart-5: #9050e9;
+  --radius: 0.375rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #16325c;
+  --sidebar-primary: #0176d3;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e8edf3;
+  --sidebar-accent-foreground: #16325c;
+  --sidebar-border: #d8dde6;
+  --sidebar-ring: #0176d3;
 }
 
 .dark {
-  --background: #0f172a;
-  --foreground: #f8fafc;
-  --card: #111827;
-  --card-foreground: #f8fafc;
-  --popover: #111827;
-  --popover-foreground: #f8fafc;
-  --primary: #818cf8;
-  --primary-foreground: #0f172a;
-  --secondary: #fb923c;
-  --secondary-foreground: #0f172a;
-  --muted: #1f2937;
+  --background: #0d1b2a;
+  --foreground: #e2e8f0;
+  --card: #162a3e;
+  --card-foreground: #e2e8f0;
+  --popover: #162a3e;
+  --popover-foreground: #e2e8f0;
+  --primary: #1b96ff;
+  --primary-foreground: #0d1b2a;
+  --secondary: #1e3a52;
+  --secondary-foreground: #e2e8f0;
+  --muted: #1a2f44;
   --muted-foreground: #94a3b8;
-  --accent: #312e81;
-  --accent-foreground: #f8fafc;
-  --destructive: #f87171;
-  --destructive-foreground: #0f172a;
-  --border: #1f2937;
-  --input: #1f2937;
-  --ring: #818cf8;
-  --chart-1: #f59e0b;
-  --chart-2: #38bdf8;
-  --chart-3: #a855f7;
-  --chart-4: #34d399;
-  --chart-5: #fb7185;
-  --sidebar: #0b1120;
-  --sidebar-foreground: #f8fafc;
-  --sidebar-primary: #818cf8;
-  --sidebar-primary-foreground: #0f172a;
-  --sidebar-accent: #1e1b4b;
-  --sidebar-accent-foreground: #f8fafc;
-  --sidebar-border: #1f2937;
-  --sidebar-ring: #818cf8;
+  --accent: #0f3460;
+  --accent-foreground: #7dd3fc;
+  --destructive: #ef4444;
+  --destructive-foreground: #0d1b2a;
+  --border: #1e3a52;
+  --input: #1e3a52;
+  --ring: #1b96ff;
+  --chart-1: #1b96ff;
+  --chart-2: #4ade80;
+  --chart-3: #fbbf24;
+  --chart-4: #94a3b8;
+  --chart-5: #a78bfa;
+  --sidebar: #0d1b2a;
+  --sidebar-foreground: #e2e8f0;
+  --sidebar-primary: #1b96ff;
+  --sidebar-primary-foreground: #0d1b2a;
+  --sidebar-accent: #1e3a52;
+  --sidebar-accent-foreground: #e2e8f0;
+  --sidebar-border: #1e3a52;
+  --sidebar-ring: #1b96ff;
 }
 
 @theme inline {
@@ -112,6 +112,7 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --font-sans-heading: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
 }
 
 @layer base {
@@ -120,6 +121,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
@@ -132,6 +135,4 @@
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  /* Hide non-print elements if they don't have a specific class (optional, but good practice) */
-  /* For this specific task, we rely on the iframe isolation so we don't need to hide body elements */
 }

@@ -2,7 +2,7 @@
 
 import { useSession, signOut } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
-import { LogOut, User } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 
@@ -38,22 +38,17 @@ export function AuthNav() {
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-slate-800 border border-blue-200 dark:border-slate-700">
-        <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          {session.user?.name || session.user?.email}
-        </span>
-      </div>
-      <Button
+    <div className="flex items-center gap-4">
+      <span className="hidden sm:inline text-sm text-muted-foreground">
+        {session.user?.name || session.user?.email}
+      </span>
+      <button
         onClick={handleSignOut}
-        variant="outline"
-        size="sm"
-        className="border-2 border-gray-300 dark:border-gray-600 hover:border-red-500 dark:hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400"
+        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4 decoration-border hover:decoration-foreground"
       >
-        <LogOut className="h-4 w-4 sm:mr-2" />
+        <LogOut className="h-3.5 w-3.5" />
         <span className="hidden sm:inline">Sign Out</span>
-      </Button>
+      </button>
     </div>
   );
 }

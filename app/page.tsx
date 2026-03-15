@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { getResumes } from "@/lib/actions/resume";
-import { ResumeList } from "@/components/resume-list";
+import { ResumeDashboard } from "@/components/resume-dashboard";
 
 export default async function HomePage() {
   // Check authentication on server
@@ -18,5 +18,5 @@ export default async function HomePage() {
   const result = await getResumes();
   const resumes = result.success && result.data ? result.data : [];
 
-  return <ResumeList initialResumes={resumes} />;
+  return <ResumeDashboard initialResumes={resumes} />;
 }
