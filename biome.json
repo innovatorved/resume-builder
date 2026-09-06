@@ -1,25 +1,12 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.3.5/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.12/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
     "useIgnoreFile": true
   },
   "files": {
-    "includes": [
-      "app/**",
-      "components/**",
-      "hooks/**",
-      "lib/**",
-      "types/**",
-      "*.json",
-      "*.ts",
-      "*.tsx",
-      "*.js",
-      "*.jsx",
-      "*.mjs",
-      "*.css"
-    ],
+    "includes": ["src/**", "*.json", "*.ts", "*.tsx", "*.js", "*.jsx", "*.mjs", "*.css"],
     "ignoreUnknown": true
   },
   "formatter": {
@@ -68,7 +55,7 @@
   },
   "overrides": [
     {
-      "includes": ["*.mjs", "next.config.mjs", "postcss.config.mjs"],
+      "includes": ["*.mjs", "astro.config.mjs", "postcss.config.mjs"],
       "javascript": {
         "formatter": {
           "semicolons": "asNeeded"
@@ -76,7 +63,7 @@
       }
     },
     {
-      "includes": [".next/**", "node_modules/**", ".git/**"],
+      "includes": ["dist/**", ".astro/**", ".wrangler/**", "node_modules/**", ".git/**"],
       "formatter": {
         "enabled": false
       },

@@ -1,0 +1,49 @@
+---
+import { desc, eq } from "drizzle-orm";
+import { ResumeDashboard } from "@/components/resume-dashboard";
+import Layout from "@/layouts/Layout.astro";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { resume } from "@/lib/db/schema";
+import type { ResumeData } from "@/types/resume";
+
+const session = await auth.api.getSession({
+  headers: Astro.request.headers,
+});
+
+if (!session?.user) {
+  return Astro.redirect("/login");
+}
+
+function parseResumeData(data: unknown): ResumeData {
+  if (typeof data === "string") {
+    try {
+      return JSON.parse(data) as ResumeData;
+    } catch {
+      return data as unknown as ResumeData;
+    }
+  }
+  return data as ResumeData;
+}
+
+const userResumes = await db
+  .select({
+    id: resume.id,
+    name: resume.name,
+    data: resume.data,
+    createdAt: resume.createdAt,
+    updatedAt: resume.updatedAt,
+  })
+  .from(resume)
+  .where(eq(resume.userId, session.user.id))
+  .orderBy(desc(resume.updatedAt));
+
+const initialResumes = userResumes.map((r) => ({
+  ...r,
+  data: parseResumeData(r.data),
+}));
+---
+
+<Layout title="Dashboard | Resume Builder">
+  <ResumeDashboard client:load initialResumes={initialResumes} />
+</Layout>

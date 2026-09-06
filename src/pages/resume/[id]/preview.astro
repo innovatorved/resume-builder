@@ -1,0 +1,49 @@
+---
+import { and, eq } from "drizzle-orm";
+import { ResumePreviewPage } from "@/components/resume-preview-page";
+import Layout from "@/layouts/Layout.astro";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { resume } from "@/lib/db/schema";
+import type { ResumeData } from "@/types/resume";
+
+const session = await auth.api.getSession({
+  headers: Astro.request.headers,
+});
+
+if (!session?.user) {
+  return Astro.redirect("/login");
+}
+
+const { id } = Astro.params;
+
+if (!id) {
+  return Astro.redirect("/");
+}
+
+const [found] = await db
+  .select({
+    id: resume.id,
+    name: resume.name,
+    data: resume.data,
+    createdAt: resume.createdAt,
+    updatedAt: resume.updatedAt,
+  })
+  .from(resume)
+  .where(and(eq(resume.id, id), eq(resume.userId, session.user.id)))
+  .limit(1);
+
+if (!found) {
+  return Astro.redirect("/");
+}
+
+const rawData = typeof found.data === "string" ? JSON.parse(found.data) : found.data;
+const resumeData = {
+  ...found,
+  data: rawData as ResumeData,
+};
+---
+
+<Layout title={`Preview ${resumeData.name} | Resume Builder`}>
+  <ResumePreviewPage client:load resume={resumeData} />
+</Layout>
