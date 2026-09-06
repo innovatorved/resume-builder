@@ -92,18 +92,37 @@ if (!found) {
   return Astro.redirect("/");
 }
 
-// Fetch the latest saved version snapshot to preserve exact LaTeX code and history
-const [latestVersion] = await db
-  .select({
-    id: resumeVersion.id,
-    versionNumber: resumeVersion.versionNumber,
-    rawLatex: resumeVersion.rawLatex,
-    structuredData: resumeVersion.structuredData,
-  })
-  .from(resumeVersion)
-  .where(eq(resumeVersion.resumeId, id))
-  .orderBy(desc(resumeVersion.versionNumber))
-  .limit(1);
+// Fetch the version snapshot by currentVersionId first, then fallback to latest by number
+let latestVersion: { id: string; versionNumber: number; rawLatex: string | null; structuredData: unknown } | undefined;
+
+if (found.currentVersionId) {
+  const [byId] = await db
+    .select({
+      id: resumeVersion.id,
+      versionNumber: resumeVersion.versionNumber,
+      rawLatex: resumeVersion.rawLatex,
+      structuredData: resumeVersion.structuredData,
+    })
+    .from(resumeVersion)
+    .where(eq(resumeVersion.id, found.currentVersionId))
+    .limit(1);
+  latestVersion = byId;
+}
+
+if (!latestVersion) {
+  const [byNumber] = await db
+    .select({
+      id: resumeVersion.id,
+      versionNumber: resumeVersion.versionNumber,
+      rawLatex: resumeVersion.rawLatex,
+      structuredData: resumeVersion.structuredData,
+    })
+    .from(resumeVersion)
+    .where(eq(resumeVersion.resumeId, id))
+    .orderBy(desc(resumeVersion.versionNumber))
+    .limit(1);
+  latestVersion = byNumber;
+}
 
 const rawData = typeof found.data === "string" ? JSON.parse(found.data) : found.data;
 const initialResume = {

@@ -63,7 +63,7 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
       autoSaveTimerRef.current = setTimeout(async () => {
         setAutoSaveStatus("saving");
         try {
-          await fetch(`/api/resumes/${initialResume.id}`, {
+          const response = await fetch(`/api/resumes/${initialResume.id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -73,7 +73,13 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
               rawLatex: newSource,
             }),
           });
-          setAutoSaveStatus("saved");
+          if (response.ok) {
+            setAutoSaveStatus("saved");
+          } else {
+            const errBody = await response.json().catch(() => ({}));
+            console.warn("[AutoSave] Server error:", response.status, errBody);
+            setAutoSaveStatus("unsaved");
+          }
         } catch (err) {
           console.warn("[AutoSave] Failed to save draft:", err);
           setAutoSaveStatus("unsaved");
