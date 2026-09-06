@@ -127,8 +127,8 @@ export function AiAssistPanel({
           onClick={() => setActiveTab("tailor")}
           className={`flex-1 py-2.5 px-2 text-center font-medium border-b-2 transition-colors ${
             activeTab === "tailor"
-              ? "border-blue-500 text-blue-400 bg-blue-500/10"
-              : "border-transparent text-slate-400 hover:text-slate-200"
+              ? "border-white text-white bg-neutral-900"
+              : "border-transparent text-neutral-400 hover:text-neutral-200"
           }`}
         >
           Tailor to JD
@@ -138,8 +138,8 @@ export function AiAssistPanel({
           onClick={() => setActiveTab("bullet")}
           className={`flex-1 py-2.5 px-2 text-center font-medium border-b-2 transition-colors ${
             activeTab === "bullet"
-              ? "border-blue-500 text-blue-400 bg-blue-500/10"
-              : "border-transparent text-slate-400 hover:text-slate-200"
+              ? "border-white text-white bg-neutral-900"
+              : "border-transparent text-neutral-400 hover:text-neutral-200"
           }`}
         >
           Rewrite Bullet
@@ -200,7 +200,7 @@ export function AiAssistPanel({
             </div>
 
             <Button
-              className="w-full text-xs h-8 bg-blue-600 hover:bg-blue-500 text-white gap-1.5"
+              className="w-full text-xs h-8 bg-white text-black hover:bg-neutral-200 gap-1.5 font-medium"
               disabled={isTailoring || !jobDescription.trim()}
               onClick={handleTailor}
             >
@@ -309,8 +309,8 @@ export function AiAssistPanel({
                     onClick={() => setBulletMode(m)}
                     className={`py-1 text-[11px] rounded border transition-colors ${
                       bulletMode === m
-                        ? "bg-blue-600 text-white border-blue-500"
-                        : "bg-slate-800 text-slate-400 border-slate-700 hover:text-white"
+                        ? "bg-white text-black border-white font-medium"
+                        : "bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white"
                     }`}
                   >
                     {m === "xyz" ? "Google XYZ" : m === "impact" ? "Impact" : "Concise"}
@@ -320,18 +320,18 @@ export function AiAssistPanel({
             </div>
 
             <Button
-              className="w-full text-xs h-8 bg-blue-600 hover:bg-blue-500 text-white gap-1.5"
+              className="w-full text-xs h-8 bg-white text-black hover:bg-neutral-200 gap-1.5 font-medium"
               disabled={isRewriting || !bulletText.trim()}
               onClick={handleRewrite}
             >
               {isRewriting ? (
                 <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-black" />
                   Rewriting...
                 </>
               ) : (
                 <>
-                  <Wand2 className="w-3.5 h-3.5" />
+                  <Wand2 className="w-3.5 h-3.5 text-black" />
                   Enhance Bullet
                 </>
               )}
@@ -344,16 +344,16 @@ export function AiAssistPanel({
             )}
 
             {rewriteResult && (
-              <div className="space-y-2 pt-2 border-t border-slate-800">
-                <div className="p-3 bg-slate-800/80 border border-blue-500/40 rounded-lg">
-                  <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider block mb-1">
+              <div className="space-y-2 pt-2 border-t border-neutral-800">
+                <div className="p-3 bg-neutral-900 border border-neutral-700 rounded-lg">
+                  <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">
                     Recommended (High Impact)
                   </span>
-                  <p className="text-xs text-slate-200 leading-relaxed font-medium">
+                  <p className="text-xs text-neutral-200 leading-relaxed font-medium">
                     {rewriteResult.improved}
                   </p>
                   {rewriteResult.explanation && (
-                    <p className="text-[11px] text-slate-400 mt-1 italic">
+                    <p className="text-[11px] text-neutral-400 mt-1 italic">
                       {rewriteResult.explanation}
                     </p>
                   )}
@@ -361,14 +361,14 @@ export function AiAssistPanel({
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-6 text-[11px] px-2 text-slate-300"
+                      className="h-6 text-[11px] px-2 text-neutral-300 border-neutral-700"
                       onClick={() => navigator.clipboard.writeText(rewriteResult.improved)}
                     >
                       <Copy className="w-3 h-3 mr-1" /> Copy
                     </Button>
                     <Button
                       size="sm"
-                      className="h-6 text-[11px] px-2 bg-blue-600 hover:bg-blue-500 text-white"
+                      className="h-6 text-[11px] px-2 bg-white text-black hover:bg-neutral-200 font-medium"
                       onClick={() => onApplyBulletEdit(rewriteResult.improved)}
                     >
                       <Check className="w-3 h-3 mr-1" /> Apply
@@ -379,14 +379,14 @@ export function AiAssistPanel({
                 {rewriteResult.alternatives?.map((alt: string) => (
                   <div
                     key={alt}
-                    className="p-2.5 bg-slate-800/40 border border-slate-700/60 rounded-lg text-xs text-slate-300"
+                    className="p-2.5 bg-neutral-900/60 border border-neutral-800 rounded-lg text-xs text-neutral-300"
                   >
                     <p>{alt}</p>
                     <div className="mt-1.5 flex justify-end">
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-5 text-[10px] px-1.5 text-blue-400 hover:text-blue-300"
+                        className="h-5 text-[10px] px-1.5 text-neutral-300 hover:text-white"
                         onClick={() => onApplyBulletEdit(alt)}
                       >
                         Use this

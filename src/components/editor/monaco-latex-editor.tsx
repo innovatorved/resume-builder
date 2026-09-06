@@ -128,10 +128,10 @@ export function MonacoLatexEditor({ value, onChange, readOnly = false }: MonacoL
   };
 
   return (
-    <div className="w-full h-full relative flex flex-col bg-[#1e1e1e]">
+    <div className="w-full h-full relative flex flex-col bg-neutral-950">
       {/* File Tab Header */}
-      <div className="flex items-center px-4 py-1.5 bg-[#181818] border-b border-[#2d2d2d] text-xs select-none">
-        <div className="flex items-center gap-2 text-slate-300 bg-[#1e1e1e] px-3 py-1 rounded-t border-t-2 border-blue-500 font-mono text-[11px]">
+      <div className="flex items-center px-3 py-1 bg-neutral-950 border-b border-neutral-800 text-xs select-none">
+        <div className="flex items-center gap-2 text-neutral-200 bg-neutral-900 px-3 py-1 rounded-t border-t-2 border-white font-mono text-[11px]">
           <span>main.tex</span>
         </div>
       </div>
@@ -154,7 +154,7 @@ export function MonacoLatexEditor({ value, onChange, readOnly = false }: MonacoL
             minimap: { enabled: false },
             fontSize: 13,
             lineHeight: 20,
-            fontFamily: "'Geist Mono', 'Fira Code', Menlo, Monaco, monospace",
+            fontFamily: "'GeistMono', ui-monospace, SFMono-Regular, Menlo, Monaco, monospace",
             wordWrap: "on",
             scrollBeyondLastLine: false,
             smoothScrolling: true,

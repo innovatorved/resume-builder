@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
-import { generateLatex } from "@/lib/latex-generator";
 import { sanitizeRawLatex } from "@/lib/latex/escape";
+import { generateLatex } from "@/lib/latex-generator";
 import type { ResumeData } from "@/types/resume";
 
 export const POST: APIRoute = async ({ request }) => {

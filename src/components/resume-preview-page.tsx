@@ -54,10 +54,7 @@ export function ResumePreviewPage({ resume }: ResumePreviewPageProps) {
               Back
             </a>
 
-            <h1
-              className="text-lg font-medium text-foreground truncate font-semibold"
-              style={{ fontFamily: "var(--font-sans-heading)" }}
-            >
+            <h1 className="text-base sm:text-lg font-semibold tracking-tighter text-foreground truncate">
               {resume.name}
             </h1>
 

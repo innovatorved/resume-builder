@@ -92,50 +92,65 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 overflow-hidden">
-      <div className="w-full max-w-lg">
-        {/* Header */}
-        <div className="mb-12 animate-in fade-in slide-in-from-top-4 duration-500">
-          <p className="text-sm font-medium tracking-widest uppercase text-muted-foreground mb-6">
-            Resume Builder
+    <div className="min-h-screen bg-background flex items-center justify-center p-6 sm:p-8 overflow-hidden">
+      <div className="w-full max-w-md">
+        {/* Brand Header matching sso.vedgupta.in */}
+        <div className="flex items-center gap-3 mb-10">
+          <div className="flex items-center justify-center rounded-md shrink-0 h-10 w-10 border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900">
+            <VLogo className="shrink-0 h-5 w-5 text-black dark:text-white" />
+          </div>
+          <div>
+            <p className="text-base font-semibold tracking-tighter text-foreground">Ved Gupta</p>
+            <p className="text-[11px] text-neutral-500 uppercase tracking-widest font-medium">
+              Resume Studio
+            </p>
+          </div>
+        </div>
+
+        {/* Section Header */}
+        <div className="mb-8">
+          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-neutral-500 mb-2">
+            Sign In
           </p>
-          <h1 className="font-semibold text-5xl md:text-6xl text-foreground mb-3 tracking-tight">
+          <h1 className="text-3xl font-semibold tracking-tighter text-foreground mb-2 text-balance">
             Welcome back
           </h1>
-          <p className="text-muted-foreground text-lg">Sign in to continue crafting your resume.</p>
+          <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+            Sign in to continue crafting your LaTeX resume.
+          </p>
         </div>
 
         {/* Progress line */}
-        <div className="flex items-center gap-3 mb-8">
+        <div className="flex items-center gap-2 mb-8">
           <div
-            className={`h-0.5 transition-all duration-500 ease-out ${
-              currentStep === "email" ? "w-20 bg-primary" : "w-10 bg-border"
+            className={`h-0.5 transition-all duration-300 ${
+              currentStep === "email" ? "w-16 bg-foreground" : "w-8 bg-neutral-200 dark:bg-neutral-800"
             }`}
           />
           <div
-            className={`h-0.5 transition-all duration-500 ease-out ${
-              currentStep === "password" ? "w-20 bg-primary" : "w-10 bg-border"
+            className={`h-0.5 transition-all duration-300 ${
+              currentStep === "password" ? "w-16 bg-foreground" : "w-8 bg-neutral-200 dark:bg-neutral-800"
             }`}
           />
         </div>
 
         {/* Email Step */}
         <div
-          className={`transition-all duration-500 ${
+          className={`transition-all duration-300 ${
             currentStep === "email"
               ? "opacity-100 translate-x-0 relative"
               : "opacity-0 -translate-x-full absolute pointer-events-none"
           }`}
         >
           {/* VedGupta SSO Quick Sign-in */}
-          <div className="space-y-4 mb-8">
+          <div className="space-y-4 mb-6">
             <Button
               type="button"
               variant="outline"
               size="lg"
               onClick={handleSsoLogin}
               disabled={isSsoLoading || isLoading}
-              className="w-full h-12 text-base font-medium flex items-center justify-center gap-2.5 border-border hover:bg-accent/50 transition-all cursor-pointer"
+              className="w-full h-11 text-sm font-medium flex items-center justify-center gap-2.5 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 hover:bg-neutral-50 dark:hover:bg-neutral-900 text-black dark:text-white transition-colors cursor-pointer"
             >
               {isSsoLoading ? (
                 <>
@@ -144,26 +159,26 @@ export function LoginPage() {
                 </>
               ) : (
                 <>
-                  <VLogo className="h-5 w-5 text-foreground shrink-0" />
-                  Continue with VedGupta SSO
+                  <VLogo className="h-4 w-4 text-foreground shrink-0" />
+                  Continue with Ved Gupta SSO
                 </>
               )}
             </Button>
             <div className="relative flex items-center justify-center py-2">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border" />
+                <div className="w-full border-t border-neutral-200 dark:border-neutral-800" />
               </div>
-              <span className="relative bg-background px-3 text-xs uppercase tracking-widest text-muted-foreground">
+              <span className="relative bg-background px-3 text-[11px] uppercase tracking-widest text-neutral-500 font-medium">
                 or use email
               </span>
             </div>
           </div>
 
-          <form onSubmit={handleEmailNext} className="space-y-10">
-            <div className="space-y-4">
+          <form onSubmit={handleEmailNext} className="space-y-6">
+            <div className="space-y-2">
               <label
                 htmlFor="email"
-                className="text-sm font-medium tracking-wide text-foreground uppercase"
+                className="text-xs font-medium uppercase tracking-[0.14em] text-neutral-500"
               >
                 Email address
               </label>
@@ -173,24 +188,24 @@ export function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="h-14 text-lg border-0 border-b-2 border-border rounded-none bg-transparent focus:border-primary focus-visible:ring-0 transition-colors placeholder:text-muted-foreground/50"
+                className="h-11 text-sm border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 text-foreground rounded-md px-3.5 focus-visible:ring-2 focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 transition-colors"
                 autoFocus
                 onKeyPress={handleKeyPress}
                 required
               />
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between pt-2">
               <a
                 href="/register"
-                className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium underline underline-offset-4 decoration-border hover:decoration-foreground"
+                className="text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white transition-colors text-xs font-medium underline underline-offset-4 decoration-neutral-300 dark:decoration-neutral-700"
               >
                 Create an account
               </a>
               <Button
                 type="submit"
                 size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 h-12 text-base font-medium group transition-all cursor-pointer"
+                className="h-11 px-6 text-sm font-medium group transition-all"
                 disabled={!email}
               >
                 Continue
@@ -202,21 +217,21 @@ export function LoginPage() {
 
         {/* Password Step */}
         <div
-          className={`transition-all duration-500 ${
+          className={`transition-all duration-300 ${
             currentStep === "password"
               ? "opacity-100 translate-x-0 relative"
               : "opacity-0 translate-x-full absolute pointer-events-none"
           }`}
         >
-          <form onSubmit={handlePasswordSubmit} className="space-y-10">
-            <div className="space-y-4">
+          <form onSubmit={handlePasswordSubmit} className="space-y-6">
+            <div className="space-y-2">
               <label
                 htmlFor="password"
-                className="text-sm font-medium tracking-wide text-foreground uppercase"
+                className="text-xs font-medium uppercase tracking-[0.14em] text-neutral-500"
               >
                 Password
               </label>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-xs text-neutral-500">
                 Signing in as <span className="font-medium text-foreground">{email}</span>
               </p>
               <Input
@@ -225,20 +240,20 @@ export function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
-                className="h-14 text-lg border-0 border-b-2 border-border rounded-none bg-transparent focus:border-primary focus-visible:ring-0 transition-colors placeholder:text-muted-foreground/50"
+                className="h-11 text-sm border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 text-foreground rounded-md px-3.5 focus-visible:ring-2 focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 transition-colors"
                 autoFocus
                 required
                 disabled={isLoading}
               />
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between pt-2">
               <Button
                 type="button"
                 variant="ghost"
                 size="lg"
                 onClick={handleBack}
-                className="text-muted-foreground hover:text-foreground transition-colors group cursor-pointer"
+                className="h-11 text-xs text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white transition-colors group cursor-pointer"
                 disabled={isLoading}
               >
                 <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
@@ -247,7 +262,7 @@ export function LoginPage() {
               <Button
                 type="submit"
                 size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 h-12 text-base font-medium transition-all cursor-pointer"
+                className="h-11 px-6 text-sm font-medium transition-all cursor-pointer"
                 disabled={!password || isLoading}
               >
                 {isLoading ? (
@@ -266,10 +281,22 @@ export function LoginPage() {
           </form>
         </div>
 
-        {/* Footer */}
-        <p className="text-center text-xs text-muted-foreground mt-20">
-          By signing in, you agree to our Terms of Service and Privacy Policy
-        </p>
+        {/* Footer matching sso.vedgupta.in */}
+        <div className="mt-16 pt-6 border-t border-neutral-200 dark:border-neutral-800/80 text-center space-y-2">
+          <p className="text-xs text-neutral-500">
+            <a
+              href="https://sso.vedgupta.in"
+              target="_blank"
+              rel="noreferrer"
+              className="underline decoration-neutral-300 dark:decoration-neutral-700 underline-offset-4 hover:text-black dark:hover:text-white transition-colors"
+            >
+              sso.vedgupta.in
+            </a>
+          </p>
+          <p className="text-[11px] text-neutral-500">
+            © 2026 Ved Prakash Gupta · Resume Studio
+          </p>
+        </div>
       </div>
     </div>
   );

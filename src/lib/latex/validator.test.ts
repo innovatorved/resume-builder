@@ -37,7 +37,13 @@ Extra brace} here.
 \\item Test
 \\end{document}`;
     const errors = validateLatexSyntax(invalid);
-    expect(errors.some((e) => e.message.includes("Mismatched LaTeX environment") || e.message.includes("Unclosed LaTeX environment"))).toBe(true);
+    expect(
+      errors.some(
+        (e) =>
+          e.message.includes("Mismatched LaTeX environment") ||
+          e.message.includes("Unclosed LaTeX environment")
+      )
+    ).toBe(true);
   });
 
   it("detects mismatched end environment", () => {

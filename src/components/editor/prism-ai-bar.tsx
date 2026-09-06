@@ -133,17 +133,17 @@ export function PrismAiBar({
   };
 
   return (
-    <div className="border-t border-slate-800 bg-slate-950/95 backdrop-blur-md shadow-2xl flex flex-col z-30 transition-all">
+    <div className="border-t border-neutral-800 bg-neutral-950/98 backdrop-blur-md shadow-2xl flex flex-col z-30 transition-all font-sans">
       {/* Header bar */}
-      <div className="flex items-center justify-between px-3 py-1.5 border-b border-slate-900 bg-slate-900/60 text-xs">
+      <div className="flex items-center justify-between px-3.5 py-1.5 border-b border-neutral-900 bg-neutral-900/40 text-xs">
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 font-medium text-slate-200">
-            <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-            <span className="tracking-wide">Prism AI Assistant</span>
+          <div className="flex items-center gap-1.5 font-medium text-neutral-200">
+            <Sparkles className="w-3.5 h-3.5 text-neutral-400" />
+            <span className="tracking-tight font-semibold">Prism AI Copilot</span>
           </div>
 
-          <span className="text-[11px] text-slate-500 hidden sm:inline">
-            Directly refactors your LaTeX resume
+          <span className="text-[11px] text-neutral-500 hidden sm:inline">
+            Directly rewrites and optimizes LaTeX code
           </span>
 
           {hasCompileError && (
@@ -152,7 +152,7 @@ export function PrismAiBar({
               onClick={() =>
                 handleSubmit("Fix the LaTeX syntax and compilation errors in this document")
               }
-              className="ml-2 inline-flex items-center gap-1 text-[11px] bg-red-500/20 text-red-300 border border-red-500/30 px-2 py-0.5 rounded hover:bg-red-500/30 transition-colors"
+              className="ml-2 inline-flex items-center gap-1 text-[11px] bg-red-500/10 text-red-400 border border-red-500/30 px-2 py-0.5 rounded hover:bg-red-500/20 transition-colors"
             >
               <Wand2 className="w-3 h-3 text-red-400" />
               Fix LaTeX Error
@@ -163,7 +163,7 @@ export function PrismAiBar({
             <button
               type="button"
               onClick={handleUndo}
-              className="inline-flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 ml-2"
+              className="inline-flex items-center gap-1 text-[11px] text-neutral-400 hover:text-white ml-2 transition-colors"
             >
               <RotateCcw className="w-3 h-3" />
               Undo AI Edit
@@ -172,13 +172,13 @@ export function PrismAiBar({
         </div>
 
         <div className="flex items-center gap-1">
-          <kbd className="hidden md:inline-block px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-800 rounded border border-slate-700">
+          <kbd className="hidden md:inline-block px-1.5 py-0.5 text-[10px] font-mono text-neutral-400 bg-neutral-900 rounded border border-neutral-800">
             ⌘K
           </kbd>
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors ml-1"
+            className="p-1 rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900 transition-colors ml-1"
             title={isOpen ? "Minimize AI panel" : "Expand AI panel"}
           >
             {isOpen ? (
@@ -192,22 +192,22 @@ export function PrismAiBar({
 
       {/* Expanded Conversation History */}
       {isOpen && messages.length > 0 && (
-        <div className="max-h-48 overflow-y-auto p-3 space-y-2.5 text-xs border-b border-slate-900/80">
+        <div className="max-h-48 overflow-y-auto p-3 space-y-2.5 text-xs border-b border-neutral-900">
           {messages.map((m) => (
             <div
               key={m.id}
               className={`flex gap-2.5 ${m.role === "user" ? "justify-end" : "justify-start"}`}
             >
               {m.role === "assistant" && (
-                <div className="w-5 h-5 rounded-full bg-blue-600/30 border border-blue-500/50 flex items-center justify-center shrink-0 text-blue-400 mt-0.5">
+                <div className="w-5 h-5 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center shrink-0 text-neutral-300 mt-0.5">
                   <Sparkles className="w-3 h-3" />
                 </div>
               )}
               <div
-                className={`max-w-2xl px-3 py-2 rounded-lg leading-relaxed ${
+                className={`max-w-2xl px-3.5 py-2 rounded-lg leading-relaxed ${
                   m.role === "user"
-                    ? "bg-blue-600 text-white shadow"
-                    : "bg-slate-900 border border-slate-800 text-slate-200"
+                    ? "bg-white text-black font-medium shadow-sm"
+                    : "bg-neutral-900 border border-neutral-800 text-neutral-200"
                 }`}
               >
                 {m.content}
@@ -215,8 +215,8 @@ export function PrismAiBar({
             </div>
           ))}
           {isLoading && (
-            <div className="flex items-center gap-2 text-slate-400 text-xs italic">
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-400" />
+            <div className="flex items-center gap-2 text-neutral-400 text-xs italic">
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
               <span>Prism is rewriting and formatting LaTeX code...</span>
             </div>
           )}
@@ -226,15 +226,15 @@ export function PrismAiBar({
 
       {/* Quick Action Suggestion Chips */}
       {isOpen && (
-        <div className="px-3 pt-2 pb-1.5 flex items-center gap-1.5 overflow-x-auto text-[11px] no-scrollbar">
-          <span className="text-slate-500 shrink-0 font-medium">Quick actions:</span>
+        <div className="px-3.5 pt-2 pb-1.5 flex items-center gap-1.5 overflow-x-auto text-[11px] no-scrollbar">
+          <span className="text-neutral-500 shrink-0 font-medium">Quick actions:</span>
           {suggestedPrompts.map((chip) => (
             <button
               key={chip}
               type="button"
               disabled={isLoading}
               onClick={() => handleSubmit(chip)}
-              className="shrink-0 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 hover:border-slate-700 px-2.5 py-1 rounded-full transition-all flex items-center gap-1"
+              className="shrink-0 bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-neutral-800 hover:border-neutral-700 px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 cursor-pointer"
             >
               <span>{chip}</span>
             </button>
@@ -250,9 +250,9 @@ export function PrismAiBar({
               e.preventDefault();
               handleSubmit();
             }}
-            className="flex items-center gap-2 bg-slate-900/90 border border-slate-800 focus-within:border-blue-500/80 rounded-xl px-3 py-1.5 shadow-inner transition-colors"
+            className="flex items-center gap-2 bg-neutral-900/90 border border-neutral-800 focus-within:border-neutral-600 rounded-lg px-3 py-1.5 shadow-inner transition-colors"
           >
-            <Terminal className="w-4 h-4 text-slate-500 shrink-0" />
+            <Terminal className="w-4 h-4 text-neutral-500 shrink-0" />
             <input
               ref={inputRef}
               type="text"
@@ -260,18 +260,18 @@ export function PrismAiBar({
               onChange={(e) => setPrompt(e.target.value)}
               disabled={isLoading}
               placeholder="Ask Prism AI to edit, tailor to a job post, rewrite bullets, or fix LaTeX syntax..."
-              className="flex-1 bg-transparent text-xs sm:text-sm text-slate-100 placeholder:text-slate-500 outline-none"
+              className="flex-1 bg-transparent text-xs sm:text-sm text-neutral-100 placeholder:text-neutral-500 outline-none"
             />
             <Button
               type="submit"
               size="icon"
               disabled={isLoading || !prompt.trim()}
-              className="h-7 w-7 rounded-lg bg-blue-600 hover:bg-blue-500 text-white shrink-0 shadow transition-all disabled:opacity-40"
+              className="h-7 w-7 rounded-md bg-white text-black hover:bg-neutral-200 dark:bg-white dark:text-black dark:hover:bg-neutral-200 shrink-0 shadow transition-colors disabled:opacity-30"
             >
               {isLoading ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-black" />
               ) : (
-                <ArrowUp className="w-3.5 h-3.5" />
+                <ArrowUp className="w-3.5 h-3.5 text-black" />
               )}
             </Button>
           </form>
@@ -282,7 +282,7 @@ export function PrismAiBar({
               <button
                 type="button"
                 onClick={() => setErrorMessage(null)}
-                className="text-slate-400 hover:text-white ml-2"
+                className="text-neutral-400 hover:text-white ml-2"
               >
                 <X className="w-3 h-3" />
               </button>

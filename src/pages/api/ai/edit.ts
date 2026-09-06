@@ -1,8 +1,8 @@
 import type { APIRoute } from "astro";
+import { getGeminiClient, isGeminiConfigured } from "@/lib/ai/gemini-client";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { aiGeneration } from "@/lib/db/schema";
-import { getGeminiClient, isGeminiConfigured } from "@/lib/ai/gemini-client";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {

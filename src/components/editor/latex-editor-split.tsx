@@ -1,14 +1,7 @@
-import {
-  ArrowLeft,
-  ChevronDown,
-  Download,
-  FileCode,
-  History,
-  Loader2,
-  Save,
-} from "lucide-react";
+import { ArrowLeft, ChevronDown, Download, FileCode, History, Loader2, Save } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { VLogo } from "@/components/v-logo";
 import { useToast } from "@/hooks/use-toast";
 import { getTemplate, TEMPLATES } from "@/lib/templates";
 import { type CompileResult, latexCompiler } from "@/lib/wasm/compiler-bridge";
@@ -297,26 +290,26 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#0e0e10] text-slate-100 font-sans selection:bg-blue-600 selection:text-white">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-black text-white font-sans selection:bg-neutral-800 selection:text-white">
       {/* TOP PRISM NAVIGATION BAR */}
-      <header className="h-12 border-b border-[#232326] bg-[#141416] flex items-center justify-between px-3 z-20 select-none">
-        {/* Left: Back + Document Title */}
+      <header className="h-12 border-b border-neutral-800 bg-neutral-950 flex items-center justify-between px-3.5 z-20 select-none">
+        {/* Left: Brand Badge + Back + Document Title */}
         <div className="flex items-center gap-3">
           <a
             href="/"
-            className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-[#202024] transition-colors"
+            className="flex items-center justify-center rounded-md shrink-0 h-7 w-7 border border-neutral-800 bg-neutral-900 hover:bg-neutral-800 hover:border-neutral-700 text-white transition-colors"
             title="Back to Dashboard"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <VLogo className="shrink-0 h-3.5 w-3.5 text-white" />
           </a>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500 font-mono">resume /</span>
+            <span className="text-xs text-neutral-500 font-mono">resume /</span>
             <input
               type="text"
               value={resumeName}
               onChange={(e) => setResumeName(e.target.value)}
-              className="bg-transparent hover:bg-[#1e1e22] focus:bg-[#1e1e22] text-xs sm:text-sm font-semibold text-slate-100 px-2 py-1 rounded border border-transparent focus:border-[#38383e] outline-none transition-all w-48 sm:w-64"
+              className="bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 text-xs sm:text-sm font-semibold tracking-tight text-white px-2 py-1 rounded border border-transparent focus:border-neutral-700 outline-none transition-all w-48 sm:w-64"
               placeholder="Resume Title"
             />
           </div>
@@ -324,11 +317,11 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
 
         {/* Center: Template Switcher */}
         <div className="hidden sm:flex items-center gap-2">
-          <span className="text-[11px] text-slate-400">Template:</span>
+          <span className="text-[11px] text-neutral-400 font-medium">Template:</span>
           <select
             value={templateId}
             onChange={(e) => handleTemplateChange(e.target.value)}
-            className="bg-[#1c1c20] text-xs text-slate-200 border border-[#2e2e34] rounded-md px-2 py-1 outline-none hover:border-slate-500 cursor-pointer font-medium"
+            className="bg-neutral-900 text-xs text-neutral-200 border border-neutral-800 rounded-md px-2.5 py-1 outline-none hover:border-neutral-700 cursor-pointer font-medium transition-colors"
           >
             {Object.values(TEMPLATES).map((tpl) => (
               <option key={tpl.id} value={tpl.id}>
@@ -344,17 +337,17 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 text-xs text-slate-300 hover:text-white hover:bg-[#202024] gap-1.5"
+            className="h-8 text-xs text-neutral-300 hover:text-white hover:bg-neutral-900 gap-1.5 rounded-md"
             onClick={() => setShowVersionModal(true)}
           >
-            <History className="w-3.5 h-3.5 text-blue-400" />
+            <History className="w-3.5 h-3.5 text-neutral-400" />
             <span className="hidden md:inline">History</span>
           </Button>
 
           {/* Save Version Button */}
           <Button
             size="sm"
-            className="h-8 text-xs bg-blue-600 hover:bg-blue-500 text-white gap-1.5 shadow-sm transition-all"
+            className="h-8 text-xs bg-white text-black hover:bg-neutral-200 font-medium rounded-md gap-1.5 shadow-xs transition-colors"
             disabled={isSaving}
             onClick={() => handleSaveVersion()}
           >
@@ -376,28 +369,28 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
             <Button
               variant="outline"
               size="sm"
-              className="h-8 text-xs text-slate-300 border-[#2e2e34] bg-[#1c1c20] hover:bg-[#25252b] gap-1"
+              className="h-8 text-xs text-neutral-200 border-neutral-800 bg-neutral-900 hover:bg-neutral-800 gap-1 rounded-md"
             >
-              <Download className="w-3.5 h-3.5" />
+              <Download className="w-3.5 h-3.5 text-neutral-400" />
               <span>Export</span>
-              <ChevronDown className="w-3 h-3 text-slate-400" />
+              <ChevronDown className="w-3 h-3 text-neutral-400" />
             </Button>
 
-            <div className="absolute right-0 top-full mt-1 w-44 bg-[#18181c] border border-[#2e2e34] rounded-lg shadow-2xl py-1 hidden group-hover:block z-30 animate-in fade-in-50">
+            <div className="absolute right-0 top-full mt-1 w-48 bg-neutral-950 border border-neutral-800 rounded-md shadow-2xl py-1 hidden group-hover:block z-30 animate-in fade-in-50">
               <button
                 type="button"
                 onClick={handleDownloadPdf}
-                className="w-full text-left px-3 py-1.5 text-xs text-slate-200 hover:bg-[#24242a] flex items-center gap-2"
+                className="w-full text-left px-3 py-1.5 text-xs text-neutral-200 hover:bg-neutral-900 flex items-center gap-2 transition-colors"
               >
-                <Download className="w-3.5 h-3.5 text-blue-400" />
+                <Download className="w-3.5 h-3.5 text-neutral-400" />
                 Download PDF
               </button>
               <button
                 type="button"
                 onClick={handleDownloadTex}
-                className="w-full text-left px-3 py-1.5 text-xs text-slate-200 hover:bg-[#24242a] flex items-center gap-2"
+                className="w-full text-left px-3 py-1.5 text-xs text-neutral-200 hover:bg-neutral-900 flex items-center gap-2 transition-colors"
               >
-                <FileCode className="w-3.5 h-3.5 text-purple-400" />
+                <FileCode className="w-3.5 h-3.5 text-neutral-400" />
                 Download .tex Source
               </button>
             </div>
@@ -410,7 +403,7 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
         {/* Left Pane: Monaco Editor */}
         <div
           style={{ width: `${splitRatio}%` }}
-          className="h-full flex flex-col border-r border-[#232326] overflow-hidden bg-[#1e1e1e]"
+          className="h-full flex flex-col border-r border-neutral-800 overflow-hidden bg-neutral-950"
         >
           <MonacoLatexEditor value={latexSource} onChange={handleLatexChange} />
         </div>
@@ -419,12 +412,12 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
         <div
           aria-hidden="true"
           onMouseDown={handleMouseDown}
-          className="w-1.5 hover:w-2 bg-[#1c1c20] hover:bg-blue-500 cursor-col-resize transition-all z-10 select-none"
+          className="w-1 bg-neutral-900 hover:bg-neutral-600 hover:w-1.5 cursor-col-resize transition-all z-10 select-none"
           title="Drag to resize panes"
         />
 
         {/* Right Pane: Vector PDF Preview */}
-        <div className="flex-1 h-full overflow-hidden bg-[#141416]">
+        <div className="flex-1 h-full overflow-hidden bg-neutral-950">
           <PdfPreviewPane
             pdfData={pdfData}
             isCompiling={isCompiling}

@@ -1,9 +1,9 @@
 import type { APIRoute } from "astro";
 import { and, eq } from "drizzle-orm";
+import { getGeminiClient, isGeminiConfigured } from "@/lib/ai/gemini-client";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { aiGeneration, jobPost, resume } from "@/lib/db/schema";
-import { getGeminiClient, isGeminiConfigured } from "@/lib/ai/gemini-client";
 import type { ResumeData } from "@/types/resume";
 
 export const POST: APIRoute = async ({ request, locals }) => {
