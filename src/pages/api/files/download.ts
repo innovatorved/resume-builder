@@ -20,33 +20,53 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     const url = new URL(request.url);
     const versionId = url.searchParams.get("versionId");
+    const resumeId = url.searchParams.get("resumeId");
     const fileType = url.searchParams.get("fileType") || "pdf"; // pdf | source
     const redirect = url.searchParams.get("redirect") !== "false";
 
-    if (!versionId) {
-      return new Response(JSON.stringify({ success: false, error: "versionId is required" }), {
+    if (!versionId && !resumeId) {
+      return new Response(
+        JSON.stringify({ success: false, error: "versionId or resumeId is required" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    if (fileType !== "pdf" && fileType !== "source") {
+      return new Response(JSON.stringify({ success: false, error: "Invalid fileType" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    // Join version with resume to verify ownership
-    const [record] = await db
-      .select({
-        versionId: resumeVersion.id,
-        versionNumber: resumeVersion.versionNumber,
-        sourceKey: resumeVersion.sourceKey,
-        pdfKey: resumeVersion.pdfKey,
-        resumeName: resume.name,
-        userId: resume.userId,
-      })
-      .from(resumeVersion)
-      .innerJoin(resume, eq(resumeVersion.resumeId, resume.id))
-      .where(and(eq(resumeVersion.id, versionId), eq(resume.userId, session.user.id)))
-      .limit(1);
+    const fields = {
+      versionId: resumeVersion.id,
+      versionNumber: resumeVersion.versionNumber,
+      resumeId: resumeVersion.resumeId,
+      sourceKey: resumeVersion.sourceKey,
+      pdfKey: resumeVersion.pdfKey,
+      resumeName: resume.name,
+      userId: resume.userId,
+    };
+
+    const [record] = resumeId
+      ? await db
+          .select(fields)
+          .from(resume)
+          .innerJoin(resumeVersion, eq(resume.currentVersionId, resumeVersion.id))
+          .where(and(eq(resume.id, resumeId), eq(resume.userId, session.user.id)))
+          .limit(1)
+      : await db
+          .select(fields)
+          .from(resumeVersion)
+          .innerJoin(resume, eq(resumeVersion.resumeId, resume.id))
+          .where(and(eq(resumeVersion.id, versionId ?? ""), eq(resume.userId, session.user.id)))
+          .limit(1);
 
     if (!record) {
-      return new Response(JSON.stringify({ success: false, error: "Version not found" }), {
+      return new Response(JSON.stringify({ success: false, error: "Saved resume not found" }), {
         status: 404,
         headers: { "Content-Type": "application/json" },
       });
@@ -56,15 +76,31 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     if (!key) {
       return new Response(
-        JSON.stringify({ success: false, error: "File not available for this version" }),
+        JSON.stringify({
+          success: false,
+          error:
+            fileType === "pdf"
+              ? "No saved PDF is available. Open the resume and save it first."
+              : "File not available for this version",
+        }),
         { status: 404, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    const safeTitle = record.resumeName.toLowerCase().replace(/[^a-z0-9_-]/g, "-");
+    const expectedPrefix = `resumes/${session.user.id}/${record.resumeId}/${fileType}/`;
+    if (!key.startsWith(expectedPrefix)) {
+      return new Response(JSON.stringify({ success: false, error: "Invalid saved file" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const safeTitle = record.resumeName.toLowerCase().replace(/[^a-z0-9_-]/g, "-") || "resume";
     const filename = `${safeTitle}-v${record.versionNumber}.${fileType === "source" ? "tex" : "pdf"}`;
 
-    const env = (locals as any)?.runtime?.env || process.env;
+    const env =
+      (locals as { runtime?: { env?: Record<string, string | undefined> } }).runtime?.env ||
+      process.env;
 
     if (!isR2Configured(env)) {
       return new Response(

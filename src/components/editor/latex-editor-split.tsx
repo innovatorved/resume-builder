@@ -1,6 +1,15 @@
-import { ArrowLeft, ChevronDown, Code, Download, FileCode, FileText, History, Loader2, Save } from "lucide-react";
+import {
+  ChevronDown,
+  Code,
+  Download,
+  FileCode,
+  FileText,
+  History,
+  Loader2,
+  Save,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BrandLockup, ResumeMark } from "@/components/brand-lockup";
+import { ResumeMark } from "@/components/brand-lockup";
 import { Button } from "@/components/ui/button";
 import { VLogo } from "@/components/v-logo";
 import { useToast } from "@/hooks/use-toast";
@@ -149,9 +158,7 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
       setLatexSource(ver.rawLatex);
       runCompile(ver.rawLatex);
     } else if (ver.structuredData) {
-      const generated = generateCleanModern(
-        ver.structuredData as unknown as ResumeData
-      );
+      const generated = generateCleanModern(ver.structuredData as unknown as ResumeData);
       setLatexSource(generated);
       runCompile(generated);
     }
@@ -168,67 +175,55 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
     setIsSaving(true);
 
     try {
-      const versionTempId = crypto.randomUUID();
-      let sourceKey = `resumes/local/${initialResume.id}/source/${versionTempId}.tex`;
-      let pdfKey: string | null = null;
+      if (!pdfData) {
+        throw new Error("Wait for the resume to compile successfully before saving.");
+      }
 
-      // 1. Attempt presigned R2 upload for source
-      try {
-        const signSourceRes = await fetch("/api/files/sign-url", {
+      const versionTempId = crypto.randomUUID();
+      const uploadToR2 = async (
+        type: "source" | "pdf",
+        contentType: string,
+        extension: string,
+        body: BodyInit
+      ) => {
+        const signResponse = await fetch("/api/files/sign-url", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             resumeId: initialResume.id,
             versionId: versionTempId,
-            type: "source",
-            contentType: "application/x-latex",
-            extension: "tex",
+            type,
+            contentType,
+            extension,
           }),
         });
 
-        const signSourceData = await signSourceRes.json();
-        if (signSourceData.success && signSourceData.data?.uploadUrl) {
-          sourceKey = signSourceData.data.key;
-          await fetch(signSourceData.data.uploadUrl, {
-            method: "PUT",
-            headers: { "Content-Type": "application/x-latex" },
-            body: latexSource,
-          });
+        const signData = await signResponse.json().catch(() => ({}));
+        if (!signResponse.ok || !signData.success || !signData.data?.uploadUrl) {
+          throw new Error(signData.error || `Failed to prepare ${type} upload.`);
         }
-      } catch (uploadErr) {
-        console.warn("[SaveVersion] Cloudflare R2 upload skipped (using DB record):", uploadErr);
-      }
 
-      // 2. Attempt presigned R2 upload for compiled PDF if available
-      if (pdfData) {
-        try {
-          const signPdfRes = await fetch("/api/files/sign-url", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              resumeId: initialResume.id,
-              versionId: versionTempId,
-              type: "pdf",
-              contentType: "application/pdf",
-              extension: "pdf",
-            }),
-          });
-
-          const signPdfData = await signPdfRes.json();
-          if (signPdfData.success && signPdfData.data?.uploadUrl) {
-            pdfKey = signPdfData.data.key;
-            await fetch(signPdfData.data.uploadUrl, {
-              method: "PUT",
-              headers: { "Content-Type": "application/pdf" },
-              body: pdfData,
-            });
-          }
-        } catch (pdfUploadErr) {
-          console.warn("[SaveVersion] Cloudflare R2 PDF upload skipped:", pdfUploadErr);
+        const uploadResponse = await fetch(signData.data.uploadUrl, {
+          method: "PUT",
+          headers: { "Content-Type": contentType },
+          body,
+        });
+        if (!uploadResponse.ok) {
+          throw new Error(`Failed to upload ${type} to Cloudflare R2.`);
         }
-      }
 
-      // 3. Commit version to database
+        return signData.data.key as string;
+      };
+
+      const sourceKey = await uploadToR2("source", "application/x-latex", "tex", latexSource);
+      const pdfKey = await uploadToR2(
+        "pdf",
+        "application/pdf",
+        "pdf",
+        new Blob([pdfData as BlobPart], { type: "application/pdf" })
+      );
+
+      // Commit only after both R2 objects exist.
       const versionRes = await fetch("/api/versions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -243,6 +238,11 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
         }),
       });
 
+      const versionData = await versionRes.json().catch(() => ({}));
+      if (!versionRes.ok || !versionData.success) {
+        throw new Error(versionData.error || "Failed to record the saved version.");
+      }
+
       // Also ensure resume title and draft are synced to the resume row
       await fetch(`/api/resumes/${initialResume.id}`, {
         method: "PUT",
@@ -255,23 +255,14 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
         }),
       });
 
-      const versionData = await versionRes.json();
-
-      if (versionData.success) {
-        setCurrentVersionId(versionData.data.id);
-        toast({
-          title: "Version Saved",
-          description: `Version ${versionData.data.versionNumber} saved to version history.`,
-        });
-      } else {
-        toast({
-          title: "Saved Locally",
-          description: versionData.error || "Updated in database.",
-        });
-      }
+      setCurrentVersionId(versionData.data.id);
+      toast({
+        title: "Version Saved",
+        description: `Version ${versionData.data.versionNumber} saved to version history.`,
+      });
     } catch (err: unknown) {
       toast({
-        title: "Save Notice",
+        title: "Save failed",
         description: err instanceof Error ? err.message : "Failed to save version.",
         variant: "destructive",
       });
@@ -374,7 +365,9 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
               placeholder="Resume Title"
             />
             <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono border border-neutral-800 bg-neutral-900">
-              {autoSaveStatus === "saving" && <span className="text-amber-400 animate-pulse">saving...</span>}
+              {autoSaveStatus === "saving" && (
+                <span className="text-amber-400 animate-pulse">saving...</span>
+              )}
               {autoSaveStatus === "saved" && <span className="text-emerald-400">saved</span>}
               {autoSaveStatus === "unsaved" && <span className="text-neutral-400">unsaved</span>}
             </span>

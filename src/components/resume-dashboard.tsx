@@ -6,15 +6,11 @@ import {
   Copy,
   Download,
   Edit2,
-  Eye,
-  FileJson,
   FileText,
   GraduationCap,
   Loader2,
-  MoreVertical,
   Plus,
   Search,
-  Sparkles,
   Trash2,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -27,13 +23,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { createResume, deleteResume, duplicateResume, updateResume } from "@/lib/actions/resume";
-import { downloadCompiledPdf } from "@/lib/latex-generator";
+import { deleteResume, duplicateResume, updateResume } from "@/lib/actions/resume";
 import type { ResumeData } from "@/types/resume";
 
 interface Resume {
@@ -56,8 +49,6 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
   const [resumeToRename, setResumeToRename] = useState<Resume | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [descValue, setDescValue] = useState("");
-  const [showJsonDialog, setShowJsonDialog] = useState(false);
-  const [jsonInput, setJsonInput] = useState("");
   const { toast } = useToast();
 
   const navigate = (path: string) => {
@@ -137,9 +128,7 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
       if (result.success) {
         setResumes((prev) =>
           prev.map((r) =>
-            r.id === resumeToRename.id
-              ? { ...r, name: renameValue.trim(), data: updatedData }
-              : r
+            r.id === resumeToRename.id ? { ...r, name: renameValue.trim(), data: updatedData } : r
           )
         );
         toast({
@@ -195,80 +184,33 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
   const handleDownloadPDF = async (resumeItem: Resume) => {
     setIsDownloading(resumeItem.id);
     try {
-      await downloadCompiledPdf(resumeItem.data);
+      const response = await fetch(
+        `/api/files/download?resumeId=${encodeURIComponent(resumeItem.id)}&fileType=pdf&redirect=false`
+      );
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.success || !result.data?.downloadUrl) {
+        throw new Error(result.error || "Failed to download the saved PDF.");
+      }
+
+      const link = document.createElement("a");
+      link.href = result.data.downloadUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
       toast({
         title: "PDF Downloaded",
-        description: "LaTeX document compiled and downloaded successfully.",
+        description: "The latest saved resume was downloaded successfully.",
       });
-    } catch {
+    } catch (error) {
       toast({
         title: "Download failed",
-        description: "Failed to generate PDF from LaTeX. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to download the saved PDF.",
         variant: "destructive",
       });
     } finally {
       setIsDownloading(null);
     }
-  };
-
-  const handleImportFromJson = async () => {
-    try {
-      const parsed = JSON.parse(jsonInput);
-      const resumeName = parsed.personalInfo?.name
-        ? `${parsed.personalInfo.name}'s Resume`
-        : "Imported Resume";
-      const result = await createResume({ name: resumeName, data: parsed });
-
-      if (result.success && result.data) {
-        setResumes((prev) => [result.data, ...prev]);
-        setShowJsonDialog(false);
-        setJsonInput("");
-        toast({
-          title: "Resume imported",
-          description: `"${resumeName}" has been successfully imported.`,
-        });
-      }
-    } catch {
-      toast({
-        title: "Invalid JSON",
-        description: "Please check your JSON format and try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const content = e.target?.result as string;
-        const parsed = JSON.parse(content);
-        const resumeName = parsed.personalInfo?.name
-          ? `${parsed.personalInfo.name}'s Resume`
-          : file.name.replace(".json", "");
-        const result = await createResume({ name: resumeName, data: parsed });
-
-        if (result.success && result.data) {
-          setResumes((prev) => [result.data, ...prev]);
-          setShowJsonDialog(false);
-          toast({
-            title: "Resume imported",
-            description: "Your resume has been imported successfully.",
-          });
-        }
-      } catch {
-        toast({
-          title: "Invalid JSON file",
-          description: "Please verify that the uploaded file contains valid resume JSON.",
-          variant: "destructive",
-        });
-      }
-    };
-    reader.readAsText(file);
-    event.target.value = "";
   };
 
   return (
@@ -280,97 +222,6 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
             <BrandLockup size="md" showTagline={false} />
 
             <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-              {/* Import JSON modal trigger */}
-              <Dialog open={showJsonDialog} onOpenChange={setShowJsonDialog}>
-                <DialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 text-xs font-medium border-border/80 hover:bg-neutral-100 dark:hover:bg-neutral-900 gap-1.5 cursor-pointer"
-                  >
-                    <FileJson className="h-3.5 w-3.5 text-neutral-400" />
-                    <span className="hidden sm:inline">Import JSON</span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-xl max-h-[90vh] flex flex-col bg-neutral-950 border-neutral-800 text-neutral-100">
-                  <DialogHeader>
-                    <DialogTitle className="text-lg font-semibold tracking-tight text-white">
-                      Import Resume Data
-                    </DialogTitle>
-                    <p className="text-xs text-neutral-400 mt-1">
-                      Upload a JSON file or paste structured resume data to import into Resume Studio.
-                    </p>
-                  </DialogHeader>
-
-                  <div className="flex-1 overflow-y-auto space-y-4 py-2 text-xs">
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="json-file-input"
-                        className="text-[11px] font-medium text-neutral-400 uppercase tracking-wider"
-                      >
-                        Upload JSON File
-                      </label>
-                      <div className="border border-dashed border-neutral-800 rounded-lg p-6 hover:border-neutral-700 transition-colors bg-neutral-900/30">
-                        <div className="flex flex-col items-center justify-center text-center space-y-2">
-                          <FileJson className="h-7 w-7 text-neutral-500" />
-                          <p className="text-xs text-neutral-300">
-                            Select a .json file exported from standard resume schemas
-                          </p>
-                          <Input
-                            id="json-file-input"
-                            type="file"
-                            accept=".json"
-                            onChange={handleFileUpload}
-                            className="cursor-pointer max-w-[220px] text-xs h-8 bg-neutral-900 border-neutral-800 mt-2"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="relative flex items-center justify-center py-2">
-                      <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-neutral-800" />
-                      </div>
-                      <span className="relative bg-neutral-950 px-3 text-[10px] uppercase tracking-widest text-neutral-500 font-medium">
-                        or paste JSON
-                      </span>
-                    </div>
-
-                    <div className="space-y-1">
-                      <Textarea
-                        placeholder='{"personalInfo": {"name": "Alex Morgan", "title": "Senior Engineer", ...}}'
-                        value={jsonInput}
-                        onChange={(e) => setJsonInput(e.target.value)}
-                        className="min-h-[180px] font-mono text-xs leading-relaxed resize-none bg-neutral-900 border-neutral-800 text-neutral-200 focus-visible:ring-1 focus-visible:ring-neutral-400"
-                        spellCheck={false}
-                      />
-                    </div>
-                  </div>
-
-                  <DialogFooter className="gap-2 border-t border-neutral-800 pt-3">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setShowJsonDialog(false);
-                        setJsonInput("");
-                      }}
-                      className="text-neutral-400 hover:text-white"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={handleImportFromJson}
-                      disabled={!jsonInput.trim()}
-                      className="bg-white text-black hover:bg-neutral-200"
-                    >
-                      Import & Create
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-
               {/* Primary New Resume CTA */}
               <Button
                 onClick={() => navigate("/resume/new")}
@@ -428,26 +279,15 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
               No resumes yet
             </h3>
             <p className="text-xs text-muted-foreground mb-6 leading-relaxed">
-              Create your first professional resume using our interactive LaTeX studio, or import an
-              existing JSON document.
+              Create your first professional resume using our interactive LaTeX studio.
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <Button
-                onClick={() => navigate("/resume/new")}
-                className="bg-white text-black hover:bg-neutral-200 text-xs h-9 px-5 font-medium gap-1.5 cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Create First Resume</span>
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowJsonDialog(true)}
-                className="text-xs h-9 px-4 border-border cursor-pointer"
-              >
-                <FileJson className="w-3.5 h-3.5 mr-1 text-neutral-400" />
-                Import JSON
-              </Button>
-            </div>
+            <Button
+              onClick={() => navigate("/resume/new")}
+              className="bg-white text-black hover:bg-neutral-200 text-xs h-9 px-5 font-medium gap-1.5 cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Create First Resume</span>
+            </Button>
           </div>
         ) : filteredResumes.length === 0 ? (
           <div className="py-16 text-center text-muted-foreground text-xs space-y-2">
@@ -546,11 +386,14 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
                         {subtitle ? (
                           <>
                             <span className="truncate">{subtitle}</span>
-                            <span className="text-neutral-300 dark:text-neutral-700 hidden sm:inline">•</span>
+                            <span className="text-neutral-300 dark:text-neutral-700 hidden sm:inline">
+                              •
+                            </span>
                           </>
                         ) : null}
                         <span className="text-[11px] text-neutral-400 hidden sm:inline">
-                          Updated {new Date(item.updatedAt).toLocaleDateString("en-US", {
+                          Updated{" "}
+                          {new Date(item.updatedAt).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
                             year: "numeric",
@@ -662,10 +505,14 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
               </DialogHeader>
               <div className="py-3 space-y-3">
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-medium text-neutral-400 uppercase tracking-wider">
+                  <label
+                    htmlFor="resume-title"
+                    className="text-[11px] font-medium text-neutral-400 uppercase tracking-wider"
+                  >
                     Resume Title
                   </label>
                   <Input
+                    id="resume-title"
                     value={renameValue}
                     onChange={(e) => setRenameValue(e.target.value)}
                     placeholder="e.g. Full Stack Resume 2026"
@@ -674,10 +521,15 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-medium text-neutral-400 uppercase tracking-wider">
-                    Description / Target Role <span className="text-neutral-500 font-normal">(optional)</span>
+                  <label
+                    htmlFor="resume-target-role"
+                    className="text-[11px] font-medium text-neutral-400 uppercase tracking-wider"
+                  >
+                    Description / Target Role{" "}
+                    <span className="text-neutral-500 font-normal">(optional)</span>
                   </label>
                   <Input
+                    id="resume-target-role"
                     value={descValue}
                     onChange={(e) => setDescValue(e.target.value)}
                     placeholder="e.g. Senior Backend Engineer (leave blank to hide)"
