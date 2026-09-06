@@ -1,19 +1,31 @@
 import type { APIRoute } from "astro";
 import { generateLatex } from "@/lib/latex-generator";
+import { sanitizeRawLatex } from "@/lib/latex/escape";
 import type { ResumeData } from "@/types/resume";
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const data: ResumeData = await request.json();
+    const body = await request.json();
 
-    if (!data) {
-      return new Response(JSON.stringify({ error: "Resume data is required" }), {
+    if (!body) {
+      return new Response(JSON.stringify({ error: "Request payload is required" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    const texContent = generateLatex(data);
+    let texContent = "";
+    let resumeName = "resume";
+
+    if (body.rawLatex && typeof body.rawLatex === "string") {
+      texContent = sanitizeRawLatex(body.rawLatex);
+    } else {
+      const data = body as ResumeData;
+      texContent = generateLatex(data);
+      if (data.personalInfo?.name) {
+        resumeName = data.personalInfo.name.toLowerCase().replace(/\s+/g, "-");
+      }
+    }
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000);
@@ -48,9 +60,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     const pdfBuffer = await compileResponse.arrayBuffer();
 
-    const filename = data.personalInfo?.name
-      ? `${data.personalInfo.name.toLowerCase().replace(/\s+/g, "-")}-resume.pdf`
-      : "resume.pdf";
+    const filename = `${resumeName}-resume.pdf`;
 
     return new Response(pdfBuffer, {
       status: 200,

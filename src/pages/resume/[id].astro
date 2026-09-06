@@ -1,6 +1,6 @@
 ---
 import { and, eq } from "drizzle-orm";
-import { ResumeEditor } from "@/components/resume-editor";
+import { LatexEditorSplit } from "@/components/editor/latex-editor-split";
 import Layout from "@/layouts/Layout.astro";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -21,33 +21,96 @@ if (!id) {
   return Astro.redirect("/");
 }
 
-let initialResume;
+const DEFAULT_RESUME: ResumeData = {
+  personalInfo: {
+    name: "Alex Morgan",
+    title: "Senior Software Engineer",
+    phone: "+1 (555) 019-2834",
+    email: "alex.morgan@example.com",
+    linkedin: "linkedin.com/in/alexmorgan",
+    location: "San Francisco, CA",
+  },
+  summary:
+    "Results-driven Software Engineer with 6+ years of experience designing high-throughput distributed systems and cloud infrastructure.",
+  experience: [
+    {
+      company: "TechNova Inc.",
+      title: "Senior Backend Engineer",
+      location: "San Francisco, CA",
+      startDate: "2022",
+      endDate: "Present",
+      description: "Led core infrastructure scaling initiatives across distributed systems.",
+      responsibilities: [
+        "Architected distributed event-streaming platform using Kafka, reducing message latency by 45%",
+        "Scaled microservices from 10k to 120k requests/sec across multi-region Kubernetes clusters",
+      ],
+    },
+  ],
+  education: [
+    {
+      institution: "University of California, Berkeley",
+      degree: "B.S. in Computer Science",
+      location: "Berkeley, CA",
+      startDate: "2016",
+      endDate: "2020",
+    },
+  ],
+  skills: [
+    "Go",
+    "TypeScript",
+    "Node.js",
+    "Kubernetes",
+    "PostgreSQL",
+    "Kafka",
+    "Cloudflare Workers",
+    "AWS",
+  ],
+  certifications: [],
+  projects: [],
+  languages: [],
+};
 
-if (id !== "new") {
-  const [found] = await db
-    .select({
-      id: resume.id,
-      name: resume.name,
-      data: resume.data,
-      createdAt: resume.createdAt,
-      updatedAt: resume.updatedAt,
-    })
-    .from(resume)
-    .where(and(eq(resume.id, id), eq(resume.userId, session.user.id)))
-    .limit(1);
-
-  if (!found) {
-    return Astro.redirect("/");
-  }
-
-  const rawData = typeof found.data === "string" ? JSON.parse(found.data) : found.data;
-  initialResume = {
-    ...found,
-    data: rawData as ResumeData,
-  };
+// If navigating to /resume/new, create a new resume immediately and redirect to its ID
+if (id === "new") {
+  const newId = crypto.randomUUID();
+  const now = new Date();
+  await db.insert(resume).values({
+    id: newId,
+    userId: session.user.id,
+    name: "New Resume",
+    data: DEFAULT_RESUME,
+    templateId: "clean-modern",
+    createdAt: now,
+    updatedAt: now,
+  });
+  return Astro.redirect(`/resume/${newId}`);
 }
+
+const [found] = await db
+  .select({
+    id: resume.id,
+    name: resume.name,
+    data: resume.data,
+    templateId: resume.templateId,
+    currentVersionId: resume.currentVersionId,
+    createdAt: resume.createdAt,
+    updatedAt: resume.updatedAt,
+  })
+  .from(resume)
+  .where(and(eq(resume.id, id), eq(resume.userId, session.user.id)))
+  .limit(1);
+
+if (!found) {
+  return Astro.redirect("/");
+}
+
+const rawData = typeof found.data === "string" ? JSON.parse(found.data) : found.data;
+const initialResume = {
+  ...found,
+  data: (rawData || DEFAULT_RESUME) as ResumeData,
+};
 ---
 
-<Layout title={initialResume ? `Edit ${initialResume.name} | Resume Builder` : "New Resume | Resume Builder"}>
-  <ResumeEditor client:load initialResume={initialResume} />
+<Layout title={`${initialResume.name} | LaTeX Resume Studio`}>
+  <LatexEditorSplit client:only="react" initialResume={initialResume} />
 </Layout>

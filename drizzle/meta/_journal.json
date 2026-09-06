@@ -8,6 +8,13 @@
       "when": 1788673495532,
       "tag": "0000_jazzy_clint_barton",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1788678029961,
+      "tag": "0001_ordinary_genesis",
+      "breakpoints": true
     }
   ]
 }
