@@ -1,15 +1,33 @@
 import { GoogleGenAI } from "@google/genai";
 
-export function getGeminiApiKey(env?: Record<string, string | undefined>): string | null {
-  return env?.GEMINI_API_KEY || process.env.GEMINI_API_KEY || null;
+// biome-ignore lint/suspicious/noExplicitAny: Environment bindings can come from multiple runtimes
+export function getGeminiApiKey(contextOrEnv?: any): string | null {
+  const env =
+    contextOrEnv?.locals?.runtime?.env ||
+    contextOrEnv?.runtime?.env ||
+    contextOrEnv?.env ||
+    contextOrEnv;
+
+  const key =
+    env?.GEMINI_API_KEY ||
+    (typeof process !== "undefined" && process.env?.GEMINI_API_KEY) ||
+    (typeof import.meta !== "undefined" && (import.meta as any).env?.GEMINI_API_KEY) ||
+    (globalThis as any)?.__env__?.GEMINI_API_KEY ||
+    (globalThis as any)?.env?.GEMINI_API_KEY ||
+    (globalThis as any)?.GEMINI_API_KEY ||
+    null;
+
+  return key;
 }
 
-export function isGeminiConfigured(env?: Record<string, string | undefined>): boolean {
-  return Boolean(getGeminiApiKey(env));
+// biome-ignore lint/suspicious/noExplicitAny: Environment bindings can come from multiple runtimes
+export function isGeminiConfigured(contextOrEnv?: any): boolean {
+  return Boolean(getGeminiApiKey(contextOrEnv));
 }
 
-export function getGeminiClient(env?: Record<string, string | undefined>): GoogleGenAI {
-  const apiKey = getGeminiApiKey(env);
+// biome-ignore lint/suspicious/noExplicitAny: Environment bindings can come from multiple runtimes
+export function getGeminiClient(contextOrEnv?: any): GoogleGenAI {
+  const apiKey = getGeminiApiKey(contextOrEnv);
   if (!apiKey) {
     throw new Error(
       "GEMINI_API_KEY is not configured. Please set GEMINI_API_KEY in your Cloudflare secrets or environment."

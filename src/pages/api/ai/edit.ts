@@ -27,9 +27,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    const env = (locals as any)?.runtime?.env || process.env;
+    const env = (locals as any)?.runtime?.env || locals || process.env;
 
-    if (!isGeminiConfigured(env)) {
+    if (!isGeminiConfigured(locals) && !isGeminiConfigured(env)) {
       return new Response(
         JSON.stringify({
           success: false,

@@ -1,5 +1,6 @@
 import { ArrowRight, Loader2, ShieldCheck } from "lucide-react";
 import { useState } from "react";
+import { BrandLockup } from "@/components/brand-lockup";
 import { Button } from "@/components/ui/button";
 import { VLogo } from "@/components/v-logo";
 import { useToast } from "@/hooks/use-toast";
@@ -30,18 +31,8 @@ export function RegisterPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6 sm:p-8 overflow-hidden">
       <div className="w-full max-w-md">
-        {/* Brand Header matching sso.vedgupta.in */}
-        <div className="flex items-center gap-3 mb-10">
-          <div className="flex items-center justify-center rounded-md shrink-0 h-10 w-10 border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900">
-            <VLogo className="shrink-0 h-5 w-5 text-black dark:text-white" />
-          </div>
-          <div>
-            <p className="text-base font-semibold tracking-tighter text-foreground">Ved Gupta</p>
-            <p className="text-[11px] text-neutral-500 uppercase tracking-widest font-medium">
-              Resume Studio
-            </p>
-          </div>
-        </div>
+        {/* Brand Header: VD x Resume Builder */}
+        <BrandLockup size="lg" className="mb-10" />
 
         {/* Section Header */}
         <div className="mb-8">

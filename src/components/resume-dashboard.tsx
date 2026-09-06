@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { BrandLockup } from "@/components/brand-lockup";
 import { VLogo } from "@/components/v-logo";
 import { useToast } from "@/hooks/use-toast";
 import { createResume, deleteResume, duplicateResume, updateResume } from "@/lib/actions/resume";
@@ -215,14 +216,7 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
       <header className="border-b border-border bg-background sticky top-0 z-40">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center rounded-md shrink-0 h-8 w-8 border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900">
-                <VLogo className="shrink-0 h-4 w-4 text-black dark:text-white" />
-              </div>
-              <h1 className="text-base sm:text-lg text-foreground font-semibold tracking-tighter truncate">
-                Resume Builder
-              </h1>
-            </div>
+            <BrandLockup size="md" showTagline={false} />
             <div className="flex items-center gap-2 sm:gap-5 flex-shrink-0">
               <Dialog open={showJsonDialog} onOpenChange={setShowJsonDialog}>
                 <DialogTrigger asChild>

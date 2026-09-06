@@ -1,14 +1,16 @@
-import { ArrowLeft, ChevronDown, Download, FileCode, History, Loader2, Save } from "lucide-react";
+import { ArrowLeft, ChevronDown, Code, Download, FileCode, FileText, History, Loader2, Save } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { BrandLockup, ResumeMark } from "@/components/brand-lockup";
 import { Button } from "@/components/ui/button";
 import { VLogo } from "@/components/v-logo";
 import { useToast } from "@/hooks/use-toast";
-import { getTemplate, TEMPLATES } from "@/lib/templates";
+import { generateCleanModern } from "@/lib/templates";
 import { type CompileResult, latexCompiler } from "@/lib/wasm/compiler-bridge";
 import type { ResumeData } from "@/types/resume";
 import { MonacoLatexEditor } from "./monaco-latex-editor";
 import { PdfPreviewPane } from "./pdf-preview-pane";
 import { PrismAiBar } from "./prism-ai-bar";
+import { StructuredFormEditor } from "./structured-form-editor";
 import { VersionHistoryModal, type VersionItem } from "./version-history-modal";
 
 interface LatexEditorSplitProps {
@@ -25,7 +27,7 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
   const { toast } = useToast();
 
   const [resumeName, setResumeName] = useState(initialResume.name || "Untitled Resume");
-  const [templateId, setTemplateId] = useState(initialResume.templateId || "clean-modern");
+  const [leftViewMode, setLeftViewMode] = useState<"code" | "form">("code");
   const [structuredData, setStructuredData] = useState<ResumeData>(initialResume.data);
   const [currentVersionId, setCurrentVersionId] = useState<string | undefined>(
     initialResume.currentVersionId || undefined
@@ -33,7 +35,7 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
 
   // LaTeX source string
   const [latexSource, setLatexSource] = useState(() => {
-    return getTemplate(templateId).generate(initialResume.data);
+    return generateCleanModern(initialResume.data);
   });
 
   // Compilation state
@@ -72,10 +74,10 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
     runCompile(latexSource);
   }, [runCompile, latexSource]);
 
-  // Update LaTeX when template changes
-  const handleTemplateChange = (newTemplateId: string) => {
-    setTemplateId(newTemplateId);
-    const newSource = getTemplate(newTemplateId).generate(structuredData);
+  // Update LaTeX when structured form data changes
+  const handleFormDataChange = (newData: ResumeData) => {
+    setStructuredData(newData);
+    const newSource = generateCleanModern(newData);
     setLatexSource(newSource);
     runCompile(newSource);
   };
@@ -106,7 +108,7 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
       setLatexSource(ver.rawLatex);
       runCompile(ver.rawLatex);
     } else if (ver.structuredData) {
-      const generated = getTemplate(templateId).generate(
+      const generated = generateCleanModern(
         ver.structuredData as unknown as ResumeData
       );
       setLatexSource(generated);
@@ -297,10 +299,12 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
         <div className="flex items-center gap-3">
           <a
             href="/"
-            className="flex items-center justify-center rounded-md shrink-0 h-7 w-7 border border-neutral-800 bg-neutral-900 hover:bg-neutral-800 hover:border-neutral-700 text-white transition-colors"
+            className="flex items-center gap-1.5 px-2 py-1 rounded-md border border-neutral-800 bg-neutral-900 hover:bg-neutral-800 hover:border-neutral-700 text-white transition-colors"
             title="Back to Dashboard"
           >
             <VLogo className="shrink-0 h-3.5 w-3.5 text-white" />
+            <span className="text-neutral-500 font-mono text-[10px]">✕</span>
+            <ResumeMark className="shrink-0 h-3.5 w-3.5 text-white" />
           </a>
 
           <div className="flex items-center gap-2">
@@ -315,20 +319,32 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
           </div>
         </div>
 
-        {/* Center: Template Switcher */}
-        <div className="hidden sm:flex items-center gap-2">
-          <span className="text-[11px] text-neutral-400 font-medium">Template:</span>
-          <select
-            value={templateId}
-            onChange={(e) => handleTemplateChange(e.target.value)}
-            className="bg-neutral-900 text-xs text-neutral-200 border border-neutral-800 rounded-md px-2.5 py-1 outline-none hover:border-neutral-700 cursor-pointer font-medium transition-colors"
+        {/* Center: View Switcher (LaTeX Code vs Form Builder) */}
+        <div className="flex items-center p-0.5 bg-neutral-900 border border-neutral-800 rounded-lg">
+          <button
+            type="button"
+            onClick={() => setLeftViewMode("code")}
+            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${
+              leftViewMode === "code"
+                ? "bg-white text-black shadow-xs font-semibold"
+                : "text-neutral-400 hover:text-white"
+            }`}
           >
-            {Object.values(TEMPLATES).map((tpl) => (
-              <option key={tpl.id} value={tpl.id}>
-                {tpl.name}
-              </option>
-            ))}
-          </select>
+            <Code className="w-3.5 h-3.5" />
+            <span>LaTeX Code</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setLeftViewMode("form")}
+            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${
+              leftViewMode === "form"
+                ? "bg-white text-black shadow-xs font-semibold"
+                : "text-neutral-400 hover:text-white"
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>Form Builder</span>
+          </button>
         </div>
 
         {/* Right: Actions */}
@@ -400,12 +416,16 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
 
       {/* MAIN SPLIT-PANE BODY */}
       <div className="flex-1 flex overflow-hidden relative">
-        {/* Left Pane: Monaco Editor */}
+        {/* Left Pane: Monaco Editor or Form Builder */}
         <div
           style={{ width: `${splitRatio}%` }}
           className="h-full flex flex-col border-r border-neutral-800 overflow-hidden bg-neutral-950"
         >
-          <MonacoLatexEditor value={latexSource} onChange={handleLatexChange} />
+          {leftViewMode === "code" ? (
+            <MonacoLatexEditor value={latexSource} onChange={handleLatexChange} />
+          ) : (
+            <StructuredFormEditor data={structuredData} onChange={handleFormDataChange} />
+          )}
         </div>
 
         {/* Resizer Divider */}

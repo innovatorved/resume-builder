@@ -1,6 +1,6 @@
 import Editor, { type Monaco, type OnMount } from "@monaco-editor/react";
-import { useCallback, useEffect, useRef } from "react";
-import { validateLatexSyntax } from "@/lib/latex/validator";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { type SyntaxMarker, validateLatexSyntax } from "@/lib/latex/validator";
 
 interface MonacoLatexEditorProps {
   value: string;
@@ -11,13 +11,16 @@ interface MonacoLatexEditorProps {
 export function MonacoLatexEditor({ value, onChange, readOnly = false }: MonacoLatexEditorProps) {
   const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
+  const [syntaxIssues, setSyntaxIssues] = useState<SyntaxMarker[]>([]);
 
   const updateSyntaxMarkers = useCallback((code: string) => {
+    const issues = validateLatexSyntax(code);
+    setSyntaxIssues(issues);
+
     if (!editorRef.current || !monacoRef.current) return;
     const model = editorRef.current.getModel();
     if (!model) return;
 
-    const issues = validateLatexSyntax(code);
     const markers = issues.map((issue) => ({
       startLineNumber: issue.startLineNumber,
       startColumn: issue.startColumn,
@@ -41,7 +44,163 @@ export function MonacoLatexEditor({ value, onChange, readOnly = false }: MonacoL
     editorRef.current = editor;
     monacoRef.current = monaco;
 
-    // Register custom LaTeX completions
+    // Register LaTeX language if not already registered
+    const existingLangs = monaco.languages.getLanguages();
+    if (!existingLangs.some((l) => l.id === "latex")) {
+      monaco.languages.register({ id: "latex" });
+    }
+
+    // Language configuration for brackets, comments, and auto-closing
+    monaco.languages.setLanguageConfiguration("latex", {
+      comments: {
+        lineComment: "%",
+      },
+      brackets: [
+        ["{", "}"],
+        ["[", "]"],
+        ["(", ")"],
+      ],
+      autoClosingPairs: [
+        { open: "{", close: "}" },
+        { open: "[", close: "]" },
+        { open: "(", close: ")" },
+        { open: "$", close: "$" },
+        { open: '"', close: '"' },
+      ],
+      surroundingPairs: [
+        { open: "{", close: "}" },
+        { open: "[", close: "]" },
+        { open: "(", close: ")" },
+        { open: "$", close: "$" },
+      ],
+    });
+
+    // Monarch syntax tokenizer for rich LaTeX syntax highlighting
+    monaco.languages.setMonarchTokensProvider("latex", {
+      defaultToken: "",
+      tokenPostfix: ".latex",
+
+      keywords: [
+        "documentclass",
+        "usepackage",
+        "begin",
+        "end",
+        "item",
+        "section",
+        "subsection",
+        "subsubsection",
+        "paragraph",
+        "textbf",
+        "textit",
+        "textsc",
+        "textsf",
+        "texttt",
+        "underline",
+        "emph",
+        "href",
+        "url",
+        "vspace",
+        "hspace",
+        "hfill",
+        "vfill",
+        "definecolor",
+        "color",
+        "titleformat",
+        "titlespacing",
+        "pagestyle",
+        "urlstyle",
+        "setlength",
+        "parindent",
+        "Huge",
+        "huge",
+        "LARGE",
+        "Large",
+        "large",
+        "normalsize",
+        "small",
+        "footnotesize",
+        "scriptsize",
+        "tiny",
+        "titlerule",
+        "centering",
+        "raggedright",
+        "bfseries",
+        "scshape",
+      ],
+
+      tokenizer: {
+        root: [
+          // Comments
+          [/%.*$/, "comment"],
+
+          // Math mode inline & display
+          [/\$\$[^$]*\$\$/, "string.math"],
+          [/\$[^$]*\$/, "string.math"],
+
+          // Environment declarations
+          [
+            /(\\begin)(\s*\{)([^}]+)(\})/,
+            ["keyword", "delimiter.curly", "type.identifier", "delimiter.curly"],
+          ],
+          [
+            /(\\end)(\s*\{)([^}]+)(\})/,
+            ["keyword", "delimiter.curly", "type.identifier", "delimiter.curly"],
+          ],
+
+          // Commands with backslash
+          [
+            /\\([a-zA-Z@]+)/,
+            {
+              cases: {
+                "@keywords": "keyword",
+                "@default": "tag",
+              },
+            },
+          ],
+
+          // Escaped characters: \%, \&, \$, \_, \#, etc.
+          [/\\[%&$_#{}]/, "constant.character.escape"],
+
+          // Line break
+          [/\\\\/, "keyword.operator"],
+
+          // Brackets and braces
+          [/[{}()[\]]/, "@brackets"],
+
+          // Whitespace
+          [/\s+/, "white"],
+        ],
+      },
+    });
+
+    // Custom dark theme for LaTeX matching VS Code & sso.vedgupta.in
+    monaco.editor.defineTheme("latex-theme", {
+      base: "vs-dark",
+      inherit: true,
+      rules: [
+        { token: "comment", foreground: "6A9955", fontStyle: "italic" },
+        { token: "keyword", foreground: "C586C0", fontStyle: "bold" },
+        { token: "tag", foreground: "4EC9B0" },
+        { token: "type.identifier", foreground: "4FC1FF", fontStyle: "bold" },
+        { token: "string.math", foreground: "CE9178" },
+        { token: "constant.character.escape", foreground: "D7BA7D" },
+        { token: "keyword.operator", foreground: "D4D4D4", fontStyle: "bold" },
+        { token: "delimiter.curly", foreground: "FFD700" },
+      ],
+      colors: {
+        "editor.background": "#0a0a0a",
+        "editor.foreground": "#e5e5e5",
+        "editorLineNumber.foreground": "#525252",
+        "editorLineNumber.activeForeground": "#ffffff",
+        "editorCursor.foreground": "#ffffff",
+        "editor.lineHighlightBackground": "#171717",
+        "editor.selectionBackground": "#262626",
+      },
+    });
+
+    monaco.editor.setTheme("latex-theme");
+
+    // Register custom LaTeX snippet completions
     monaco.languages.registerCompletionItemProvider("latex", {
       provideCompletionItems: (model, position) => {
         const word = model.getWordUntilPosition(position);
@@ -131,12 +290,48 @@ export function MonacoLatexEditor({ value, onChange, readOnly = false }: MonacoL
     updateSyntaxMarkers(value);
   };
 
+  const jumpToFirstError = () => {
+    const first = syntaxIssues[0];
+    if (first && editorRef.current) {
+      editorRef.current.revealLineInCenter(first.startLineNumber);
+      editorRef.current.setPosition({
+        lineNumber: first.startLineNumber,
+        column: first.startColumn,
+      });
+      editorRef.current.focus();
+    }
+  };
+
   return (
     <div className="w-full h-full relative flex flex-col bg-neutral-950">
-      {/* File Tab Header */}
-      <div className="flex items-center px-3 py-1 bg-neutral-950 border-b border-neutral-800 text-xs select-none">
-        <div className="flex items-center gap-2 text-neutral-200 bg-neutral-900 px-3 py-1 rounded-t border-t-2 border-white font-mono text-[11px]">
-          <span>main.tex</span>
+      {/* File Tab Header & Real-time Type Check / Syntax Status */}
+      <div className="flex items-center justify-between px-3 py-1.5 bg-neutral-950 border-b border-neutral-800 text-xs select-none">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 text-neutral-200 bg-neutral-900 px-2.5 py-1 rounded border border-neutral-800 font-mono text-[11px]">
+            <span>main.tex</span>
+          </div>
+        </div>
+
+        {/* Real-time Syntax & Type Check Status Indicator */}
+        <div className="flex items-center gap-2">
+          {syntaxIssues.length === 0 ? (
+            <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 bg-emerald-950/40 border border-emerald-800/50 px-2.5 py-0.5 rounded-full font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <span>LaTeX Valid</span>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={jumpToFirstError}
+              className="flex items-center gap-1.5 text-[11px] text-red-400 bg-red-950/40 border border-red-800/60 px-2.5 py-0.5 rounded-full font-mono hover:bg-red-950/70 transition-colors cursor-pointer"
+              title={syntaxIssues.map((s) => `Line ${s.startLineNumber}: ${s.message}`).join("\n")}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
+              <span>
+                {syntaxIssues.length} Syntax Error{syntaxIssues.length > 1 ? "s" : ""} (Click to jump)
+              </span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -145,7 +340,7 @@ export function MonacoLatexEditor({ value, onChange, readOnly = false }: MonacoL
           height="100%"
           defaultLanguage="latex"
           language="latex"
-          theme="vs-dark"
+          theme="latex-theme"
           value={value}
           onChange={(val) => {
             const newVal = val || "";

@@ -27,14 +27,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
 
-    interface RuntimeLocals {
-      runtime?: {
-        env?: Record<string, string>;
-      };
-    }
-    const env = (locals as RuntimeLocals)?.runtime?.env || process.env;
+    const env = (locals as any)?.runtime?.env || locals || process.env;
 
-    if (!isGeminiConfigured(env)) {
+    if (!isGeminiConfigured(locals) && !isGeminiConfigured(env)) {
       return new Response(
         JSON.stringify({
           success: false,
@@ -46,7 +41,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    const ai = getGeminiClient(env);
+    const ai = getGeminiClient(locals) || getGeminiClient(env);
 
     const systemInstruction = `You are an expert AI resume assistant and LaTeX typesetter inside an interactive LaTeX Resume Studio.
 You have FULL ACCESS to the user's active LaTeX document.
