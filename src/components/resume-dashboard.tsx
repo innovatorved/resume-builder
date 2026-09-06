@@ -439,8 +439,14 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
             </Button>
           </div>
         ) : (
-          /* Resume Grid Cards */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+          /* Resume Single-Row List */
+          <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950/60 divide-y divide-neutral-200 dark:divide-neutral-800/80 overflow-hidden shadow-xs">
+            {/* Header row for table/list clarity */}
+            <div className="hidden sm:flex items-center justify-between px-5 py-2.5 bg-neutral-50/70 dark:bg-neutral-900/40 text-[11px] font-medium text-neutral-400 uppercase tracking-wider">
+              <span>Resume Document</span>
+              <span>Updated & Actions</span>
+            </div>
+
             {filteredResumes.map((item) => {
               const expCount = item.data?.experience?.length || 0;
               const eduCount = item.data?.education?.length || 0;
@@ -451,80 +457,70 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
               return (
                 <div
                   key={item.id}
-                  className="group relative flex flex-col justify-between rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950/60 hover:border-neutral-400 dark:hover:border-neutral-700 shadow-xs hover:shadow-md transition-all duration-200 overflow-hidden"
+                  className="group flex flex-col md:flex-row md:items-center justify-between p-4 sm:px-5 sm:py-3.5 hover:bg-neutral-50/80 dark:hover:bg-neutral-900/40 transition-colors gap-3 md:gap-4"
                 >
-                  {/* Card Top: Title & Controls */}
-                  <div className="p-4 sm:p-5 pb-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
+                  {/* Left Column: Icon + Name + Subtitle + Metadata Badges */}
+                  <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
+                    <div className="w-9 h-9 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center text-neutral-500 shrink-0 group-hover:border-neutral-300 dark:group-hover:border-neutral-700 transition-colors">
+                      <FileText className="w-4 h-4" />
+                    </div>
+
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
                         <button
                           type="button"
                           onClick={() => navigate(`/resume/${item.id}`)}
-                          className="text-left font-semibold text-sm sm:text-base text-foreground hover:underline decoration-neutral-400 underline-offset-2 truncate block cursor-pointer transition-colors"
+                          className="text-left font-semibold text-sm text-foreground hover:underline decoration-neutral-400 underline-offset-2 truncate cursor-pointer transition-colors"
                           title={item.name}
                         >
                           {item.name}
                         </button>
-                        <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
-                          {candidateTitle}
-                          {candidateName ? ` · ${candidateName}` : ""}
-                        </p>
+
+                        {/* Metadata Pills */}
+                        <div className="flex items-center gap-1.5 flex-wrap text-[10px] text-neutral-500">
+                          <span className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 font-mono text-neutral-600 dark:text-neutral-400">
+                            LaTeX
+                          </span>
+                          {expCount > 0 && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400">
+                              <Briefcase className="w-2.5 h-2.5" />
+                              <span>{expCount} exp</span>
+                            </span>
+                          )}
+                          {eduCount > 0 && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400">
+                              <GraduationCap className="w-2.5 h-2.5" />
+                              <span>{eduCount} edu</span>
+                            </span>
+                          )}
+                          {skillsCount > 0 && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400">
+                              <span>{skillsCount} skills</span>
+                            </span>
+                          )}
+                        </div>
                       </div>
 
-                      {/* Header quick action buttons */}
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => handleOpenRename(item)}
-                          className="p-1.5 rounded-md text-neutral-400 hover:text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors"
-                          title="Rename"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteResume(item.id, item.name)}
-                          className="p-1.5 rounded-md text-neutral-400 hover:text-red-400 hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                      <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                        <span>{candidateTitle}{candidateName ? ` · ${candidateName}` : ""}</span>
+                        <span className="text-neutral-300 dark:text-neutral-700 hidden sm:inline">•</span>
+                        <span className="text-[11px] text-neutral-400 hidden sm:inline">
+                          Updated {new Date(item.updatedAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </span>
                       </div>
-                    </div>
-
-                    {/* Metadata Pills */}
-                    <div className="flex flex-wrap items-center gap-1.5 mt-4 text-[11px] text-neutral-500">
-                      {expCount > 0 && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400">
-                          <Briefcase className="w-3 h-3" />
-                          <span>{expCount} exp</span>
-                        </span>
-                      )}
-                      {eduCount > 0 && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400">
-                          <GraduationCap className="w-3 h-3" />
-                          <span>{eduCount} edu</span>
-                        </span>
-                      )}
-                      {skillsCount > 0 && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400">
-                          <span>{skillsCount} skills</span>
-                        </span>
-                      )}
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 font-mono text-[10px]">
-                        LaTeX
-                      </span>
                     </div>
                   </div>
 
-                  {/* Card Bottom: Date & Actions */}
-                  <div className="px-4 sm:px-5 py-3 border-t border-neutral-100 dark:border-neutral-900/80 bg-neutral-50/50 dark:bg-neutral-950/40 flex items-center justify-between gap-2 text-xs">
-                    <span className="text-[11px] text-neutral-400">
+                  {/* Right Column: Date (mobile) + Action Buttons */}
+                  <div className="flex items-center justify-between sm:justify-end gap-1.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-neutral-100 dark:border-neutral-900">
+                    <span className="text-[11px] text-neutral-400 sm:hidden">
                       {new Date(item.updatedAt).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
-                        year: "numeric",
                       })}
                     </span>
 
@@ -535,15 +531,15 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
                         size="sm"
                         disabled={isDuplicating === item.id}
                         onClick={() => handleDuplicateResume(item)}
-                        className="h-7 px-2 text-xs text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white cursor-pointer"
-                        title="Duplicate Resume Object"
+                        className="h-8 px-2.5 text-xs text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer"
+                        title="Duplicate Resume (creates clone of structured data and raw LaTeX)"
                       >
                         {isDuplicating === item.id ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         ) : (
                           <>
-                            <Copy className="w-3 h-3 mr-1" />
-                            <span>Copy</span>
+                            <Copy className="w-3.5 h-3.5 mr-1.5" />
+                            <span>Duplicate</span>
                           </>
                         )}
                       </Button>
@@ -554,21 +550,46 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
                         size="sm"
                         disabled={isDownloading === item.id}
                         onClick={() => handleDownloadPDF(item)}
-                        className="h-7 px-2 text-xs text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white cursor-pointer"
+                        className="h-8 px-2.5 text-xs text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer"
                         title="Download compiled PDF"
                       >
                         {isDownloading === item.id ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         ) : (
-                          <Download className="w-3 h-3" />
+                          <>
+                            <Download className="w-3.5 h-3.5 mr-1.5" />
+                            <span>PDF</span>
+                          </>
                         )}
                       </Button>
 
-                      {/* Open Studio Action */}
+                      {/* Rename Button */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOpenRename(item)}
+                        className="h-8 w-8 p-0 text-neutral-400 hover:text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer"
+                        title="Rename"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </Button>
+
+                      {/* Delete Button */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteResume(item.id, item.name)}
+                        className="h-8 w-8 p-0 text-neutral-400 hover:text-red-400 hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+
+                      {/* Open Studio Button */}
                       <Button
                         size="sm"
                         onClick={() => navigate(`/resume/${item.id}`)}
-                        className="h-7 px-2.5 text-xs bg-white text-black hover:bg-neutral-200 font-medium gap-1 cursor-pointer shadow-xs"
+                        className="h-8 px-3 text-xs bg-neutral-900 text-white dark:bg-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 font-medium gap-1.5 cursor-pointer shadow-xs ml-1"
                       >
                         <span>Open</span>
                         <ArrowRight className="w-3 h-3" />
