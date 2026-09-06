@@ -1,5 +1,6 @@
 import Editor, { type Monaco, type OnMount } from "@monaco-editor/react";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
+import { validateLatexSyntax } from "@/lib/latex/validator";
 
 interface MonacoLatexEditorProps {
   value: string;
@@ -8,10 +9,33 @@ interface MonacoLatexEditorProps {
 }
 
 export function MonacoLatexEditor({ value, onChange, readOnly = false }: MonacoLatexEditorProps) {
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
+  const monacoRef = useRef<Monaco | null>(null);
+
+  useEffect(() => {
+    if (!editorRef.current || !monacoRef.current) return;
+    const model = editorRef.current.getModel();
+    if (!model) return;
+
+    const issues = validateLatexSyntax(value);
+    const markers = issues.map((issue) => ({
+      startLineNumber: issue.startLineNumber,
+      startColumn: issue.startColumn,
+      endLineNumber: issue.endLineNumber,
+      endColumn: issue.endColumn,
+      message: issue.message,
+      severity:
+        issue.severity === "error"
+          ? (monacoRef.current?.MarkerSeverity.Error ?? 8)
+          : (monacoRef.current?.MarkerSeverity.Warning ?? 4),
+    }));
+
+    monacoRef.current.editor.setModelMarkers(model, "latex-syntax", markers);
+  }, [value]);
 
   const handleEditorDidMount: OnMount = (editor, monaco: Monaco) => {
     editorRef.current = editor;
+    monacoRef.current = monaco;
 
     // Register custom LaTeX completions
     monaco.languages.registerCompletionItemProvider("latex", {
@@ -99,35 +123,50 @@ export function MonacoLatexEditor({ value, onChange, readOnly = false }: MonacoL
         return { suggestions };
       },
     });
+
+    updateSyntaxMarkers(value);
   };
 
   return (
     <div className="w-full h-full relative flex flex-col bg-[#1e1e1e]">
-      <Editor
-        height="100%"
-        defaultLanguage="latex"
-        language="latex"
-        theme="vs-dark"
-        value={value}
-        onChange={(val) => onChange(val || "")}
-        onMount={handleEditorDidMount}
-        options={{
-          readOnly,
-          minimap: { enabled: false },
-          fontSize: 13,
-          lineHeight: 20,
-          fontFamily: "'Geist Mono', 'Fira Code', Menlo, Monaco, monospace",
-          wordWrap: "on",
-          scrollBeyondLastLine: false,
-          smoothScrolling: true,
-          cursorBlinking: "smooth",
-          automaticLayout: true,
-          padding: { top: 12, bottom: 12 },
-          lineNumbers: "on",
-          renderLineHighlight: "all",
-          tabSize: 2,
-        }}
-      />
+      {/* File Tab Header */}
+      <div className="flex items-center px-4 py-1.5 bg-[#181818] border-b border-[#2d2d2d] text-xs select-none">
+        <div className="flex items-center gap-2 text-slate-300 bg-[#1e1e1e] px-3 py-1 rounded-t border-t-2 border-blue-500 font-mono text-[11px]">
+          <span>main.tex</span>
+        </div>
+      </div>
+
+      <div className="flex-1 relative overflow-hidden">
+        <Editor
+          height="100%"
+          defaultLanguage="latex"
+          language="latex"
+          theme="vs-dark"
+          value={value}
+          onChange={(val) => {
+            const newVal = val || "";
+            onChange(newVal);
+            updateSyntaxMarkers(newVal);
+          }}
+          onMount={handleEditorDidMount}
+          options={{
+            readOnly,
+            minimap: { enabled: false },
+            fontSize: 13,
+            lineHeight: 20,
+            fontFamily: "'Geist Mono', 'Fira Code', Menlo, Monaco, monospace",
+            wordWrap: "on",
+            scrollBeyondLastLine: false,
+            smoothScrolling: true,
+            cursorBlinking: "smooth",
+            automaticLayout: true,
+            padding: { top: 10, bottom: 10 },
+            lineNumbers: "on",
+            renderLineHighlight: "all",
+            tabSize: 2,
+          }}
+        />
+      </div>
     </div>
   );
 }
