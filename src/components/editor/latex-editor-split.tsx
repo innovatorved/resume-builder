@@ -92,7 +92,7 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
     runCompile(newLatex);
 
     toast({
-      title: "Prism AI Applied Changes",
+      title: "AI Changes Applied",
       description: summary,
     });
   };

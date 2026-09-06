@@ -113,13 +113,13 @@ export function PrismAiBar({
 
         // Apply updated LaTeX to editor & compile
         if (data.data.updatedLatex) {
-          onApplyUpdatedLatex(data.data.updatedLatex, data.data.reply || "Modified by Prism AI");
+          onApplyUpdatedLatex(data.data.updatedLatex, data.data.reply || "Updated by AI");
         }
       } else {
         setErrorMessage(data.error || "Failed to update resume. Please try again.");
       }
     } catch (err: unknown) {
-      setErrorMessage(err instanceof Error ? err.message : "Error contacting Prism AI");
+      setErrorMessage(err instanceof Error ? err.message : "Error contacting AI service");
     } finally {
       setIsLoading(false);
     }
@@ -139,12 +139,8 @@ export function PrismAiBar({
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 font-medium text-neutral-200">
             <Sparkles className="w-3.5 h-3.5 text-neutral-400" />
-            <span className="tracking-tight font-semibold">Prism AI Copilot</span>
+            <span className="tracking-tight font-semibold">Chat</span>
           </div>
-
-          <span className="text-[11px] text-neutral-500 hidden sm:inline">
-            Directly rewrites and optimizes LaTeX code
-          </span>
 
           {hasCompileError && (
             <button
@@ -217,7 +213,7 @@ export function PrismAiBar({
           {isLoading && (
             <div className="flex items-center gap-2 text-neutral-400 text-xs italic">
               <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
-              <span>Prism is rewriting and formatting LaTeX code...</span>
+              <span>Updating LaTeX resume...</span>
             </div>
           )}
           <div ref={chatEndRef} />
@@ -259,7 +255,7 @@ export function PrismAiBar({
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               disabled={isLoading}
-              placeholder="Ask Prism AI to edit, tailor to a job post, rewrite bullets, or fix LaTeX syntax..."
+              placeholder="Ask anything or request edits to your resume..."
               className="flex-1 bg-transparent text-xs sm:text-sm text-neutral-100 placeholder:text-neutral-500 outline-none"
             />
             <Button
