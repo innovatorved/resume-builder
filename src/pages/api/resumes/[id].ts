@@ -1,8 +1,9 @@
 import type { APIRoute } from "astro";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { resume } from "@/lib/db/schema";
+import { resume, resumeVersion } from "@/lib/db/schema";
+import { generateCleanModern } from "@/lib/templates";
 import { type ResumeData, updateResumeSchema } from "@/lib/validations/resume";
 
 function parseResumeData(data: unknown): ResumeData {
@@ -219,17 +220,47 @@ export const POST: APIRoute = async ({ params, request }) => {
       });
     }
 
-    const newId = crypto.randomUUID();
-    const now = new Date();
-    const newName = `Copy of ${existing.name}`;
+    // Fetch the latest version snapshot if available to duplicate exact LaTeX and assets
+    const [latestVersion] = await db
+      .select()
+      .from(resumeVersion)
+      .where(eq(resumeVersion.resumeId, existing.id))
+      .orderBy(desc(resumeVersion.versionNumber))
+      .limit(1);
 
+    const newId = crypto.randomUUID();
+    const newVersionId = crypto.randomUUID();
+    const now = new Date();
+    const newName = `${existing.name} (Copy)`;
+
+    const parsedData = parseResumeData(existing.data);
+    const rawLatex = latestVersion?.rawLatex || generateCleanModern(parsedData);
+    const sourceKey = latestVersion?.sourceKey || `resumes/local/${newId}/source/${newVersionId}.tex`;
+
+    // 1. Insert duplicated resume
     await db.insert(resume).values({
       id: newId,
       userId: session.user.id,
       name: newName,
-      data: existing.data,
+      data: parsedData,
+      templateId: existing.templateId || "clean-modern",
+      currentVersionId: newVersionId,
       createdAt: now,
       updatedAt: now,
+    });
+
+    // 2. Clone initial version record for the duplicated resume
+    await db.insert(resumeVersion).values({
+      id: newVersionId,
+      resumeId: newId,
+      versionNumber: 1,
+      sourceKey,
+      pdfKey: latestVersion?.pdfKey || null,
+      structuredData: parsedData,
+      rawLatex,
+      isLatexCustom: latestVersion?.isLatexCustom ?? true,
+      changeSummary: `Duplicated from "${existing.name}" at ${now.toLocaleTimeString()}`,
+      createdAt: now,
     });
 
     return new Response(
@@ -238,7 +269,8 @@ export const POST: APIRoute = async ({ params, request }) => {
         data: {
           id: newId,
           name: newName,
-          data: parseResumeData(existing.data),
+          data: parsedData,
+          currentVersionId: newVersionId,
           createdAt: now,
           updatedAt: now,
         },
