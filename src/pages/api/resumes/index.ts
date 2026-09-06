@@ -2,7 +2,8 @@ import type { APIRoute } from "astro";
 import { desc, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { resume } from "@/lib/db/schema";
+import { resume, resumeVersion } from "@/lib/db/schema";
+import { generateCleanModern } from "@/lib/templates";
 import { createResumeSchema, type ResumeData } from "@/lib/validations/resume";
 
 function parseResumeData(data: unknown): ResumeData {
@@ -78,15 +79,32 @@ export const POST: APIRoute = async ({ request }) => {
     const body = await request.json();
     const validated = createResumeSchema.parse(body);
     const id = crypto.randomUUID();
+    const vId = crypto.randomUUID();
     const now = new Date();
+    const initialLatex = generateCleanModern(validated.data);
 
     await db.insert(resume).values({
       id,
       userId: session.user.id,
       name: validated.name,
       data: validated.data,
+      currentVersionId: vId,
+      templateId: "clean-modern",
       createdAt: now,
       updatedAt: now,
+    });
+
+    await db.insert(resumeVersion).values({
+      id: vId,
+      resumeId: id,
+      versionNumber: 1,
+      sourceKey: `resumes/${session.user.id}/${id}/source/${vId}.tex`,
+      pdfKey: null,
+      structuredData: validated.data,
+      rawLatex: initialLatex,
+      isLatexCustom: false,
+      changeSummary: "Initial version",
+      createdAt: now,
     });
 
     return new Response(

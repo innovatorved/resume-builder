@@ -55,6 +55,7 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
   const [isDuplicating, setIsDuplicating] = useState<string | null>(null);
   const [resumeToRename, setResumeToRename] = useState<Resume | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  const [descValue, setDescValue] = useState("");
   const [showJsonDialog, setShowJsonDialog] = useState(false);
   const [jsonInput, setJsonInput] = useState("");
   const { toast } = useToast();
@@ -108,33 +109,55 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
   const handleOpenRename = (r: Resume) => {
     setResumeToRename(r);
     setRenameValue(r.name);
+    const existingTitle = r.data?.personalInfo?.title || "";
+    const isDummyTitle =
+      existingTitle.toLowerCase() === "senior software engineer" ||
+      existingTitle.toLowerCase() === "professional resume";
+    setDescValue(isDummyTitle ? "" : existingTitle);
   };
 
   const handleConfirmRename = async () => {
     if (!resumeToRename || !renameValue.trim()) return;
 
     try {
-      const result = await updateResume({ id: resumeToRename.id, name: renameValue.trim() });
-      if (result.success && result.data) {
+      const updatedData: ResumeData = {
+        ...resumeToRename.data,
+        personalInfo: {
+          ...(resumeToRename.data?.personalInfo || { name: "" }),
+          title: descValue.trim(),
+        },
+      };
+
+      const result = await updateResume({
+        id: resumeToRename.id,
+        name: renameValue.trim(),
+        data: updatedData,
+      });
+
+      if (result.success) {
         setResumes((prev) =>
-          prev.map((r) => (r.id === resumeToRename.id ? { ...r, name: renameValue.trim() } : r))
+          prev.map((r) =>
+            r.id === resumeToRename.id
+              ? { ...r, name: renameValue.trim(), data: updatedData }
+              : r
+          )
         );
         toast({
-          title: "Resume renamed",
-          description: `Renamed to "${renameValue.trim()}".`,
+          title: "Resume updated",
+          description: `Saved changes to "${renameValue.trim()}".`,
         });
         setResumeToRename(null);
       } else {
         toast({
           title: "Error",
-          description: result.error || "Failed to rename resume",
+          description: result.error || "Failed to update resume",
           variant: "destructive",
         });
       }
     } catch {
       toast({
         title: "Error",
-        description: "Failed to rename resume",
+        description: "Failed to update resume",
         variant: "destructive",
       });
     }
@@ -451,8 +474,26 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
               const expCount = item.data?.experience?.length || 0;
               const eduCount = item.data?.education?.length || 0;
               const skillsCount = item.data?.skills?.length || 0;
-              const candidateTitle = item.data?.personalInfo?.title || "Professional Resume";
-              const candidateName = item.data?.personalInfo?.name;
+
+              // Extract user-provided candidate title and name; ignore dummy fallback text
+              const rawTitle = item.data?.personalInfo?.title?.trim() || "";
+              const rawName = item.data?.personalInfo?.name?.trim() || "";
+              const isDummyTitle =
+                rawTitle.toLowerCase() === "senior software engineer" ||
+                rawTitle.toLowerCase() === "professional resume";
+              const isDummyName = rawName.toLowerCase() === "alex morgan";
+
+              const validTitle = isDummyTitle ? "" : rawTitle;
+              const validName = isDummyName ? "" : rawName;
+
+              let subtitle = "";
+              if (validTitle && validName) {
+                subtitle = `${validTitle} · ${validName}`;
+              } else if (validTitle) {
+                subtitle = validTitle;
+              } else if (validName) {
+                subtitle = validName;
+              }
 
               return (
                 <div
@@ -501,9 +542,13 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 truncate">
-                        <span>{candidateTitle}{candidateName ? ` · ${candidateName}` : ""}</span>
-                        <span className="text-neutral-300 dark:text-neutral-700 hidden sm:inline">•</span>
+                      <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">
+                        {subtitle ? (
+                          <>
+                            <span className="truncate">{subtitle}</span>
+                            <span className="text-neutral-300 dark:text-neutral-700 hidden sm:inline">•</span>
+                          </>
+                        ) : null}
                         <span className="text-[11px] text-neutral-400 hidden sm:inline">
                           Updated {new Date(item.updatedAt).toLocaleDateString("en-US", {
                             month: "short",
@@ -602,7 +647,7 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
           </div>
         )}
 
-        {/* Rename Modal */}
+        {/* Edit Resume Details Modal */}
         {resumeToRename && (
           <Dialog
             open={Boolean(resumeToRename)}
@@ -610,22 +655,38 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
           >
             <DialogContent className="max-w-md bg-neutral-950 border-neutral-800 text-white">
               <DialogHeader>
-                <DialogTitle className="text-base font-semibold">Rename Resume</DialogTitle>
+                <DialogTitle className="text-base font-semibold">Edit Resume Details</DialogTitle>
                 <p className="text-xs text-neutral-400">
-                  Update the display title for this resume.
+                  Update the resume title and optional target role description.
                 </p>
               </DialogHeader>
-              <div className="py-2">
-                <Input
-                  value={renameValue}
-                  onChange={(e) => setRenameValue(e.target.value)}
-                  placeholder="Enter resume name"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleConfirmRename();
-                  }}
-                  className="h-9 text-xs bg-neutral-900 border-neutral-800 text-white"
-                  autoFocus
-                />
+              <div className="py-3 space-y-3">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-medium text-neutral-400 uppercase tracking-wider">
+                    Resume Title
+                  </label>
+                  <Input
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    placeholder="e.g. Full Stack Resume 2026"
+                    className="h-9 text-xs bg-neutral-900 border-neutral-800 text-white"
+                    autoFocus
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-medium text-neutral-400 uppercase tracking-wider">
+                    Description / Target Role <span className="text-neutral-500 font-normal">(optional)</span>
+                  </label>
+                  <Input
+                    value={descValue}
+                    onChange={(e) => setDescValue(e.target.value)}
+                    placeholder="e.g. Senior Backend Engineer (leave blank to hide)"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleConfirmRename();
+                    }}
+                    className="h-9 text-xs bg-neutral-900 border-neutral-800 text-white"
+                  />
+                </div>
               </div>
               <DialogFooter className="gap-2">
                 <Button

@@ -117,6 +117,34 @@ export const PUT: APIRoute = async ({ params, request }) => {
 
     await db.update(resume).set(updateValues).where(eq(resume.id, validated.id));
 
+    // Also persist rawLatex to the current version if supplied
+    if (typeof body.rawLatex === "string") {
+      if (existing.currentVersionId) {
+        await db
+          .update(resumeVersion)
+          .set({
+            rawLatex: body.rawLatex,
+            structuredData: (updateValues.data || parseResumeData(existing.data)) as ResumeData,
+          })
+          .where(eq(resumeVersion.id, existing.currentVersionId));
+      } else {
+        const vId = crypto.randomUUID();
+        await db.insert(resumeVersion).values({
+          id: vId,
+          resumeId: existing.id,
+          versionNumber: 1,
+          sourceKey: `resumes/${session.user.id}/${existing.id}/source/${vId}.tex`,
+          pdfKey: null,
+          structuredData: (updateValues.data || parseResumeData(existing.data)) as ResumeData,
+          rawLatex: body.rawLatex,
+          isLatexCustom: true,
+          changeSummary: "Saved edits",
+          createdAt: now,
+        });
+        await db.update(resume).set({ currentVersionId: vId }).where(eq(resume.id, existing.id));
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,

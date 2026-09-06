@@ -1,10 +1,11 @@
 ---
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { LatexEditorSplit } from "@/components/editor/latex-editor-split";
 import Layout from "@/layouts/Layout.astro";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { resume } from "@/lib/db/schema";
+import { resume, resumeVersion } from "@/lib/db/schema";
+import { generateCleanModern } from "@/lib/templates";
 import type { ResumeData } from "@/types/resume";
 
 const session = await auth.api.getSession({
@@ -23,66 +24,53 @@ if (!id) {
 
 const DEFAULT_RESUME: ResumeData = {
   personalInfo: {
-    name: "Alex Morgan",
-    title: "Senior Software Engineer",
-    phone: "+1 (555) 019-2834",
-    email: "alex.morgan@example.com",
-    linkedin: "linkedin.com/in/alexmorgan",
-    location: "San Francisco, CA",
+    name: session.user.name || "",
+    title: "",
+    phone: "",
+    email: session.user.email || "",
+    linkedin: "",
+    location: "",
   },
-  summary:
-    "Results-driven Software Engineer with 6+ years of experience designing high-throughput distributed systems and cloud infrastructure.",
-  experience: [
-    {
-      company: "TechNova Inc.",
-      title: "Senior Backend Engineer",
-      location: "San Francisco, CA",
-      startDate: "2022",
-      endDate: "Present",
-      description: "Led core infrastructure scaling initiatives across distributed systems.",
-      responsibilities: [
-        "Architected distributed event-streaming platform using Kafka, reducing message latency by 45%",
-        "Scaled microservices from 10k to 120k requests/sec across multi-region Kubernetes clusters",
-      ],
-    },
-  ],
-  education: [
-    {
-      institution: "University of California, Berkeley",
-      degree: "B.S. in Computer Science",
-      location: "Berkeley, CA",
-      startDate: "2016",
-      endDate: "2020",
-    },
-  ],
-  skills: [
-    "Go",
-    "TypeScript",
-    "Node.js",
-    "Kubernetes",
-    "PostgreSQL",
-    "Kafka",
-    "Cloudflare Workers",
-    "AWS",
-  ],
+  summary: "",
+  experience: [],
+  education: [],
+  skills: [],
   certifications: [],
   projects: [],
   languages: [],
 };
 
-// If navigating to /resume/new, create a new resume immediately and redirect to its ID
+// If navigating to /resume/new, create a new resume and initial version record, then redirect to its ID
 if (id === "new") {
   const newId = crypto.randomUUID();
+  const versionId = crypto.randomUUID();
   const now = new Date();
+  const initialLatex = generateCleanModern(DEFAULT_RESUME);
+
   await db.insert(resume).values({
     id: newId,
     userId: session.user.id,
-    name: "New Resume",
+    name: "Untitled Resume",
     data: DEFAULT_RESUME,
     templateId: "clean-modern",
+    currentVersionId: versionId,
     createdAt: now,
     updatedAt: now,
   });
+
+  await db.insert(resumeVersion).values({
+    id: versionId,
+    resumeId: newId,
+    versionNumber: 1,
+    sourceKey: `resumes/${session.user.id}/${newId}/source/${versionId}.tex`,
+    pdfKey: null,
+    structuredData: DEFAULT_RESUME,
+    rawLatex: initialLatex,
+    isLatexCustom: false,
+    changeSummary: "Initial version",
+    createdAt: now,
+  });
+
   return Astro.redirect(`/resume/${newId}`);
 }
 
@@ -104,10 +92,25 @@ if (!found) {
   return Astro.redirect("/");
 }
 
+// Fetch the latest saved version snapshot to preserve exact LaTeX code and history
+const [latestVersion] = await db
+  .select({
+    id: resumeVersion.id,
+    versionNumber: resumeVersion.versionNumber,
+    rawLatex: resumeVersion.rawLatex,
+    structuredData: resumeVersion.structuredData,
+  })
+  .from(resumeVersion)
+  .where(eq(resumeVersion.resumeId, id))
+  .orderBy(desc(resumeVersion.versionNumber))
+  .limit(1);
+
 const rawData = typeof found.data === "string" ? JSON.parse(found.data) : found.data;
 const initialResume = {
   ...found,
   data: (rawData || DEFAULT_RESUME) as ResumeData,
+  rawLatex: latestVersion?.rawLatex || null,
+  currentVersionId: latestVersion?.id || found.currentVersionId,
 };
 ---
 

@@ -2,60 +2,60 @@ import z from "zod";
 
 // Personal Info Schema
 export const personalInfoSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  title: z.string().min(1, "Title is required"),
-  phone: z.string().min(1, "Phone is required"),
-  email: z.string().email("Invalid email address"),
-  linkedin: z.string().optional(),
-  location: z.string().min(1, "Location is required"),
+  name: z.string().default(""),
+  title: z.string().optional().default(""),
+  phone: z.string().optional().default(""),
+  email: z.string().optional().default(""),
+  linkedin: z.string().optional().default(""),
+  location: z.string().optional().default(""),
 });
 
 // Experience Schema
 export const experienceSchema = z.object({
-  title: z.string().min(1, "Job title is required"),
-  company: z.string().min(1, "Company is required"),
-  location: z.string().min(1, "Location is required"),
-  startDate: z.string().optional(),
-  endDate: z.string().min(1, "End date is required"),
-  description: z.string().optional(),
+  title: z.string().default(""),
+  company: z.string().default(""),
+  location: z.string().optional().default(""),
+  startDate: z.string().optional().default(""),
+  endDate: z.string().optional().default(""),
+  description: z.string().optional().default(""),
   responsibilities: z.array(z.string()).default([]),
 });
 
 // Education Schema
 export const educationSchema = z.object({
-  degree: z.string().min(1, "Degree is required"),
-  institution: z.string().min(1, "Institution is required"),
-  location: z.string().min(1, "Location is required"),
-  startDate: z.string().optional(),
-  endDate: z.string().min(1, "End date is required"),
+  degree: z.string().default(""),
+  institution: z.string().default(""),
+  location: z.string().optional().default(""),
+  startDate: z.string().optional().default(""),
+  endDate: z.string().optional().default(""),
 });
 
 // Certification Schema
 export const certificationSchema = z.object({
-  title: z.string().min(1, "Certification title is required"),
-  issuer: z.string().min(1, "Issuer is required"),
-  date: z.string().min(1, "Date is required"),
-  link: z.string().url("Invalid URL").optional().or(z.literal("")),
-  skills: z.string().optional(),
+  title: z.string().default(""),
+  issuer: z.string().default(""),
+  date: z.string().optional().default(""),
+  link: z.string().optional().default(""),
+  skills: z.string().optional().default(""),
 });
 
 // Project Schema
 export const projectSchema = z.object({
-  title: z.string().min(1, "Project title is required"),
-  description: z.string().min(1, "Description is required"),
-  technologies: z.string().min(1, "Technologies are required"),
+  title: z.string().default(""),
+  description: z.string().optional().default(""),
+  technologies: z.string().optional().default(""),
 });
 
 // Language Schema
 export const languageSchema = z.object({
-  name: z.string().min(1, "Language name is required"),
-  level: z.string().min(1, "Proficiency level is required"),
+  name: z.string().default(""),
+  level: z.string().optional().default(""),
 });
 
 // Main Resume Data Schema
 export const resumeDataSchema = z.object({
-  personalInfo: personalInfoSchema,
-  summary: z.string().min(1, "Summary is required"),
+  personalInfo: personalInfoSchema.default({ name: "" }),
+  summary: z.string().optional().default(""),
   experience: z.array(experienceSchema).default([]),
   education: z.array(educationSchema).default([]),
   skills: z.array(z.string()).default([]),

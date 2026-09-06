@@ -20,6 +20,7 @@ interface LatexEditorSplitProps {
     data: ResumeData;
     templateId?: string | null;
     currentVersionId?: string | null;
+    rawLatex?: string | null;
   };
 }
 
@@ -33,9 +34,9 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
     initialResume.currentVersionId || undefined
   );
 
-  // LaTeX source string
+  // LaTeX source string - prefers loaded rawLatex from database version snapshot
   const [latexSource, setLatexSource] = useState(() => {
-    return generateCleanModern(initialResume.data);
+    return initialResume.rawLatex || generateCleanModern(initialResume.data);
   });
 
   // Compilation state
@@ -48,8 +49,39 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
   const [splitRatio, setSplitRatio] = useState<number>(50); // percentage for left editor pane
   const [showVersionModal, setShowVersionModal] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
 
   const isResizingRef = useRef<boolean>(false);
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounced auto-save function to persist drafts in real time
+  const triggerAutoSave = useCallback(
+    (newSource: string, newData: ResumeData, newName: string) => {
+      setAutoSaveStatus("unsaved");
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+
+      autoSaveTimerRef.current = setTimeout(async () => {
+        setAutoSaveStatus("saving");
+        try {
+          await fetch(`/api/resumes/${initialResume.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: initialResume.id,
+              name: newName.trim() || initialResume.name,
+              data: newData,
+              rawLatex: newSource,
+            }),
+          });
+          setAutoSaveStatus("saved");
+        } catch (err) {
+          console.warn("[AutoSave] Failed to save draft:", err);
+          setAutoSaveStatus("unsaved");
+        }
+      }, 1500);
+    },
+    [initialResume.id, initialResume.name]
+  );
 
   // Trigger compilation whenever latexSource changes
   const runCompile = useCallback((source: string) => {
@@ -80,18 +112,21 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
     const newSource = generateCleanModern(newData);
     setLatexSource(newSource);
     runCompile(newSource);
+    triggerAutoSave(newSource, newData, resumeName);
   };
 
   // Handle Monaco code edit
   const handleLatexChange = (newCode: string) => {
     setLatexSource(newCode);
     runCompile(newCode);
+    triggerAutoSave(newCode, structuredData, resumeName);
   };
 
   // Handle AI Copilot directly modifying the LaTeX source
   const handleApplyAiLatex = (newLatex: string, summary: string) => {
     setLatexSource(newLatex);
     runCompile(newLatex);
+    triggerAutoSave(newLatex, structuredData, resumeName);
 
     toast({
       title: "AI Changes Applied",
@@ -199,6 +234,18 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
           rawLatex: latexSource,
           isLatexCustom: true,
           changeSummary: summary || `Saved at ${new Date().toLocaleTimeString()}`,
+        }),
+      });
+
+      // Also ensure resume title and draft are synced to the resume row
+      await fetch(`/api/resumes/${initialResume.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: initialResume.id,
+          name: resumeName.trim() || initialResume.name,
+          data: structuredData,
+          rawLatex: latexSource,
         }),
       });
 
@@ -312,10 +359,19 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
             <input
               type="text"
               value={resumeName}
-              onChange={(e) => setResumeName(e.target.value)}
-              className="bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 text-xs sm:text-sm font-semibold tracking-tight text-white px-2 py-1 rounded border border-transparent focus:border-neutral-700 outline-none transition-all w-48 sm:w-64"
+              onChange={(e) => {
+                const val = e.target.value;
+                setResumeName(val);
+                triggerAutoSave(latexSource, structuredData, val);
+              }}
+              className="bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 text-xs sm:text-sm font-semibold tracking-tight text-white px-2 py-1 rounded border border-transparent focus:border-neutral-700 outline-none transition-all w-36 sm:w-56"
               placeholder="Resume Title"
             />
+            <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono border border-neutral-800 bg-neutral-900">
+              {autoSaveStatus === "saving" && <span className="text-amber-400 animate-pulse">saving...</span>}
+              {autoSaveStatus === "saved" && <span className="text-emerald-400">saved</span>}
+              {autoSaveStatus === "unsaved" && <span className="text-neutral-400">unsaved</span>}
+            </span>
           </div>
         </div>
 
