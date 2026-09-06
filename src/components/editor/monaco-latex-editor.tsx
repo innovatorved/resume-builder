@@ -1,5 +1,5 @@
 import Editor, { type Monaco, type OnMount } from "@monaco-editor/react";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { validateLatexSyntax } from "@/lib/latex/validator";
 
 interface MonacoLatexEditorProps {
@@ -12,12 +12,12 @@ export function MonacoLatexEditor({ value, onChange, readOnly = false }: MonacoL
   const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
 
-  useEffect(() => {
+  const updateSyntaxMarkers = useCallback((code: string) => {
     if (!editorRef.current || !monacoRef.current) return;
     const model = editorRef.current.getModel();
     if (!model) return;
 
-    const issues = validateLatexSyntax(value);
+    const issues = validateLatexSyntax(code);
     const markers = issues.map((issue) => ({
       startLineNumber: issue.startLineNumber,
       startColumn: issue.startColumn,
@@ -31,7 +31,11 @@ export function MonacoLatexEditor({ value, onChange, readOnly = false }: MonacoL
     }));
 
     monacoRef.current.editor.setModelMarkers(model, "latex-syntax", markers);
-  }, [value]);
+  }, []);
+
+  useEffect(() => {
+    updateSyntaxMarkers(value);
+  }, [value, updateSyntaxMarkers]);
 
   const handleEditorDidMount: OnMount = (editor, monaco: Monaco) => {
     editorRef.current = editor;
