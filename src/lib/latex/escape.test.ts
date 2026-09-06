@@ -34,7 +34,8 @@ describe("escapeLatex", () => {
 
 describe("sanitizeRawLatex", () => {
   it("should block shell-escape / write18 commands", () => {
-    const malicious = "\\documentclass{article}\n\\immediate\\write18{rm -rf /}\n\\begin{document}Hello\\end{document}";
+    const malicious =
+      "\\documentclass{article}\n\\immediate\\write18{rm -rf /}\n\\begin{document}Hello\\end{document}";
     const sanitized = sanitizeRawLatex(malicious);
 
     expect(sanitized).not.toContain("\\write18");
@@ -50,7 +51,8 @@ describe("sanitizeRawLatex", () => {
   });
 
   it("should allow harmless LaTeX macros", () => {
-    const safe = "\\section{Experience}\n\\textbf{Senior Engineer}\n\\begin{itemize}\n\\item Built APIs\n\\end{itemize}";
+    const safe =
+      "\\section{Experience}\n\\textbf{Senior Engineer}\n\\begin{itemize}\n\\item Built APIs\n\\end{itemize}";
     const sanitized = sanitizeRawLatex(safe);
 
     expect(sanitized).toBe(safe);

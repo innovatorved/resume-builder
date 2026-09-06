@@ -10,7 +10,7 @@ import {
   Save,
   Sparkles,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { getTemplate, TEMPLATES } from "@/lib/templates";
@@ -65,7 +65,7 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
   const isResizingRef = useRef<boolean>(false);
 
   // Trigger compilation whenever latexSource changes
-  const runCompile = React.useCallback((source: string) => {
+  const runCompile = useCallback((source: string) => {
     setIsCompiling(true);
     setCompileError(undefined);
 

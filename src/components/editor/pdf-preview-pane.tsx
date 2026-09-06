@@ -1,15 +1,14 @@
 import {
   AlertCircle,
-  ChevronLeft,
-  ChevronRight,
   Download,
+  ExternalLink,
   FileText,
   Loader2,
   RefreshCw,
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 interface PdfPreviewPaneProps {
@@ -31,109 +30,32 @@ export function PdfPreviewPane({
   onDownloadPdf,
   onDownloadTex: _onDownloadTex,
 }: PdfPreviewPaneProps) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-
-  const [pdfDoc, setPdfDoc] = useState<any>(null);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [totalPages, setTotalPages] = useState<number>(1);
-  const [scale, setScale] = useState<number>(1.2);
-  const [_isRendering, setIsRendering] = useState<boolean>(false);
   const [showLogDrawer, setShowLogDrawer] = useState<boolean>(false);
-  const [_pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+  const [zoomLevel, setZoomLevel] = useState<number>(100);
 
-  // Load and parse PDF with pdfjs-dist
+  // Generate object URL whenever new PDF bytes are compiled
   useEffect(() => {
     if (!pdfData || pdfData.length === 0) return;
 
-    let isMounted = true;
-
-    // Create object URL for iframe fallback or direct download
-    const blob = new Blob([pdfData], { type: "application/pdf" });
+    const blob = new Blob([pdfData as BlobPart], { type: "application/pdf" });
     const url = URL.createObjectURL(blob);
     setPdfBlobUrl(url);
 
-    (async () => {
-      try {
-        const pdfjs = await import("pdfjs-dist");
-        // Use CDN worker if local worker is not bundled
-        if (!pdfjs.GlobalWorkerOptions.workerSrc) {
-          pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version || "4.10.38"}/pdf.worker.min.mjs`;
-        }
-
-        const loadingTask = pdfjs.getDocument({ data: pdfData });
-        const doc = await loadingTask.promise;
-
-        if (isMounted) {
-          setPdfDoc(doc);
-          setTotalPages(doc.numPages);
-          setCurrentPage(1);
-        }
-      } catch (err) {
-        console.warn("[PdfPreviewPane] pdf.js canvas render error, using fallback viewer:", err);
-      }
-    })();
-
     return () => {
-      isMounted = false;
       URL.revokeObjectURL(url);
     };
   }, [pdfData]);
 
-  // Render current page to canvas
-  useEffect(() => {
-    if (!pdfDoc || !canvasRef.current) return;
-
-    let renderTask: any = null;
-
-    (async () => {
-      try {
-        setIsRendering(true);
-        const page = await pdfDoc.getPage(currentPage);
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
-        const context = canvas.getContext("2d");
-        if (!context) return;
-
-        const viewport = page.getViewport({ scale });
-        const outputScale = window.devicePixelRatio || 1;
-
-        canvas.width = Math.floor(viewport.width * outputScale);
-        canvas.height = Math.floor(viewport.height * outputScale);
-        canvas.style.width = `${Math.floor(viewport.width)}px`;
-        canvas.style.height = `${Math.floor(viewport.height)}px`;
-
-        const transform = outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : null;
-
-        const renderContext = {
-          canvasContext: context,
-          transform: transform || undefined,
-          viewport: viewport,
-        };
-
-        renderTask = page.render(renderContext);
-        await renderTask.promise;
-      } catch (err: any) {
-        if (err?.name !== "RenderingCancelledException") {
-          console.error("[PdfPreviewPane] Render error:", err);
-        }
-      } finally {
-        setIsRendering(false);
-      }
-    })();
-
-    return () => {
-      if (renderTask) {
-        renderTask.cancel();
-      }
-    };
-  }, [pdfDoc, currentPage, scale]);
+  const handleOpenNewTab = () => {
+    if (!pdfBlobUrl) return;
+    window.open(pdfBlobUrl, "_blank");
+  };
 
   return (
     <div className="flex flex-col h-full bg-slate-900 border-l border-slate-800 text-slate-100 select-none overflow-hidden">
       {/* Top Toolbar */}
-      <div className="flex items-center justify-between px-3 py-2 bg-slate-950/80 border-b border-slate-800 text-xs gap-2">
+      <div className="flex items-center justify-between px-3 py-2 bg-slate-950/80 border-b border-slate-800 text-xs gap-2 shrink-0">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-slate-300 flex items-center gap-1.5">
             <FileText className="w-3.5 h-3.5 text-blue-400" />
@@ -161,61 +83,45 @@ export function PdfPreviewPane({
           )}
         </div>
 
-        {/* Page & Zoom Controls */}
+        {/* Action Controls */}
         <div className="flex items-center gap-1">
-          {totalPages > 1 && (
-            <div className="flex items-center mr-2 border border-slate-700 rounded bg-slate-800/60">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 text-slate-300 hover:text-white"
-                disabled={currentPage <= 1}
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              >
-                <ChevronLeft className="w-3.5 h-3.5" />
-              </Button>
-              <span className="px-1 text-[11px] text-slate-300">
-                {currentPage} / {totalPages}
-              </span>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 text-slate-300 hover:text-white"
-                disabled={currentPage >= totalPages}
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              >
-                <ChevronRight className="w-3.5 h-3.5" />
-              </Button>
-            </div>
-          )}
-
           <Button
             variant="ghost"
             size="icon"
             className="h-6 w-6 text-slate-300 hover:text-white"
-            onClick={() => setScale((s) => Math.max(0.6, s - 0.15))}
+            onClick={() => setZoomLevel((z) => Math.max(70, z - 15))}
             title="Zoom Out"
           >
             <ZoomOut className="w-3.5 h-3.5" />
           </Button>
-          <span className="text-[11px] text-slate-400 min-w-9 text-center">
-            {Math.round(scale * 100)}%
-          </span>
+          <span className="text-[11px] text-slate-400 min-w-9 text-center">{zoomLevel}%</span>
           <Button
             variant="ghost"
             size="icon"
             className="h-6 w-6 text-slate-300 hover:text-white"
-            onClick={() => setScale((s) => Math.min(2.5, s + 0.15))}
+            onClick={() => setZoomLevel((z) => Math.min(150, z + 15))}
             title="Zoom In"
           >
             <ZoomIn className="w-3.5 h-3.5" />
           </Button>
 
+          {pdfBlobUrl && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 text-slate-300 hover:text-white ml-0.5"
+              onClick={handleOpenNewTab}
+              title="Open PDF in full tab"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+            </Button>
+          )}
+
           {onRecompile && (
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 text-slate-300 hover:text-white ml-1"
+              className="h-6 w-6 text-slate-300 hover:text-white ml-0.5"
               onClick={onRecompile}
               title="Force Recompile"
             >
@@ -238,19 +144,16 @@ export function PdfPreviewPane({
         </div>
       </div>
 
-      {/* Main Canvas / Viewer Container */}
-      <div
-        ref={containerRef}
-        className="flex-1 overflow-auto p-4 flex justify-center items-start bg-slate-950/60 relative"
-      >
-        {isCompiling && !pdfData && (
+      {/* Main Vector PDF Viewer Container */}
+      <div className="flex-1 overflow-hidden p-3 flex justify-center items-center bg-slate-950/70 relative">
+        {isCompiling && !pdfBlobUrl && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 z-10 text-slate-400">
             <Loader2 className="w-8 h-8 animate-spin text-blue-500 mb-2" />
             <p className="text-sm">Compiling LaTeX document...</p>
           </div>
         )}
 
-        {compileError && !pdfData && (
+        {compileError && !pdfBlobUrl && (
           <div className="m-auto max-w-md p-4 bg-red-950/40 border border-red-800 rounded-lg text-red-200 text-sm">
             <div className="flex items-center gap-2 font-semibold text-red-400 mb-2">
               <AlertCircle className="w-5 h-5" />
@@ -267,13 +170,20 @@ export function PdfPreviewPane({
           </div>
         )}
 
-        {pdfData && (
-          <div className="shadow-2xl rounded border border-slate-800 bg-white transition-all">
-            <canvas ref={canvasRef} className="block mx-auto rounded" />
+        {pdfBlobUrl && (
+          <div
+            className="w-full h-full flex items-center justify-center transition-all"
+            style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: "top center" }}
+          >
+            <iframe
+              src={`${pdfBlobUrl}#toolbar=0&navpanes=0&scrollbar=1`}
+              className="w-full h-full rounded border border-slate-800 bg-white shadow-2xl"
+              title="High-Quality Vector PDF Preview"
+            />
           </div>
         )}
 
-        {!pdfData && !isCompiling && !compileError && (
+        {!pdfBlobUrl && !isCompiling && !compileError && (
           <div className="m-auto text-slate-500 text-sm flex flex-col items-center">
             <FileText className="w-10 h-10 mb-2 opacity-40" />
             <p>No compiled PDF yet. Start typing to compile.</p>
@@ -283,7 +193,7 @@ export function PdfPreviewPane({
 
       {/* Compiler Log Drawer */}
       {showLogDrawer && (
-        <div className="h-48 bg-black/90 border-t border-slate-800 p-3 font-mono text-xs text-slate-300 overflow-auto">
+        <div className="h-48 bg-black/95 border-t border-slate-800 p-3 font-mono text-xs text-slate-300 overflow-auto shrink-0">
           <div className="flex justify-between items-center pb-2 border-b border-slate-800 text-slate-400">
             <span className="font-semibold text-slate-200">LaTeX Compiler Output</span>
             <button
