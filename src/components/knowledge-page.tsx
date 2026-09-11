@@ -935,26 +935,6 @@ export function KnowledgePage() {
               </div>
             )}
             <Button
-              onClick={handleCreateResumeFromKnowledge}
-              disabled={isGeneratingResume}
-              size="sm"
-              className="h-8 px-2.5 sm:px-3 gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-medium cursor-pointer"
-              title="Create ATS LaTeX Resume from your Knowledge"
-            >
-              {isGeneratingResume ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  <span className="hidden sm:inline">Generating...</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-3.5 w-3.5 text-emerald-200" />
-                  <span className="hidden sm:inline">Create Resume</span>
-                  <span className="sm:hidden">Resume</span>
-                </>
-              )}
-            </Button>
-            <Button
               variant="outline"
               size="sm"
               onClick={() => setShowRunsView(!showRunsView)}
@@ -996,17 +976,17 @@ export function KnowledgePage() {
             <Button
               onClick={handleCreateResumeFromKnowledge}
               disabled={isGeneratingResume}
-              className="gap-2 bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs text-xs sm:text-sm font-medium h-9 px-4 cursor-pointer"
+              className="h-9 px-4 bg-white text-black hover:bg-neutral-200 font-medium text-xs gap-1.5 shadow-xs cursor-pointer"
             >
               {isGeneratingResume ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Synthesizing ATS Resume...</span>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span>Creating ATS Resume...</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4 text-emerald-200" />
-                  <span>Create Resume with Knowledge</span>
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>Create Resume from Knowledge</span>
                 </>
               )}
             </Button>
@@ -1538,15 +1518,16 @@ export function KnowledgePage() {
                       {activeDocument === "profile.md" && (
                         <Button
                           size="sm"
+                          variant="outline"
                           onClick={handleCreateResumeFromKnowledge}
                           disabled={isGeneratingResume}
-                          className="h-6 px-2.5 text-[11px] gap-1 bg-emerald-600 hover:bg-emerald-500 text-white font-medium shadow-xs cursor-pointer"
+                          className="h-6 px-2.5 text-[11px] gap-1 border-border text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-900 font-medium cursor-pointer"
                           title="Generate ATS LaTeX Resume from this profile"
                         >
                           {isGeneratingResume ? (
                             <Loader2 className="h-3 w-3 animate-spin" />
                           ) : (
-                            <Sparkles className="h-3 w-3 text-emerald-200" />
+                            <Sparkles className="h-3 w-3" />
                           )}
                           <span>Create Resume</span>
                         </Button>
