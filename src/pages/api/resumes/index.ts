@@ -82,7 +82,8 @@ export const POST: APIRoute = async ({ request }) => {
     const id = crypto.randomUUID();
     const vId = crypto.randomUUID();
     const now = new Date();
-    const hasCustomLatex = typeof validated.rawLatex === "string" && validated.rawLatex.trim().length > 0;
+    const hasCustomLatex =
+      typeof validated.rawLatex === "string" && validated.rawLatex.trim().length > 0;
     const initialLatex = hasCustomLatex
       ? validated.rawLatex!.trim()
       : generateCleanModern(validated.data);

@@ -30,7 +30,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { createResume, deleteResume, duplicateResume, updateResume } from "@/lib/actions/resume";
-import { extractResumeText, extractedResumeToResumeData } from "@/lib/pdf/extract-text";
+import { extractedResumeToResumeData, extractResumeText } from "@/lib/pdf/extract-text";
 import type { ResumeData } from "@/types/resume";
 
 interface Resume {
@@ -748,7 +748,10 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
         )}
 
         {/* Upload Existing Resume Modal */}
-        <Dialog open={uploadModalOpen} onOpenChange={(open) => !isUploadingResume && setUploadModalOpen(open)}>
+        <Dialog
+          open={uploadModalOpen}
+          onOpenChange={(open) => !isUploadingResume && setUploadModalOpen(open)}
+        >
           <DialogContent className="max-w-lg bg-neutral-950 border-neutral-800 text-white p-6">
             <DialogHeader>
               <DialogTitle className="text-base font-semibold flex items-center gap-2">
@@ -793,8 +796,12 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
                 {isUploadingResume ? (
                   <div className="flex flex-col items-center gap-2">
                     <Loader2 className="w-8 h-8 animate-spin text-white" />
-                    <p className="text-xs text-neutral-300 font-medium mt-2">{uploadProgressText}</p>
-                    <p className="text-[11px] text-neutral-500">Parsing structure, contact, and experience...</p>
+                    <p className="text-xs text-neutral-300 font-medium mt-2">
+                      {uploadProgressText}
+                    </p>
+                    <p className="text-[11px] text-neutral-500">
+                      Parsing structure, contact, and experience...
+                    </p>
                   </div>
                 ) : (
                   <>
@@ -830,7 +837,10 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
                   disabled={isUploadingResume}
                   className="rounded border-neutral-700 bg-neutral-900 text-white focus:ring-0 focus:ring-offset-0 cursor-pointer"
                 />
-                <label htmlFor="sync-kb" className="text-xs text-neutral-300 cursor-pointer select-none">
+                <label
+                  htmlFor="sync-kb"
+                  className="text-xs text-neutral-300 cursor-pointer select-none"
+                >
                   Sync into AI Knowledge Base (enables durable workflow indexing & agent live logs)
                 </label>
               </div>

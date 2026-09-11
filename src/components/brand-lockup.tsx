@@ -81,7 +81,9 @@ export function BrandLockup({ size = "md", showTagline = true, className = "" }:
           >
             Ved Gupta
           </span>
-          <span className="hidden sm:inline text-neutral-400 dark:text-neutral-500 font-mono text-xs">×</span>
+          <span className="hidden sm:inline text-neutral-400 dark:text-neutral-500 font-mono text-xs">
+            ×
+          </span>
           <span
             className={`font-semibold tracking-tight text-foreground ${
               isSm ? "text-xs" : isLg ? "text-base" : "text-sm"

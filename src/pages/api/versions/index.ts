@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { and, desc, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
+import { getCloudflareEnv } from "@/lib/cloudflare-env";
 import { db } from "@/lib/db";
 import { resume, resumeVersion } from "@/lib/db/schema";
 import type { ResumeData } from "@/types/resume";
@@ -150,14 +151,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
       })
       .where(eq(resume.id, resumeId));
 
-    const knowledgeService = locals.runtime?.env.KNOWLEDGE_AGENT;
+    const env = await getCloudflareEnv(locals);
+    const knowledgeService = env.KNOWLEDGE_AGENT;
     if (knowledgeService) {
       const target = new URL(
         `/users/${encodeURIComponent(session.user.id)}/resumes/sync`,
         "https://knowledge-agent.internal"
       );
       const internalSecret =
-        locals.runtime?.env?.INTERNAL_SERVICE_KEY ||
+        env.INTERNAL_SERVICE_KEY ||
         process.env.INTERNAL_SERVICE_KEY ||
         "rb_internal_agent_sec_2026";
       try {

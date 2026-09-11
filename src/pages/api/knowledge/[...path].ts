@@ -1,10 +1,12 @@
 import type { APIRoute } from "astro";
 import { auth } from "@/lib/auth";
+import { getCloudflareEnv } from "@/lib/cloudflare-env";
 
 const handler: APIRoute = async ({ request, locals, params, url }) => {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session?.user) return Response.json({ error: "Unauthorized" }, { status: 401 });
-  const service = locals.runtime?.env.KNOWLEDGE_AGENT;
+  const env = await getCloudflareEnv(locals);
+  const service = env.KNOWLEDGE_AGENT;
   if (!service)
     return Response.json({ error: "Knowledge service is not configured" }, { status: 503 });
   const path = String(params.path || "status").replace(/^\/+/, "");
@@ -18,9 +20,7 @@ const handler: APIRoute = async ({ request, locals, params, url }) => {
   target.search = url.search;
 
   const internalSecret =
-    locals.runtime?.env?.INTERNAL_SERVICE_KEY ||
-    process.env.INTERNAL_SERVICE_KEY ||
-    "rb_internal_agent_sec_2026";
+    env.INTERNAL_SERVICE_KEY || process.env.INTERNAL_SERVICE_KEY || "rb_internal_agent_sec_2026";
 
   if (request.headers.get("Upgrade") === "websocket" || path === "ws" || path.endsWith("/ws")) {
     const wsHeaders = new Headers(request.headers);

@@ -2,8 +2,7 @@
 
 ## Architecture Overview
 
-- Frontend and API: Astro 5 SSR on Cloudflare Pages, React 19, Tailwind CSS v4.
-- Background Ingestion: Cloudflare Worker with Durable Objects (`workers/knowledge-agent`), WebSockets for live status.
+- Unified Architecture: Astro SSR and Knowledge Agent on Cloudflare Workers (Static Assets) with Durable Objects, Workflows, and WebSockets in a single unified worker (`src/worker.ts`).
 - Database: Turso (libSQL) with Drizzle ORM.
 - Storage: Cloudflare R2 for resumes, compiled PDFs, and knowledge evidence files.
 - Authentication: Better Auth with session management.
@@ -14,8 +13,7 @@
 - `bun run dev`: Start local development server on port 3000.
 - `bun test`: Run test suite.
 - `bunx tsc --noEmit`: Typecheck root project.
-- `cd workers/knowledge-agent && bunx tsc --noEmit`: Typecheck knowledge agent worker.
-- `bun run build`: Build production bundle for Cloudflare Pages.
+- `bun run build`: Build production bundle for Cloudflare Workers.
 - `bun run db:generate`: Generate database migrations.
 - `bun run db:push`: Apply database schema changes.
 

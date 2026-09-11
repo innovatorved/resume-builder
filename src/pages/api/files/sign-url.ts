@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
+import { getSyncCloudflareEnv } from "@/lib/cloudflare-env";
 import { db } from "@/lib/db";
 import { resume } from "@/lib/db/schema";
 import { createPresignedUploadUrl, isR2Configured } from "@/lib/r2/presigned";
@@ -66,8 +67,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
 
-    // Cloudflare environment bindings can come from locals.runtime.env if deployed
-    const env = (locals as any)?.runtime?.env || process.env;
+    const env = getSyncCloudflareEnv(locals);
 
     if (!isR2Configured(env)) {
       return new Response(

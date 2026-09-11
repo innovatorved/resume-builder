@@ -1,14 +1,15 @@
+import { type Tool, Type } from "@google/genai";
 import type { APIRoute } from "astro";
 import { getGeminiClient, isGeminiConfigured } from "@/lib/ai/gemini-client";
 import { auth } from "@/lib/auth";
+import { getSyncCloudflareEnv } from "@/lib/cloudflare-env";
 import { db } from "@/lib/db";
 import { aiGeneration } from "@/lib/db/schema";
 import {
+  fetchUserExistingResumeContext,
   fetchUserProfile,
   searchKnowledgeEvidence,
-  fetchUserExistingResumeContext,
 } from "@/lib/knowledge/retriever";
-import { Type, type Tool } from "@google/genai";
 
 function cleanJsonText(raw: string): string {
   const text = raw.trim();
@@ -52,7 +53,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
 
-    const env = (locals as any)?.runtime?.env || locals || process.env;
+    const env = getSyncCloudflareEnv(locals);
 
     if (!isGeminiConfigured(locals) && !isGeminiConfigured(env)) {
       return new Response(

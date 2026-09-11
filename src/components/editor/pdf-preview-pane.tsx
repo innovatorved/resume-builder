@@ -81,7 +81,9 @@ export function PdfPreviewPane({
           ) : (
             <span className="text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-[11px] shrink-0">
               <span className="sm:hidden">Ready</span>
-              <span className="hidden sm:inline">Ready {compileDurationMs ? `· ${compileDurationMs}ms` : ""}</span>
+              <span className="hidden sm:inline">
+                Ready {compileDurationMs ? `· ${compileDurationMs}ms` : ""}
+              </span>
             </span>
           )}
         </div>

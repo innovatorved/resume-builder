@@ -1573,60 +1573,62 @@ export class KnowledgeIngestionWorkflow extends AgentWorkflow<KnowledgeAgent, In
   }
 }
 
-export default {
-  async fetch(request: Request, env: Env) {
-    if (!verifyInternalSecret(request.headers.get("x-internal-secret"), env.INTERNAL_SERVICE_KEY)) {
-      return json(
-        { error: "Forbidden: Direct public access is disabled. Requests must originate internally from Resume Builder." },
-        403
-      );
-    }
-
-    const url = new URL(request.url);
-    const match = url.pathname.match(/^\/users\/([^/]+)(\/.*)?$/);
-    if (!match) return json({ error: "Not found" }, 404);
-    const userId = decodeURIComponent(match[1]);
-    if (!userId || userId.length > 200) return json({ error: "Invalid user" }, 400);
-
-    const path = match[2] || "/status";
-
-    // Dedicated per-source WebSocket: /users/:userId/sources/:sourceId/ws
-    const sourceWsMatch = path.match(/^\/sources\/([^/]+)\/ws$/);
-    if (sourceWsMatch && (request.headers.get("Upgrade") === "websocket" || path.endsWith("/ws"))) {
-      const sourceStub = await getAgentByName(env.KnowledgeAgent, `source:${userId}:${sourceWsMatch[1]}`);
-      return sourceStub.fetch(request);
-    }
-
-    // Dedicated per-source analysis REST endpoint: /users/:userId/sources/:sourceId/analysis
-    const sourceAnalysisMatch = path.match(/^\/sources\/([^/]+)\/analysis$/);
-    if (sourceAnalysisMatch && request.method === "GET") {
-      const sourceStub = await getAgentByName(env.KnowledgeAgent, `source:${userId}:${sourceAnalysisMatch[1]}`);
-      return json(await sourceStub.getSourceAnalysis());
-    }
-
-    const stub = await getAgentByName(env.KnowledgeAgent, userId);
-    if (request.headers.get("Upgrade") === "websocket" || path === "/ws") {
-      return stub.fetch(request);
-    }
-    try {
-      if (path === "/sources" && request.method === "GET") return json(await stub.listSources());
-      const idempotencyKey = request.headers.get("x-idempotency-key") || "";
-      if (path === "/sources" && request.method === "POST") return json(await stub.addSource(await request.json() as SourceInput, idempotencyKey), 202);
-      if (path === "/status" && request.method === "GET") return json(await stub.reconcileSearch());
-      if (path === "/query" && request.method === "POST") return json(await stub.queryKnowledge(String((await request.json() as { query?: unknown }).query || "")));
-      if (path === "/resumes/sync" && request.method === "POST") return json(await stub.syncResume(validateResumeReference(await request.json())));
-      if (path === "/chat" && request.method === "POST") return json(await stub.chat(String((await request.json() as { message?: unknown }).message || "")));
-      if (path === "/documents" && request.method === "GET") return json(await stub.getDocument(url.searchParams.get("path") || "manifest.json"));
-      const resumeRoute = path.match(/^\/resumes\/([^/]+)$/);
-      if (resumeRoute && request.method === "DELETE") return json({ deleted: await stub.deleteResume(resumeRoute[1]) });
-      const sourceRoute = path.match(/^\/sources\/([^/]+)(?:\/(refresh))?$/);
-      if (sourceRoute && request.method === "DELETE") return json({ deleted: await stub.deleteSource(sourceRoute[1]) });
-      if (sourceRoute?.[2] && request.method === "POST") return json(await stub.refreshSource(sourceRoute[1], idempotencyKey), 202);
-      const runRoute = path.match(/^\/runs\/([^/]+)(?:\/(retry|cancel))?$/);
-      if (runRoute && request.method === "GET" && !runRoute[2]) return json(await stub.inspectRun(runRoute[1]));
-      if (runRoute?.[2] === "retry" && request.method === "POST") return json(await stub.retryRun(runRoute[1], idempotencyKey), 202);
-      if (runRoute?.[2] === "cancel" && request.method === "POST") return json(await stub.cancelRun(runRoute[1]));
-      return json({ error: "Not found" }, 404);
-    } catch (error) { return json({ error: error instanceof Error ? error.message : "Request failed" }, 400); }
+export async function handleKnowledgeRequest(request: Request, env: Env): Promise<Response> {
+  if (!verifyInternalSecret(request.headers.get("x-internal-secret"), env.INTERNAL_SERVICE_KEY)) {
+    return json(
+      { error: "Forbidden: Direct public access is disabled. Requests must originate internally from Resume Builder." },
+      403
+    );
   }
+
+  const url = new URL(request.url);
+  const match = url.pathname.match(/^\/users\/([^/]+)(\/.*)?$/);
+  if (!match) return json({ error: "Not found" }, 404);
+  const userId = decodeURIComponent(match[1]);
+  if (!userId || userId.length > 200) return json({ error: "Invalid user" }, 400);
+
+  const path = match[2] || "/status";
+
+  // Dedicated per-source WebSocket: /users/:userId/sources/:sourceId/ws
+  const sourceWsMatch = path.match(/^\/sources\/([^/]+)\/ws$/);
+  if (sourceWsMatch && (request.headers.get("Upgrade") === "websocket" || path.endsWith("/ws"))) {
+    const sourceStub = await getAgentByName(env.KnowledgeAgent, `source:${userId}:${sourceWsMatch[1]}`);
+    return sourceStub.fetch(request);
+  }
+
+  // Dedicated per-source analysis REST endpoint: /users/:userId/sources/:sourceId/analysis
+  const sourceAnalysisMatch = path.match(/^\/sources\/([^/]+)\/analysis$/);
+  if (sourceAnalysisMatch && request.method === "GET") {
+    const sourceStub = await getAgentByName(env.KnowledgeAgent, `source:${userId}:${sourceAnalysisMatch[1]}`);
+    return json(await sourceStub.getSourceAnalysis());
+  }
+
+  const stub = await getAgentByName(env.KnowledgeAgent, userId);
+  if (request.headers.get("Upgrade") === "websocket" || path === "/ws") {
+    return stub.fetch(request);
+  }
+  try {
+    if (path === "/sources" && request.method === "GET") return json(await stub.listSources());
+    const idempotencyKey = request.headers.get("x-idempotency-key") || "";
+    if (path === "/sources" && request.method === "POST") return json(await stub.addSource(await request.json() as SourceInput, idempotencyKey), 202);
+    if (path === "/status" && request.method === "GET") return json(await stub.reconcileSearch());
+    if (path === "/query" && request.method === "POST") return json(await stub.queryKnowledge(String((await request.json() as { query?: unknown }).query || "")));
+    if (path === "/resumes/sync" && request.method === "POST") return json(await stub.syncResume(validateResumeReference(await request.json())));
+    if (path === "/chat" && request.method === "POST") return json(await stub.chat(String((await request.json() as { message?: unknown }).message || "")));
+    if (path === "/documents" && request.method === "GET") return json(await stub.getDocument(url.searchParams.get("path") || "manifest.json"));
+    const resumeRoute = path.match(/^\/resumes\/([^/]+)$/);
+    if (resumeRoute && request.method === "DELETE") return json({ deleted: await stub.deleteResume(resumeRoute[1]) });
+    const sourceRoute = path.match(/^\/sources\/([^/]+)(?:\/(refresh))?$/);
+    if (sourceRoute && request.method === "DELETE") return json({ deleted: await stub.deleteSource(sourceRoute[1]) });
+    if (sourceRoute?.[2] && request.method === "POST") return json(await stub.refreshSource(sourceRoute[1], idempotencyKey), 202);
+    const runRoute = path.match(/^\/runs\/([^/]+)(?:\/(retry|cancel))?$/);
+    if (runRoute && request.method === "GET" && !runRoute[2]) return json(await stub.inspectRun(runRoute[1]));
+    if (runRoute?.[2] === "retry" && request.method === "POST") return json(await stub.retryRun(runRoute[1], idempotencyKey), 202);
+    if (runRoute?.[2] === "cancel" && request.method === "POST") return json(await stub.cancelRun(runRoute[1]));
+    return json({ error: "Not found" }, 404);
+  } catch (error) { return json({ error: error instanceof Error ? error.message : "Request failed" }, 400); }
+}
+
+export default {
+  fetch: handleKnowledgeRequest,
 } satisfies ExportedHandler<Env>;

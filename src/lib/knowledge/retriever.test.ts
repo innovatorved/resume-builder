@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { searchKnowledgeEvidence, fetchUserProfile } from "./retriever";
+import { fetchUserProfile, searchKnowledgeEvidence } from "./retriever";
 
 describe("knowledge retriever", () => {
   it("handles empty queries gracefully without making external calls", async () => {

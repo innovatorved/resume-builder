@@ -1,12 +1,9 @@
 import { GoogleGenAI } from "@google/genai";
+import { getSyncCloudflareEnv } from "@/lib/cloudflare-env";
 
 // biome-ignore lint/suspicious/noExplicitAny: Environment bindings can come from multiple runtimes
 export function getGeminiApiKey(contextOrEnv?: any): string | null {
-  const env =
-    contextOrEnv?.locals?.runtime?.env ||
-    contextOrEnv?.runtime?.env ||
-    contextOrEnv?.env ||
-    contextOrEnv;
+  const env = getSyncCloudflareEnv(contextOrEnv?.locals || contextOrEnv);
 
   const key =
     env?.GEMINI_API_KEY ||

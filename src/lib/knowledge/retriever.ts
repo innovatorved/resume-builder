@@ -1,6 +1,6 @@
+import { desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { resume } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
 
 export interface KnowledgeChunk {
   key: string;
@@ -14,21 +14,19 @@ export interface UserCareerContext {
   existingResumeSummary: string | null;
 }
 
+import { getCloudflareEnv, getSyncCloudflareEnv } from "@/lib/cloudflare-env";
+
 export const DEFAULT_INTERNAL_SECRET = "rb_internal_agent_sec_2026";
 
 // biome-ignore lint/suspicious/noExplicitAny: env bindings can come from multiple runtime contexts
 export function getInternalServiceKey(locals?: any): string {
-  const env = locals?.runtime?.env || process.env;
-  return (
-    env?.INTERNAL_SERVICE_KEY ||
-    process.env.INTERNAL_SERVICE_KEY ||
-    DEFAULT_INTERNAL_SECRET
-  );
+  const env = getSyncCloudflareEnv(locals);
+  return env?.INTERNAL_SERVICE_KEY || process.env.INTERNAL_SERVICE_KEY || DEFAULT_INTERNAL_SECRET;
 }
 
 // biome-ignore lint/suspicious/noExplicitAny: env bindings can come from multiple runtime contexts
 function getKnowledgeBaseUrl(locals: any): string {
-  const env = locals?.runtime?.env || process.env;
+  const env = getSyncCloudflareEnv(locals);
   return (
     env?.KNOWLEDGE_AGENT_URL ||
     process.env.KNOWLEDGE_AGENT_URL ||
@@ -43,9 +41,11 @@ export async function callKnowledgeAgent(
   subPath: string,
   options: RequestInit = {}
 ): Promise<Response | null> {
-  const service = locals?.runtime?.env?.KNOWLEDGE_AGENT;
+  const env = await getCloudflareEnv(locals);
+  const service = env.KNOWLEDGE_AGENT;
   const cleanSubPath = subPath.replace(/^\/+/, "");
-  const internalSecret = getInternalServiceKey(locals);
+  const internalSecret =
+    env.INTERNAL_SERVICE_KEY || process.env.INTERNAL_SERVICE_KEY || DEFAULT_INTERNAL_SECRET;
 
   const headers = new Headers(options.headers || {});
   headers.set("x-internal-secret", internalSecret);

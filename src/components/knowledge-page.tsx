@@ -37,12 +37,7 @@ import {
 import { AuthNav } from "@/components/auth-nav";
 import { BrandLockup } from "@/components/brand-lockup";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { extractResumeText } from "@/lib/pdf/extract-text";
@@ -210,7 +205,10 @@ function Markdown({ content }: { content: string }) {
   const flush = () => {
     if (paragraph.length) {
       blocks.push(
-        <p key={`p-${blocks.length}`} className="leading-6 text-neutral-700 dark:text-neutral-300 my-1.5">
+        <p
+          key={`p-${blocks.length}`}
+          className="leading-6 text-neutral-700 dark:text-neutral-300 my-1.5"
+        >
           {inlineMarkdown(paragraph.join(" "))}
         </p>
       );
@@ -235,7 +233,10 @@ function Markdown({ content }: { content: string }) {
     if (line.trim().startsWith("```")) {
       if (inCodeBlock) {
         blocks.push(
-          <pre key={`pre-${blocks.length}`} className="overflow-x-auto rounded-lg bg-neutral-100 dark:bg-neutral-900 p-3 font-mono text-xs text-neutral-800 dark:text-neutral-200 my-2.5">
+          <pre
+            key={`pre-${blocks.length}`}
+            className="overflow-x-auto rounded-lg bg-neutral-100 dark:bg-neutral-900 p-3 font-mono text-xs text-neutral-800 dark:text-neutral-200 my-2.5"
+          >
             {codeLines.join("\n")}
           </pre>
         );
@@ -262,15 +263,24 @@ function Markdown({ content }: { content: string }) {
       const level = heading[1].length;
       blocks.push(
         level === 1 ? (
-          <h1 key={`h-${blocks.length}`} className="text-xl font-bold tracking-tight text-foreground mt-4 mb-2 pb-1 border-b border-border/60">
+          <h1
+            key={`h-${blocks.length}`}
+            className="text-xl font-bold tracking-tight text-foreground mt-4 mb-2 pb-1 border-b border-border/60"
+          >
             {inlineMarkdown(heading[2])}
           </h1>
         ) : level === 2 ? (
-          <h2 key={`h-${blocks.length}`} className="text-base font-semibold text-foreground mt-3 mb-1.5">
+          <h2
+            key={`h-${blocks.length}`}
+            className="text-base font-semibold text-foreground mt-3 mb-1.5"
+          >
             {inlineMarkdown(heading[2])}
           </h2>
         ) : (
-          <h3 key={`h-${blocks.length}`} className="text-sm font-semibold text-foreground mt-2 mb-1">
+          <h3
+            key={`h-${blocks.length}`}
+            className="text-sm font-semibold text-foreground mt-2 mb-1"
+          >
             {inlineMarkdown(heading[2])}
           </h3>
         )
@@ -278,7 +288,10 @@ function Markdown({ content }: { content: string }) {
     } else if (blockquote) {
       flush();
       blocks.push(
-        <blockquote key={`bq-${blocks.length}`} className="border-l-2 border-indigo-500 pl-3 italic text-neutral-600 dark:text-neutral-400 my-2 text-xs leading-relaxed">
+        <blockquote
+          key={`bq-${blocks.length}`}
+          className="border-l-2 border-indigo-500 pl-3 italic text-neutral-600 dark:text-neutral-400 my-2 text-xs leading-relaxed"
+        >
           {inlineMarkdown(blockquote[1])}
         </blockquote>
       );
@@ -298,7 +311,10 @@ function Markdown({ content }: { content: string }) {
   flush();
   if (inCodeBlock && codeLines.length) {
     blocks.push(
-      <pre key={`pre-${blocks.length}`} className="overflow-x-auto rounded-lg bg-neutral-100 dark:bg-neutral-900 p-3 font-mono text-xs my-2.5">
+      <pre
+        key={`pre-${blocks.length}`}
+        className="overflow-x-auto rounded-lg bg-neutral-100 dark:bg-neutral-900 p-3 font-mono text-xs my-2.5"
+      >
         {codeLines.join("\n")}
       </pre>
     );
@@ -471,9 +487,7 @@ export function KnowledgePage() {
             } else if (data.type === "run_failed") {
               setRuns((prev) =>
                 prev.map((r) =>
-                  r.id === data.runId
-                    ? { ...r, status: data.status, error: data.message }
-                    : r
+                  r.id === data.runId ? { ...r, status: data.status, error: data.message } : r
                 )
               );
               setSelectedRunForLogs((prev) =>
@@ -911,7 +925,9 @@ export function KnowledgePage() {
               title="Toggle Run History"
             >
               <History className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{showRunsView ? "Hide History" : "Run History"}</span>
+              <span className="hidden sm:inline">
+                {showRunsView ? "Hide History" : "Run History"}
+              </span>
             </Button>
             <Button variant="ghost" size="sm" asChild className="h-8 px-2 sm:px-3 gap-1.5 text-xs">
               <a href="/">
@@ -1203,7 +1219,9 @@ export function KnowledgePage() {
                             <strong>Save to PDF</strong>.
                           </li>
                           <li>
-                            Attach the downloaded PDF below &mdash; our agent extracts 100% of your authentic job titles, dates, descriptions, recommendations, and skills, combined with your verified profile footprint into Cloudflare R2!
+                            Attach the downloaded PDF below &mdash; our agent extracts 100% of your
+                            authentic job titles, dates, descriptions, recommendations, and skills,
+                            combined with your verified profile footprint into Cloudflare R2!
                           </li>
                         </ol>
                       </div>
@@ -1687,7 +1705,8 @@ export function KnowledgePage() {
                           ? "bg-neutral-100 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
                           : selectedRunForLogs?.status?.startsWith("failed")
                             ? "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300"
-                            : selectedRunForLogs?.status === "cancelled" || selectedRunForLogs?.status === "superseded"
+                            : selectedRunForLogs?.status === "cancelled" ||
+                                selectedRunForLogs?.status === "superseded"
                               ? "bg-neutral-200 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
                               : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
                     }`}
@@ -1843,7 +1862,9 @@ export function KnowledgePage() {
                     <DialogTitle className="text-base font-semibold flex items-center gap-2">
                       <span>Source Agent:</span>
                       <span className="text-neutral-200 truncate max-w-sm sm:max-w-xl md:max-w-2xl">
-                        {activeInspectedSource?.name || activeInspectedSource?.url || activeInspectedSource?.type}
+                        {activeInspectedSource?.name ||
+                          activeInspectedSource?.url ||
+                          activeInspectedSource?.type}
                       </span>
                     </DialogTitle>
                     <p className="text-[11px] font-mono text-neutral-400 mt-0.5">
@@ -1859,8 +1880,8 @@ export function KnowledgePage() {
                       sourceWsConnected
                         ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                         : activeInspectedSource?.status === "searchable"
-                        ? "bg-neutral-900 text-emerald-400 border border-neutral-800"
-                        : "bg-neutral-900 text-neutral-400 border border-neutral-800"
+                          ? "bg-neutral-900 text-emerald-400 border border-neutral-800"
+                          : "bg-neutral-900 text-neutral-400 border border-neutral-800"
                     }`}
                   >
                     <span
@@ -1868,18 +1889,18 @@ export function KnowledgePage() {
                         sourceWsConnected
                           ? "bg-emerald-400 animate-pulse"
                           : activeInspectedSource?.status === "searchable"
-                          ? "bg-emerald-500/60"
-                          : "bg-neutral-500"
+                            ? "bg-emerald-500/60"
+                            : "bg-neutral-500"
                       }`}
                     />
                     <span>
                       {sourceWsConnected
                         ? "DO WebSocket Active"
                         : activeInspectedSource?.status === "searchable"
-                        ? "Completed (DO Hibernated)"
-                        : activeInspectedSource?.status === "failed"
-                        ? "Failed (DO Hibernated)"
-                        : "Hibernating / Offline"}
+                          ? "Completed (DO Hibernated)"
+                          : activeInspectedSource?.status === "failed"
+                            ? "Failed (DO Hibernated)"
+                            : "Hibernating / Offline"}
                     </span>
                   </div>
                 </div>
@@ -1921,7 +1942,9 @@ export function KnowledgePage() {
                     <div className="flex flex-col items-center justify-center py-16 text-center text-neutral-500 space-y-2">
                       <Loader2 className="h-6 w-6 animate-spin text-neutral-400" />
                       <p>Connecting to source agent instance...</p>
-                      <p className="text-[11px] text-neutral-600">Waiting for live analysis thought frames.</p>
+                      <p className="text-[11px] text-neutral-600">
+                        Waiting for live analysis thought frames.
+                      </p>
                     </div>
                   ) : (
                     sourceAnalysisLogs.map((item, idx) => (

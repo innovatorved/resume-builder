@@ -1,13 +1,4 @@
-import {
-  ChevronDown,
-  Code2,
-  Download,
-  Eye,
-  FileCode,
-  History,
-  Loader2,
-  Save,
-} from "lucide-react";
+import { ChevronDown, Code2, Download, Eye, FileCode, History, Loader2, Save } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ResumeMark } from "@/components/brand-lockup";
 import { Button } from "@/components/ui/button";

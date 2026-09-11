@@ -89,7 +89,12 @@ export function PdfCanvasViewer({ pdfData, zoomLevel = 100 }: PdfCanvasViewerPro
 
         // Calculate responsive scale
         // Standard A4 width is 595.28 pt. We fit to container width with padding.
-        const effectiveContainerWidth = containerWidth > 0 ? containerWidth : (window.innerWidth < 768 ? window.innerWidth - 24 : 600);
+        const effectiveContainerWidth =
+          containerWidth > 0
+            ? containerWidth
+            : window.innerWidth < 768
+              ? window.innerWidth - 24
+              : 600;
         const padding = window.innerWidth < 640 ? 16 : 32;
         const availableWidth = Math.max(280, effectiveContainerWidth - padding);
         const baseScale = availableWidth / 595.28;

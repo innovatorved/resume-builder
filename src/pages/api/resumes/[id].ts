@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { and, desc, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
+import { getCloudflareEnv } from "@/lib/cloudflare-env";
 import { db } from "@/lib/db";
 import { resume, resumeVersion } from "@/lib/db/schema";
 import { generateCleanModern } from "@/lib/templates";
@@ -206,7 +207,8 @@ export const DELETE: APIRoute = async ({ params, request, locals }) => {
     }
 
     await db.delete(resume).where(eq(resume.id, id));
-    const knowledgeService = locals.runtime?.env.KNOWLEDGE_AGENT;
+    const env = await getCloudflareEnv(locals);
+    const knowledgeService = env.KNOWLEDGE_AGENT;
     if (knowledgeService) {
       try {
         const target = new URL(
@@ -214,7 +216,7 @@ export const DELETE: APIRoute = async ({ params, request, locals }) => {
           "https://knowledge-agent.internal"
         );
         const internalSecret =
-          locals.runtime?.env?.INTERNAL_SERVICE_KEY ||
+          env.INTERNAL_SERVICE_KEY ||
           process.env.INTERNAL_SERVICE_KEY ||
           "rb_internal_agent_sec_2026";
         const response = await knowledgeService.fetch(

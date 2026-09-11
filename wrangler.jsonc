@@ -1,13 +1,83 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "resume-builder",
+  "main": "./src/worker.ts",
   "compatibility_date": "2026-09-11",
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  "pages_build_output_dir": "./dist",
-  "services": [{ "binding": "KNOWLEDGE_AGENT", "service": "resume-builder-knowledge-agent" }],
+  "routes": [
+    {
+      "pattern": "resume.vedgupta.in/*",
+      "zone_name": "vedgupta.in"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "KnowledgeAgent",
+        "class_name": "KnowledgeAgent"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "KnowledgeAgent"
+      ]
+    }
+  ],
+  "workflows": [
+    {
+      "binding": "KNOWLEDGE_INGESTION",
+      "name": "resume-builder-knowledge-ingestion",
+      "class_name": "KnowledgeIngestionWorkflow"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "KNOWLEDGE_BUCKET",
+      "bucket_name": "resume-builder-knowledge"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "SESSION",
+      "id": "0e931c7bc5f74fa39826aa85151ac2aa"
+    }
+  ],
+  "browser": {
+    "binding": "BROWSER",
+    "remote": true
+  },
+  "ai": {
+    "binding": "AI"
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": true,
+      "persist": true
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 1
+    }
+  },
   "vars": {
-    "INTERNAL_SERVICE_KEY": "rb_internal_agent_sec_2026"
+    "INTERNAL_SERVICE_KEY": "rb_internal_agent_sec_2026",
+    "NEXT_PUBLIC_BETTER_AUTH_URL": "https://resume.vedgupta.in",
+    "BETTER_AUTH_URL": "https://resume.vedgupta.in",
+    "TURSO_DATABASE_URL": "libsql://resume-builder-innovatorved.aws-ap-south-1.turso.io",
+    "SSO_BASE_URL": "https://sso.vedgupta.in",
+    "SSO_CLIENT_ID": "resume-builder-app",
+    "SSO_CLIENT_SECRET": "",
+    "R2_ACCOUNT_ID": "b4ca0337fb21e846c53e1f2611ba436c",
+    "R2_ENDPOINT": "https://b4ca0337fb21e846c53e1f2611ba436c.r2.cloudflarestorage.com",
+    "R2_BUCKET": "resume-builder-private"
   }
 }

@@ -9,7 +9,7 @@ import {
   validateSource,
   validateSourceId,
   verifyInternalSecret,
-} from "../src/validation";
+} from "../validation";
 
 describe("knowledge source validation", () => {
   test("rejects private and non-HTTPS URLs", () => {

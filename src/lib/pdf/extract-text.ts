@@ -80,7 +80,9 @@ export async function extractTextFromPdf(file: File): Promise<{ text: string; pa
   for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
     const page = await doc.getPage(pageNum);
     const content = await page.getTextContent();
-    const formatted = formatPdfTextItems(content.items as Array<{ str?: string; transform?: number[] }>);
+    const formatted = formatPdfTextItems(
+      content.items as Array<{ str?: string; transform?: number[] }>
+    );
     if (formatted.trim()) {
       pageTexts.push(formatted.trim());
     }
@@ -117,7 +119,9 @@ function formatJsonResume(data: Record<string, unknown>): string {
       const title = `${w.position || "Role"} at ${w.name || w.company || "Company"}`;
       const dates = `${w.startDate || ""} - ${w.endDate || "Present"}`;
       const summary = w.summary ? `\n${w.summary}` : "";
-      const highlights = Array.isArray(w.highlights) ? `\n${w.highlights.map((h) => `- ${h}`).join("\n")}` : "";
+      const highlights = Array.isArray(w.highlights)
+        ? `\n${w.highlights.map((h) => `- ${h}`).join("\n")}`
+        : "";
       return `### ${title} (${dates})${summary}${highlights}`;
     });
     sections.push(`## Experience\n\n${items.join("\n\n")}`);
@@ -215,7 +219,9 @@ export async function extractResumeText(file: File): Promise<ExtractedResume> {
 /**
  * Converts an extracted resume into structured ResumeData for immediate editor use.
  */
-export function extractedResumeToResumeData(extracted: ExtractedResume): import("@/types/resume").ResumeData {
+export function extractedResumeToResumeData(
+  extracted: ExtractedResume
+): import("@/types/resume").ResumeData {
   const baseName = extracted.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
 
   if (extracted.rawJson) {
@@ -245,7 +251,9 @@ export function extractedResumeToResumeData(extracted: ExtractedResume): import(
       const basics = raw.basics as Record<string, any>;
       const profiles = Array.isArray(basics.profiles) ? basics.profiles : [];
       const linkedinProfile = profiles.find((p: any) =>
-        String(p.network || "").toLowerCase().includes("linkedin")
+        String(p.network || "")
+          .toLowerCase()
+          .includes("linkedin")
       );
 
       const locationStr =
@@ -286,10 +294,10 @@ export function extractedResumeToResumeData(extracted: ExtractedResume): import(
             }))
           : [],
         skills: Array.isArray(raw.skills)
-          ? raw.skills.flatMap((s: any) => [
-              s.name,
-              ...(Array.isArray(s.keywords) ? s.keywords : []),
-            ]).filter(Boolean).map(String)
+          ? raw.skills
+              .flatMap((s: any) => [s.name, ...(Array.isArray(s.keywords) ? s.keywords : [])])
+              .filter(Boolean)
+              .map(String)
           : [],
         certifications: Array.isArray(raw.certificates)
           ? raw.certificates.map((c: any) => ({
@@ -317,7 +325,10 @@ export function extractedResumeToResumeData(extracted: ExtractedResume): import(
   }
 
   const text = extracted.text;
-  const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+  const lines = text
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
 
   const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
   const email = emailMatch ? emailMatch[0] : "";
@@ -331,7 +342,12 @@ export function extractedResumeToResumeData(extracted: ExtractedResume): import(
   let candidateName = baseName;
   if (lines.length > 0) {
     const first = lines[0].replace(/^#+\s*/, "").trim();
-    if (first.length > 2 && first.length < 50 && !first.includes("@") && !first.toLowerCase().includes("resume")) {
+    if (
+      first.length > 2 &&
+      first.length < 50 &&
+      !first.includes("@") &&
+      !first.toLowerCase().includes("resume")
+    ) {
       candidateName = first;
     }
   }

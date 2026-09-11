@@ -55,7 +55,9 @@ export function generateCleanModern(data: ResumeData): string {
       if (personalInfo?.location?.trim()) parts.push(escapeLatex(personalInfo.location.trim()));
       if (personalInfo?.phone?.trim()) parts.push(escapeLatex(personalInfo.phone.trim()));
       if (personalInfo?.email?.trim()) {
-        parts.push(`\\href{mailto:${escapeLatex(personalInfo.email.trim())}}{${escapeLatex(personalInfo.email.trim())}}`);
+        parts.push(
+          `\\href{mailto:${escapeLatex(personalInfo.email.trim())}}{${escapeLatex(personalInfo.email.trim())}}`
+        );
       }
       if (personalInfo?.linkedin?.trim()) {
         const cleanLi = personalInfo.linkedin.trim().replace(/^https?:\/\//, "");

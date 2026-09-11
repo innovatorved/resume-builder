@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { and, eq } from "drizzle-orm";
 import { getGeminiClient, isGeminiConfigured } from "@/lib/ai/gemini-client";
 import { auth } from "@/lib/auth";
+import { getSyncCloudflareEnv } from "@/lib/cloudflare-env";
 import { db } from "@/lib/db";
 import { aiGeneration, jobPost, resume } from "@/lib/db/schema";
 import { fetchUserProfile, searchKnowledgeEvidence } from "@/lib/knowledge/retriever";
@@ -49,7 +50,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return Response.json({ success: false, error: "Resume not found" }, { status: 404 });
     }
 
-    const env = locals.runtime?.env || process.env;
+    const env = getSyncCloudflareEnv(locals);
     if (!isGeminiConfigured(locals) && !isGeminiConfigured(env)) {
       return Response.json(
         {

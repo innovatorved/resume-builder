@@ -1,5 +1,6 @@
 // @ts-check
 
+import agents from "agents/vite"
 import cloudflare from "@astrojs/cloudflare"
 import react from "@astrojs/react"
 import tailwindcss from "@tailwindcss/vite"
@@ -12,7 +13,7 @@ export default defineConfig({
   }),
   integrations: [react()],
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [tailwindcss(), ...agents()],
     resolve: {
       alias: {
         "@": "/src",

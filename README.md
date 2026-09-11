@@ -63,22 +63,17 @@ Live URL: https://resume.vedgupta.in/
   ```sh
   bun test
   ```
-- Typecheck frontend and backend:
+- Typecheck:
   ```sh
   bunx tsc --noEmit
-  cd workers/knowledge-agent && bunx tsc --noEmit
   ```
 
 ## Deployment
 
-- Build and deploy frontend to Cloudflare Pages:
+- Build and deploy unified Worker to Cloudflare:
   ```sh
   bun run build
-  bunx wrangler pages deploy ./dist --project-name resume-builder --branch main
-  ```
-- Deploy the knowledge worker:
-  ```sh
-  cd workers/knowledge-agent
   bunx wrangler deploy
   ```
+
 

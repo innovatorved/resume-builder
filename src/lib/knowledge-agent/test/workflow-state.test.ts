@@ -4,8 +4,8 @@ import {
   classifyRetry,
   searchStatus,
   terminalRunStatuses,
-} from "../src/workflow-state";
-import type { SourceRecord } from "../src/types";
+} from "../workflow-state";
+import type { SourceRecord } from "../types";
 
 describe("workflow state & generation fencing", () => {
   const baseSource: SourceRecord = {

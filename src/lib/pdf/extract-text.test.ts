@@ -3,9 +3,13 @@ import { extractedResumeToResumeData, extractResumeText } from "./extract-text";
 
 describe("resume text extraction", () => {
   test("extracts markdown resume", async () => {
-    const file = new File(["# John Doe\n\nSenior Software Engineer\n- Built scalable systems"], "resume.md", {
-      type: "text/markdown",
-    });
+    const file = new File(
+      ["# John Doe\n\nSenior Software Engineer\n- Built scalable systems"],
+      "resume.md",
+      {
+        type: "text/markdown",
+      }
+    );
     const result = await extractResumeText(file);
     expect(result.fileType).toBe("markdown");
     expect(result.text).toContain("John Doe");
@@ -65,9 +69,13 @@ Experienced Systems Architect
   });
 
   test("converts extracted Markdown resume to ResumeData", async () => {
-    const file = new File(["# Bruce Wayne\nGotham City\nEmail: bruce@wayne.com\nPhone: (555) 000-1111"], "bruce.md", {
-      type: "text/markdown",
-    });
+    const file = new File(
+      ["# Bruce Wayne\nGotham City\nEmail: bruce@wayne.com\nPhone: (555) 000-1111"],
+      "bruce.md",
+      {
+        type: "text/markdown",
+      }
+    );
     const extracted = await extractResumeText(file);
     const resumeData = extractedResumeToResumeData(extracted);
     expect(resumeData.personalInfo.name).toBe("Bruce Wayne");

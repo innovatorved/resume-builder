@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
+import { getSyncCloudflareEnv } from "@/lib/cloudflare-env";
 import { db } from "@/lib/db";
 import { resume, resumeVersion } from "@/lib/db/schema";
 import { createPresignedDownloadUrl, isR2Configured } from "@/lib/r2/presigned";
@@ -98,9 +99,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
     const safeTitle = record.resumeName.toLowerCase().replace(/[^a-z0-9_-]/g, "-") || "resume";
     const filename = `${safeTitle}-v${record.versionNumber}.${fileType === "source" ? "tex" : "pdf"}`;
 
-    const env =
-      (locals as { runtime?: { env?: Record<string, string | undefined> } }).runtime?.env ||
-      process.env;
+    const env = getSyncCloudflareEnv(locals);
 
     if (!isR2Configured(env)) {
       return new Response(
