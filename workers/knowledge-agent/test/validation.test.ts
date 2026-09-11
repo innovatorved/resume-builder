@@ -1,5 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
+  extractListingHeadingsAndLinks,
+  isDeepContentRoute,
   isPublicHttpsUrl,
   userPrefix,
   validateResumeReference,
@@ -43,5 +45,28 @@ describe("knowledge source validation", () => {
   test("does not let encoded tenant IDs escape their prefix", () => {
     expect(userPrefix("../other")).toBe("users/..%2Fother/");
     expect(userPrefix("a").startsWith(userPrefix("ab"))).toBe(false);
+  });
+  test("excludes deep blog and project subpages while allowing listing index routes", () => {
+    expect(isDeepContentRoute("https://vedgupta.in/blog/how-to-build-x")).toBe(true);
+    expect(isDeepContentRoute("https://vedgupta.in/posts/ai-agents")).toBe(true);
+    expect(isDeepContentRoute("https://vedgupta.in/projects/resume-builder")).toBe(true);
+    expect(isDeepContentRoute("https://vedgupta.in/project/my-tool")).toBe(true);
+    expect(isDeepContentRoute("https://vedgupta.in/blog")).toBe(false);
+    expect(isDeepContentRoute("https://vedgupta.in/blog/")).toBe(false);
+    expect(isDeepContentRoute("https://vedgupta.in/projects")).toBe(false);
+    expect(isDeepContentRoute("https://vedgupta.in/about")).toBe(false);
+    expect(isDeepContentRoute("https://vedgupta.in/experience")).toBe(false);
+  });
+  test("extracts article titles and reference links from listing html", () => {
+    const html = `
+      <article>
+        <h2><a href="/blog/ai-agents">Building AI Agents</a></h2>
+        <p>Comprehensive guide to autonomous systems.</p>
+      </article>
+    `;
+    const summary = extractListingHeadingsAndLinks(html, "https://vedgupta.in");
+    expect(summary).toContain("Building AI Agents");
+    expect(summary).toContain("https://vedgupta.in/blog/ai-agents");
+    expect(summary).toContain("Comprehensive guide");
   });
 });

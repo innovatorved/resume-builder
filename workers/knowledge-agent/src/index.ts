@@ -19,6 +19,8 @@ import type {
   SourceRecord,
 } from "./types";
 import {
+  extractListingHeadingsAndLinks,
+  isDeepContentRoute,
   isPublicHttpsUrl,
   MAX_SOURCE_BYTES,
   userPrefix,
@@ -1307,17 +1309,15 @@ async function fetchPortfolio(
   const scoreUrl = (uStr: string): number => {
     try {
       const u = new URL(uStr);
-      const path = u.pathname.toLowerCase();
+      const path = u.pathname.toLowerCase().replace(/\/+$/, "");
       if (path === "/" || path === "") return 100;
       if (/\/(about|bio|profile)\b/.test(path)) return 95;
       if (/\/(experience|work|history)\b/.test(path)) return 90;
       if (/\/(resume|cv)\b/.test(path)) return 88;
-      if (path === "/projects" || path === "/projects/") return 85;
-      if (path.startsWith("/projects/")) return 80;
+      if (path === "/projects" || path === "/portfolio") return 85;
       if (/\/(certifications?|credentials?|licenses?)\b/.test(path)) return 78;
       if (/\/(skills?|stack|technologies)\b/.test(path)) return 75;
-      if (path === "/blog" || path === "/blog/") return 60;
-      if (path.startsWith("/blog/")) return 50;
+      if (path === "/blog" || path === "/articles" || path === "/writing" || path === "/posts") return 65;
       return 20;
     } catch {
       return 0;
@@ -1325,14 +1325,14 @@ async function fetchPortfolio(
   };
 
   const validUrls = Array.from(discoveredUrls)
-    .filter((u) => !ignoredPatterns.some((p) => p.test(u)))
+    .filter((u) => !isDeepContentRoute(u) && !ignoredPatterns.some((p) => p.test(u)))
     .sort((a, b) => scoreUrl(b) - scoreUrl(a));
 
-  // Select top 10 most relevant pages
-  const selectedUrls = validUrls.slice(0, 10);
+  // Select top 6 most relevant pages (e.g. Home, About, Experience, Projects index, Blog index, Certs)
+  const selectedUrls = validUrls.slice(0, 6);
   await log(
     "fetching",
-    `Identified ${validUrls.length} total pages. Selected ${selectedUrls.length} essential career evidence pages to analyze.`
+    `Identified ${validUrls.length} relevant top-level pages (excluded deep /blog/* and /project/* subpages). Selected ${selectedUrls.length} pages to analyze.`
   );
 
   // 4. Crawl each selected page and convert to markdown
@@ -1363,14 +1363,29 @@ async function fetchPortfolio(
       if (html) {
         const titleMatch = html.match(/<title[^>]*>(.*?)<\/title>/i);
         const title = titleMatch ? titleMatch[1].replace(/\s+/g, " ").trim() : pagePath;
-        const md = htmlToMarkdown(html);
+
+        let md = "";
+        const cleanPath = pagePath.toLowerCase().replace(/\/+$/, "");
+        const isListingPage = /^\/(blog|articles?|writing|posts?|projects?|works?)$/i.test(cleanPath);
+
+        if (isListingPage) {
+          // Extract only headings, main titles, and reference links
+          const listingSummary = extractListingHeadingsAndLinks(html, origin);
+          if (listingSummary) {
+            md = `### Listing Index & Referenced Links\n\n${listingSummary}`;
+          } else {
+            md = htmlToMarkdown(html).slice(0, 4000);
+          }
+        } else {
+          md = htmlToMarkdown(html).slice(0, 15000);
+        }
 
         if (md.length > 50) {
           pageResults.push({
             url: pageUrl,
             path: pagePath,
             title,
-            markdown: md.slice(0, 15000),
+            markdown: md,
           });
         }
       }

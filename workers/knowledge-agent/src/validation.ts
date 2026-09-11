@@ -88,3 +88,77 @@ export function validateResumeReference(input: unknown): ResumeReference {
 }
 
 export const userPrefix = (userId: string) => `users/${encodeURIComponent(userId)}/`;
+
+export function extractListingHeadingsAndLinks(html: string, origin: string): string {
+  const items: string[] = [];
+  const seen = new Set<string>();
+
+  // 1. Match structured card/article/list items with headings and links
+  const cardRegex =
+    /<(?:article|li|div)[^>]*>[\s\S]*?<h[2-4][^>]*>(?:<a[^>]*href=["']([^"']+)["'][^>]*>)?([\s\S]*?)(?:<\/a>)?<\/h[2-4]>([\s\S]*?)<\/(?:article|li|div)>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = cardRegex.exec(html)) !== null) {
+    const rawHref = match[1];
+    const title = match[2].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+    const desc = match[3].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    if (title && !seen.has(title)) {
+      seen.add(title);
+      let href = "";
+      if (rawHref) {
+        try {
+          href = new URL(rawHref, origin).href;
+        } catch {
+          href = rawHref;
+        }
+      }
+      items.push(
+        `- **${title}**${href ? ` ([Link](${href}))` : ""}${desc ? `: ${desc.slice(0, 160)}` : ""}`
+      );
+    }
+  }
+
+  // 2. Fallback: match direct heading links
+  if (items.length === 0) {
+    const headingLinkRegex =
+      /<h[2-4][^>]*>[\s\S]*?<a[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>[\s\S]*?<\/h[2-4]>/gi;
+    while ((match = headingLinkRegex.exec(html)) !== null) {
+      const rawHref = match[1];
+      const title = match[2].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+      if (title && !seen.has(title)) {
+        seen.add(title);
+        let href = "";
+        try {
+          href = new URL(rawHref, origin).href;
+        } catch {
+          href = rawHref;
+        }
+        items.push(`- **${title}** ([Link](${href}))`);
+      }
+    }
+  }
+
+  // 3. Fallback: plain headings
+  if (items.length === 0) {
+    const plainHeadings = [...html.matchAll(/<h[2-4][^>]*>([\s\S]*?)<\/h[2-4]>/gi)]
+      .map((m) => m[1].replace(/<[^>]+>/g, "").trim())
+      .filter((t) => t.length > 2 && t.length < 140);
+    for (const h of plainHeadings.slice(0, 25)) {
+      items.push(`- ${h}`);
+    }
+  }
+
+  return items.slice(0, 30).join("\n");
+}
+
+export function isDeepContentRoute(uStr: string): boolean {
+  try {
+    const u = new URL(uStr);
+    const path = u.pathname.toLowerCase().replace(/\/+$/, "");
+    // Exclude individual blog posts, articles, and individual project subpages
+    if (/^\/(blog|posts?|articles?|writing|news|journal)\/.+/i.test(path)) return true;
+    if (/^\/(projects?|works?|case-studies?)\/.+/i.test(path)) return true;
+    return false;
+  } catch {
+    return false;
+  }
+}
