@@ -13,6 +13,7 @@ import {
   Pin,
   Plus,
   Search,
+  Sparkles,
   Trash2,
   Upload,
 } from "lucide-react";
@@ -29,7 +30,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { createResume, deleteResume, duplicateResume, updateResume } from "@/lib/actions/resume";
+import {
+  createResume,
+  createResumeFromKnowledge,
+  deleteResume,
+  duplicateResume,
+  updateResume,
+} from "@/lib/actions/resume";
 import { extractedResumeToResumeData, extractResumeText } from "@/lib/pdf/extract-text";
 import type { ResumeData } from "@/types/resume";
 
@@ -60,6 +67,7 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
   const [uploadProgressText, setUploadProgressText] = useState("");
   const [syncToKnowledge, setSyncToKnowledge] = useState(true);
   const [dragOver, setDragOver] = useState(false);
+  const [isGeneratingFromKnowledge, setIsGeneratingFromKnowledge] = useState(false);
   const { toast } = useToast();
 
   const navigate = (path: string) => {
@@ -337,6 +345,32 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
     }
   };
 
+  const handleCreateFromKnowledge = async () => {
+    setIsGeneratingFromKnowledge(true);
+    try {
+      toast({
+        title: "Creating Resume...",
+        description: "Synthesizing verified knowledge into an ATS LaTeX resume.",
+      });
+      const res = await createResumeFromKnowledge();
+      if (!res.success || !res.data) {
+        throw new Error(res.error || "Failed to create resume from knowledge.");
+      }
+      toast({
+        title: "Resume Created!",
+        description: "Opening your new ATS resume...",
+      });
+      window.location.href = `/resume/${res.data.id}`;
+    } catch (err: any) {
+      toast({
+        title: "Could not create resume",
+        description: err.message || "Failed to generate resume from knowledge.",
+        variant: "destructive",
+      });
+      setIsGeneratingFromKnowledge(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background font-sans">
       {/* Header */}
@@ -355,6 +389,22 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
               >
                 <Library className="h-3.5 w-3.5" />
                 <span className="hidden md:inline">Knowledge</span>
+              </Button>
+
+              {/* Create ATS Resume from Career Knowledge */}
+              <Button
+                onClick={handleCreateFromKnowledge}
+                disabled={isGeneratingFromKnowledge}
+                size="sm"
+                className="h-8 px-2 sm:px-3 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs gap-1.5 cursor-pointer shadow-xs"
+                title="Create ATS LaTeX Resume from your Knowledge"
+              >
+                {isGeneratingFromKnowledge ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Sparkles className="h-3.5 w-3.5 text-emerald-200" />
+                )}
+                <span className="hidden sm:inline">From Knowledge</span>
               </Button>
 
               {/* Upload Existing Resume CTA */}
@@ -432,6 +482,18 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Button
+                onClick={handleCreateFromKnowledge}
+                disabled={isGeneratingFromKnowledge}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-9 px-4 font-medium gap-1.5 cursor-pointer shadow-xs"
+              >
+                {isGeneratingFromKnowledge ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-200" />
+                )}
+                <span>Create with Knowledge</span>
+              </Button>
+              <Button
                 onClick={() => setUploadModalOpen(true)}
                 variant="outline"
                 className="text-xs h-9 px-4 font-medium gap-1.5 cursor-pointer border-neutral-700 bg-neutral-900 text-neutral-200 hover:bg-neutral-800 hover:text-white"
@@ -444,7 +506,7 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
                 className="bg-white text-black hover:bg-neutral-200 text-xs h-9 px-5 font-medium gap-1.5 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>Create First Resume</span>
+                <span>Create Blank Resume</span>
               </Button>
             </div>
           </div>

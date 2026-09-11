@@ -57,3 +57,12 @@ export async function duplicateResume(id: string): Promise<ActionResult<any>> {
   });
   return res.json() as Promise<ActionResult<any>>;
 }
+
+export async function createResumeFromKnowledge(): Promise<ActionResult<{ id: string; name: string }>> {
+  const res = await fetch("/api/resumes/from-knowledge", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+  return res.json() as Promise<ActionResult<{ id: string; name: string }>>;
+}
+

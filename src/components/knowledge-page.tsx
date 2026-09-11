@@ -41,6 +41,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { extractResumeText } from "@/lib/pdf/extract-text";
+import { createResumeFromKnowledge } from "@/lib/actions/resume";
 
 type SourceType = "github" | "portfolio" | "website" | "linkedin" | "resume" | "upload";
 type SourceStatus =
@@ -343,6 +344,7 @@ export function KnowledgePage() {
   const [isExtractingResume, setIsExtractingResume] = useState(false);
   const [linkedInPdfFile, setLinkedInPdfFile] = useState<File | null>(null);
   const [resumeUploadFile, setResumeUploadFile] = useState<File | null>(null);
+  const [isGeneratingResume, setIsGeneratingResume] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
 
   // Dedicated per-source Durable Object state & WebSocket
@@ -894,6 +896,21 @@ export function KnowledgePage() {
     }
   };
 
+  const handleCreateResumeFromKnowledge = async () => {
+    setIsGeneratingResume(true);
+    setError("");
+    try {
+      const result = await createResumeFromKnowledge();
+      if (!result.success || !result.data) {
+        throw new Error(result.error || "Failed to create resume from knowledge.");
+      }
+      window.location.href = `/resume/${result.data.id}`;
+    } catch (err: any) {
+      setError(err.message || "Failed to generate resume from knowledge.");
+      setIsGeneratingResume(false);
+    }
+  };
+
   const processingCount = sources.filter(
     (source) => source.status === "accepted" || source.status === "running"
   ).length;
@@ -917,6 +934,26 @@ export function KnowledgePage() {
                 <span className="sm:hidden">Live</span>
               </div>
             )}
+            <Button
+              onClick={handleCreateResumeFromKnowledge}
+              disabled={isGeneratingResume}
+              size="sm"
+              className="h-8 px-2.5 sm:px-3 gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-medium cursor-pointer"
+              title="Create ATS LaTeX Resume from your Knowledge"
+            >
+              {isGeneratingResume ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span className="hidden sm:inline">Generating...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-3.5 w-3.5 text-emerald-200" />
+                  <span className="hidden sm:inline">Create Resume</span>
+                  <span className="sm:hidden">Resume</span>
+                </>
+              )}
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -955,9 +992,28 @@ export function KnowledgePage() {
               accessible to the AI resume tailor.
             </p>
           </div>
-          <div className="font-mono text-[11px] text-muted-foreground">
-            {sources.length} source{sources.length === 1 ? "" : "s"} ·{" "}
-            {processingCount ? `${processingCount} processing` : "up to date"}
+          <div className="flex flex-col sm:flex-row lg:flex-col items-start lg:items-end gap-3">
+            <Button
+              onClick={handleCreateResumeFromKnowledge}
+              disabled={isGeneratingResume}
+              className="gap-2 bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs text-xs sm:text-sm font-medium h-9 px-4 cursor-pointer"
+            >
+              {isGeneratingResume ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Synthesizing ATS Resume...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 text-emerald-200" />
+                  <span>Create Resume with Knowledge</span>
+                </>
+              )}
+            </Button>
+            <div className="font-mono text-[11px] text-muted-foreground">
+              {sources.length} source{sources.length === 1 ? "" : "s"} ·{" "}
+              {processingCount ? `${processingCount} processing` : "up to date"}
+            </div>
           </div>
         </section>
 
@@ -1478,10 +1534,27 @@ export function KnowledgePage() {
                         </span>
                       )}
                     </div>
-                    {documentContent && (
-                      <Button
-                        size="sm"
-                        variant="outline"
+                    <div className="flex items-center gap-2">
+                      {activeDocument === "profile.md" && (
+                        <Button
+                          size="sm"
+                          onClick={handleCreateResumeFromKnowledge}
+                          disabled={isGeneratingResume}
+                          className="h-6 px-2.5 text-[11px] gap-1 bg-emerald-600 hover:bg-emerald-500 text-white font-medium shadow-xs cursor-pointer"
+                          title="Generate ATS LaTeX Resume from this profile"
+                        >
+                          {isGeneratingResume ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Sparkles className="h-3 w-3 text-emerald-200" />
+                          )}
+                          <span>Create Resume</span>
+                        </Button>
+                      )}
+                      {documentContent && (
+                        <Button
+                          size="sm"
+                          variant="outline"
                         onClick={() => {
                           navigator.clipboard.writeText(documentContent);
                           setCopiedDoc(true);
@@ -1502,6 +1575,7 @@ export function KnowledgePage() {
                         )}
                       </Button>
                     )}
+                    </div>
                   </div>
                   {/* Scrollable Markdown / Content Body */}
                   <div className="flex-1 overflow-y-auto p-5 sm:p-7">

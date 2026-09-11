@@ -31,6 +31,9 @@ export function generateCleanModern(data: ResumeData): string {
 \\usepackage{xcolor}
 \\setlength{\\parindent}{0pt}
 
+\\usepackage[default]{lato}
+\\usepackage[T1]{fontenc}
+
 % Color Definitions
 \\definecolor{primary}{HTML}{2b2b2b}
 \\definecolor{accent}{HTML}{003366}
@@ -52,7 +55,6 @@ export function generateCleanModern(data: ResumeData): string {
     \\small 
     ${(() => {
       const parts: string[] = [];
-      if (personalInfo?.location?.trim()) parts.push(escapeLatex(personalInfo.location.trim()));
       if (personalInfo?.phone?.trim()) parts.push(escapeLatex(personalInfo.phone.trim()));
       if (personalInfo?.email?.trim()) {
         parts.push(
@@ -61,8 +63,13 @@ export function generateCleanModern(data: ResumeData): string {
       }
       if (personalInfo?.linkedin?.trim()) {
         const cleanLi = personalInfo.linkedin.trim().replace(/^https?:\/\//, "");
-        parts.push(`\\href{https://${escapeLatex(cleanLi)}}{${escapeLatex(cleanLi)}}`);
+        parts.push(`\\href{https://${escapeLatex(cleanLi)}}{Linkedin}`);
       }
+      if (personalInfo?.github?.trim()) {
+        const cleanGh = personalInfo.github.trim().replace(/^https?:\/\//, "");
+        parts.push(`\\href{https://${escapeLatex(cleanGh)}}{Github}`);
+      }
+      if (personalInfo?.location?.trim()) parts.push(escapeLatex(personalInfo.location.trim()));
       return parts.join(" \\ $|$ \\ ");
     })()}
 \\end{center}
@@ -76,7 +83,16 @@ export function generateCleanModern(data: ResumeData): string {
   if (filteredSkills.length > 0) {
     tex += `\n% --- SKILLS ---\n\\section{Technical Skills}\n`;
     tex += `\\begin{itemize}[leftmargin=0.15in, labelsep=0.5em, itemsep=-2pt]\n`;
-    tex += `    \\item ${escapeLatex(filteredSkills.join(", "))}\n`;
+    filteredSkills.forEach((skill) => {
+      const colonIndex = skill.indexOf(":");
+      if (colonIndex !== -1) {
+        const cat = skill.slice(0, colonIndex).trim();
+        const items = skill.slice(colonIndex + 1).trim();
+        tex += `    \\item \\textbf{${escapeLatex(cat)}:} ${escapeLatex(items)}\n`;
+      } else {
+        tex += `    \\item ${escapeLatex(skill)}\n`;
+      }
+    });
     tex += `\\end{itemize}\n`;
   }
 
@@ -87,9 +103,9 @@ export function generateCleanModern(data: ResumeData): string {
       const locStr = exp.location ? ` \\hfill ${escapeLatex(exp.location)}` : "";
       const dateStr = dateRange ? ` \\hfill ${dateRange}` : "";
       tex += `\\textbf{${escapeLatex(exp.company)}}${locStr} \\\\\n`;
-      tex += `\\textit{${escapeLatex(exp.title)}}${dateStr} \\\\\n`;
+      tex += `\\textit{${escapeLatex(exp.title)}}${dateStr}\n`;
       if (exp.description?.trim()) {
-        tex += `${escapeLatex(exp.description.trim())}\n`;
+        tex += `\\\\ ${escapeLatex(exp.description.trim())}\n`;
       }
       const filteredResps = (exp.responsibilities || []).filter((r) => r?.trim());
       if (filteredResps.length > 0) {
@@ -103,14 +119,29 @@ export function generateCleanModern(data: ResumeData): string {
     });
   }
 
+  if (certifications && certifications.length > 0) {
+    tex += `% --- CERTIFICATIONS ---\n\\section{Certifications}\n`;
+    tex += `\\begin{itemize}[leftmargin=0.15in, labelsep=0.5em, itemsep=-2pt]\n`;
+    certifications.forEach((cert) => {
+      let certLine = `    \\item \\textbf{${escapeLatex(cert.title)}}`;
+      if (cert.issuer) certLine += ` | \\textit{${escapeLatex(cert.issuer)}}`;
+      if (cert.date) certLine += ` \\hfill ${escapeLatex(cert.date)}`;
+      tex += `${certLine}\n`;
+    });
+    tex += `\\end{itemize}\n\n`;
+  }
+
   if (projects && projects.length > 0) {
-    tex += `\n% --- PROJECTS ---\n\\section{Key Projects}\n`;
+    tex += `% --- PROJECTS ---\n\\section{Key Projects}\n`;
     projects.forEach((proj) => {
-      tex += `\\textbf{${escapeLatex(proj.title)}}`;
+      let projHeader = `\\textbf{${escapeLatex(proj.title)}}`;
       if (proj.technologies) {
-        tex += ` $|$ \\textit{${escapeLatex(proj.technologies)}}`;
+        projHeader += ` $|$ \\textit{${escapeLatex(proj.technologies)}}`;
       }
-      tex += `\n`;
+      if (proj.date) {
+        projHeader += ` \\hfill ${escapeLatex(proj.date)}`;
+      }
+      tex += `${projHeader}\n`;
       if (proj.description) {
         tex += `\\begin{itemize}[noitemsep, topsep=0pt]\n`;
         const descLines = proj.description.split("\n").filter((l) => l.trim());
@@ -130,23 +161,8 @@ export function generateCleanModern(data: ResumeData): string {
       const dateStr = dateRange ? ` \\hfill ${dateRange}` : "";
       const locStr = edu.location ? ` \\hfill ${escapeLatex(edu.location)}` : "";
       tex += `\\textbf{${escapeLatex(edu.institution)}}${dateStr} \\\\\n`;
-      tex += `${escapeLatex(edu.degree)}${locStr}\n\n`;
+      tex += `${escapeLatex(edu.degree)}${locStr} \\\\\n\n`;
     });
-  }
-
-  if (certifications && certifications.length > 0) {
-    tex += `% --- CERTIFICATIONS ---\n\\section{Certifications}\n`;
-    tex += `\\begin{itemize}[leftmargin=0.15in, labelsep=0.5em, itemsep=-2pt]\n`;
-    certifications.forEach((cert) => {
-      let certLine = `    \\item \\textbf{${escapeLatex(cert.title)}}`;
-      if (cert.issuer) certLine += ` | \\textit{${escapeLatex(cert.issuer)}}`;
-      if (cert.date) certLine += ` \\hfill ${escapeLatex(cert.date)}`;
-      tex += `${certLine}\n`;
-      if (cert.link?.trim()) {
-        tex += `    \\href{${escapeLatex(cert.link)}}{View Credential}\n`;
-      }
-    });
-    tex += `\\end{itemize}\n`;
   }
 
   if (languages && languages.length > 0) {

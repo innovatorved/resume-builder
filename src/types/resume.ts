@@ -4,6 +4,8 @@ export interface PersonalInfo {
   phone: string;
   email: string;
   linkedin?: string;
+  github?: string;
+  website?: string;
   location: string;
 }
 
@@ -37,6 +39,8 @@ export interface Project {
   title: string;
   description: string;
   technologies: string;
+  link?: string;
+  date?: string;
 }
 
 export interface Language {
