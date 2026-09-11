@@ -292,7 +292,13 @@ export function PrismAiBar({
               key={chip}
               type="button"
               disabled={isLoading}
-              onClick={() => handleSubmit(chip)}
+              onClick={() => {
+                if (chip.toLowerCase().includes("tailor")) {
+                  setShowTailor(true);
+                } else {
+                  handleSubmit(chip);
+                }
+              }}
               className="shrink-0 bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-neutral-800 hover:border-neutral-700 px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 cursor-pointer"
             >
               <span>{chip}</span>

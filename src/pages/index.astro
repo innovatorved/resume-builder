@@ -31,12 +31,13 @@ const userResumes = await db
     id: resume.id,
     name: resume.name,
     data: resume.data,
+    isPinned: resume.isPinned,
     createdAt: resume.createdAt,
     updatedAt: resume.updatedAt,
   })
   .from(resume)
   .where(eq(resume.userId, session.user.id))
-  .orderBy(desc(resume.updatedAt));
+  .orderBy(desc(resume.isPinned), desc(resume.updatedAt));
 
 const initialResumes = userResumes.map((r) => ({
   ...r,

@@ -35,12 +35,13 @@ export const GET: APIRoute = async ({ request }) => {
         id: resume.id,
         name: resume.name,
         data: resume.data,
+        isPinned: resume.isPinned,
         createdAt: resume.createdAt,
         updatedAt: resume.updatedAt,
       })
       .from(resume)
       .where(eq(resume.userId, session.user.id))
-      .orderBy(desc(resume.updatedAt));
+      .orderBy(desc(resume.isPinned), desc(resume.updatedAt));
 
     return new Response(
       JSON.stringify({
@@ -81,7 +82,10 @@ export const POST: APIRoute = async ({ request }) => {
     const id = crypto.randomUUID();
     const vId = crypto.randomUUID();
     const now = new Date();
-    const initialLatex = generateCleanModern(validated.data);
+    const hasCustomLatex = typeof validated.rawLatex === "string" && validated.rawLatex.trim().length > 0;
+    const initialLatex = hasCustomLatex
+      ? validated.rawLatex!.trim()
+      : generateCleanModern(validated.data);
 
     await db.insert(resume).values({
       id,
@@ -102,8 +106,8 @@ export const POST: APIRoute = async ({ request }) => {
       pdfKey: null,
       structuredData: validated.data,
       rawLatex: initialLatex,
-      isLatexCustom: false,
-      changeSummary: "Initial version",
+      isLatexCustom: hasCustomLatex,
+      changeSummary: hasCustomLatex ? "Imported LaTeX source" : "Initial version",
       createdAt: now,
     });
 

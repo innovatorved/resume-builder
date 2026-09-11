@@ -12,15 +12,16 @@ import { Type, type Tool } from "@google/genai";
 
 function cleanJsonText(raw: string): string {
   let text = raw.trim();
-  if (text.startsWith("```json")) {
-    text = text.slice(7);
-  } else if (text.startsWith("```")) {
-    text = text.slice(3);
+  const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (codeBlockMatch) {
+    return codeBlockMatch[1].trim();
   }
-  if (text.endsWith("```")) {
-    text = text.slice(0, -3);
+  const firstBrace = text.indexOf("{");
+  const lastBrace = text.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    return text.slice(firstBrace, lastBrace + 1).trim();
   }
-  return text.trim();
+  return text;
 }
 
 export const POST: APIRoute = async ({ request, locals }) => {

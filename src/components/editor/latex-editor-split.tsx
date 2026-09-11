@@ -137,7 +137,6 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
 
     toast({
       title: "AI Changes Applied",
-      description: summary,
     });
   };
 

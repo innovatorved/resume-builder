@@ -46,20 +46,28 @@ export function generateCleanModern(data: ResumeData): string {
 
 % --- HEADER ---
 \\begin{center}
-    {\\Huge \\textbf{${escapeLatex(personalInfo?.name?.toUpperCase() || "YOUR NAME")}}} \\\\
-    \\vspace{2pt}
-    {\\color{accent} \\large ${escapeLatex(personalInfo?.title || "Professional Title")}} \\\\
+    {\\Huge \\textbf{${escapeLatex(personalInfo?.name?.toUpperCase() || "CANDIDATE NAME")}}} \\\\
+    ${personalInfo?.title?.trim() ? `\\vspace{2pt}\n    {\\color{accent} \\large ${escapeLatex(personalInfo.title)}} \\\\` : ""}
     \\vspace{4pt}
     \\small 
-    ${personalInfo?.phone ? `${escapeLatex(personalInfo.phone)} \\ $|$ \\ ` : ""}
-    ${personalInfo?.email ? `\\href{mailto:${escapeLatex(personalInfo.email)}}{${escapeLatex(personalInfo.email)}} \\ $|$ \\ ` : ""}
-    ${personalInfo?.linkedin ? `\\href{https://${escapeLatex(personalInfo.linkedin.replace(/^https?:\/\//, ""))}}{${escapeLatex(personalInfo.linkedin.replace(/^https?:\/\//, ""))}} \\ $|$ \\ ` : ""}
-    ${escapeLatex(personalInfo?.location || "")}
+    ${(() => {
+      const parts: string[] = [];
+      if (personalInfo?.location?.trim()) parts.push(escapeLatex(personalInfo.location.trim()));
+      if (personalInfo?.phone?.trim()) parts.push(escapeLatex(personalInfo.phone.trim()));
+      if (personalInfo?.email?.trim()) {
+        parts.push(`\\href{mailto:${escapeLatex(personalInfo.email.trim())}}{${escapeLatex(personalInfo.email.trim())}}`);
+      }
+      if (personalInfo?.linkedin?.trim()) {
+        const cleanLi = personalInfo.linkedin.trim().replace(/^https?:\/\//, "");
+        parts.push(`\\href{https://${escapeLatex(cleanLi)}}{${escapeLatex(cleanLi)}}`);
+      }
+      return parts.join(" \\ $|$ \\ ");
+    })()}
 \\end{center}
 `;
 
   if (summary?.trim()) {
-    tex += `\n% --- SUMMARY ---\n\\section{Summary}\n${escapeLatex(summary)}\n`;
+    tex += `\n% --- SUMMARY ---\n\\section{Summary}\n${escapeLatex(summary.trim())}\n`;
   }
 
   const filteredSkills = (skills || []).filter((s) => s?.trim());
@@ -73,16 +81,19 @@ export function generateCleanModern(data: ResumeData): string {
   if (experience && experience.length > 0) {
     tex += `\n% --- EXPERIENCE ---\n\\section{Professional Experience}\n`;
     experience.forEach((exp) => {
-      tex += `\\textbf{${escapeLatex(exp.company)}} \\hfill ${escapeLatex(exp.location)} \\\\\n`;
-      tex += `\\textit{${escapeLatex(exp.title)}} \\hfill ${escapeLatex(exp.startDate || "")} -- ${escapeLatex(exp.endDate)} \\\\\n`;
+      const dateRange = [exp.startDate, exp.endDate].filter(Boolean).map(escapeLatex).join(" -- ");
+      const locStr = exp.location ? ` \\hfill ${escapeLatex(exp.location)}` : "";
+      const dateStr = dateRange ? ` \\hfill ${dateRange}` : "";
+      tex += `\\textbf{${escapeLatex(exp.company)}}${locStr} \\\\\n`;
+      tex += `\\textit{${escapeLatex(exp.title)}}${dateStr} \\\\\n`;
       if (exp.description?.trim()) {
-        tex += `${escapeLatex(exp.description)}\n`;
+        tex += `${escapeLatex(exp.description.trim())}\n`;
       }
       const filteredResps = (exp.responsibilities || []).filter((r) => r?.trim());
       if (filteredResps.length > 0) {
         tex += `\\begin{itemize}[noitemsep, topsep=2pt]\n`;
         filteredResps.forEach((resp) => {
-          tex += `    \\item ${escapeLatex(resp)}\n`;
+          tex += `    \\item ${escapeLatex(resp.trim())}\n`;
         });
         tex += `\\end{itemize}\n`;
       }
@@ -101,13 +112,9 @@ export function generateCleanModern(data: ResumeData): string {
       if (proj.description) {
         tex += `\\begin{itemize}[noitemsep, topsep=0pt]\n`;
         const descLines = proj.description.split("\n").filter((l) => l.trim());
-        if (descLines.length > 1) {
-          descLines.forEach((line) => {
-            tex += `    \\item ${escapeLatex(line)}\n`;
-          });
-        } else {
-          tex += `    \\item ${escapeLatex(proj.description)}\n`;
-        }
+        descLines.forEach((line) => {
+          tex += `    \\item ${escapeLatex(line.trim())}\n`;
+        });
         tex += `\\end{itemize}\n`;
       }
       tex += `\n`;
@@ -117,8 +124,11 @@ export function generateCleanModern(data: ResumeData): string {
   if (education && education.length > 0) {
     tex += `% --- EDUCATION ---\n\\section{Education}\n`;
     education.forEach((edu) => {
-      tex += `\\textbf{${escapeLatex(edu.institution)}} \\hfill ${escapeLatex(edu.startDate || "")} -- ${escapeLatex(edu.endDate)} \\\\\n`;
-      tex += `${escapeLatex(edu.degree)} \\hfill ${escapeLatex(edu.location)}\n\n`;
+      const dateRange = [edu.startDate, edu.endDate].filter(Boolean).map(escapeLatex).join(" -- ");
+      const dateStr = dateRange ? ` \\hfill ${dateRange}` : "";
+      const locStr = edu.location ? ` \\hfill ${escapeLatex(edu.location)}` : "";
+      tex += `\\textbf{${escapeLatex(edu.institution)}}${dateStr} \\\\\n`;
+      tex += `${escapeLatex(edu.degree)}${locStr}\n\n`;
     });
   }
 

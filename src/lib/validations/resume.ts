@@ -82,6 +82,7 @@ export const resumeSchema = z.object({
 export const createResumeSchema = z.object({
   name: z.string().min(1, "Resume name is required"),
   data: resumeDataSchema,
+  rawLatex: z.string().optional(),
 });
 
 // Update Resume Schema
@@ -89,6 +90,7 @@ export const updateResumeSchema = z.object({
   id: z.string().min(1, "Resume ID is required"),
   name: z.string().min(1, "Resume name is required").optional(),
   data: resumeDataSchema.optional(),
+  isPinned: z.boolean().optional(),
 });
 
 // Types

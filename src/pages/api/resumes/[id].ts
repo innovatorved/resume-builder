@@ -43,6 +43,7 @@ export const GET: APIRoute = async ({ params, request }) => {
         id: resume.id,
         name: resume.name,
         data: resume.data,
+        isPinned: resume.isPinned,
         createdAt: resume.createdAt,
         updatedAt: resume.updatedAt,
       })
@@ -114,6 +115,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
     };
     if (validated.name !== undefined) updateValues.name = validated.name;
     if (validated.data !== undefined) updateValues.data = validated.data;
+    if (validated.isPinned !== undefined) updateValues.isPinned = validated.isPinned;
 
     await db.update(resume).set(updateValues).where(eq(resume.id, validated.id));
 

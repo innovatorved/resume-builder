@@ -19,6 +19,7 @@ export async function getResume(id: string): Promise<ActionResult<any>> {
 export async function createResume(input: {
   name: string;
   data: ResumeData;
+  rawLatex?: string;
 }): Promise<ActionResult<any>> {
   const res = await fetch("/api/resumes", {
     method: "POST",
@@ -32,6 +33,8 @@ export async function updateResume(input: {
   id: string;
   name?: string;
   data?: ResumeData;
+  rawLatex?: string;
+  isPinned?: boolean;
 }): Promise<ActionResult<any>> {
   const res = await fetch(`/api/resumes/${input.id}`, {
     method: "PUT",

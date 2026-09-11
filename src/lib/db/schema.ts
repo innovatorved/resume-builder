@@ -94,6 +94,7 @@ export const resume = sqliteTable(
     data: text("data", { mode: "json" }).notNull(),
     templateId: text("template_id").default("clean-modern"),
     currentVersionId: text("current_version_id"),
+    isPinned: integer("is_pinned", { mode: "boolean" }).default(false),
     createdAt: integer("created_at", { mode: "timestamp" })
       .default(sql`(cast(unixepoch() as integer))`)
       .notNull(),

@@ -10,6 +10,7 @@ import {
   GraduationCap,
   Library,
   Loader2,
+  Pin,
   Plus,
   Search,
   Trash2,
@@ -36,6 +37,7 @@ interface Resume {
   id: string;
   name: string;
   data: ResumeData;
+  isPinned?: boolean | null;
   createdAt: Date | string;
   updatedAt: Date | string;
 }
@@ -49,6 +51,7 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDownloading, setIsDownloading] = useState<string | null>(null);
   const [isDuplicating, setIsDuplicating] = useState<string | null>(null);
+  const [isPinning, setIsPinning] = useState<string | null>(null);
   const [resumeToRename, setResumeToRename] = useState<Resume | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [descValue, setDescValue] = useState("");
@@ -63,18 +66,65 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
     window.location.href = path;
   };
 
-  // Filter resumes based on search query
+  // Filter and sort resumes (pinned resumes always prioritized)
   const filteredResumes = useMemo(() => {
-    if (!searchQuery.trim()) return resumes;
-    const q = searchQuery.toLowerCase();
-    return resumes.filter((r) => {
-      const nameMatch = r.name?.toLowerCase().includes(q);
-      const titleMatch = r.data?.personalInfo?.title?.toLowerCase().includes(q);
-      const personMatch = r.data?.personalInfo?.name?.toLowerCase().includes(q);
-      const skillsMatch = (r.data?.skills || []).some((s) => s.toLowerCase().includes(q));
-      return nameMatch || titleMatch || personMatch || skillsMatch;
+    let list = resumes;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = resumes.filter((r) => {
+        const nameMatch = r.name?.toLowerCase().includes(q);
+        const titleMatch = r.data?.personalInfo?.title?.toLowerCase().includes(q);
+        const personMatch = r.data?.personalInfo?.name?.toLowerCase().includes(q);
+        const skillsMatch = (r.data?.skills || []).some((s) => s.toLowerCase().includes(q));
+        return nameMatch || titleMatch || personMatch || skillsMatch;
+      });
+    }
+
+    return [...list].sort((a, b) => {
+      const pinA = a.isPinned ? 1 : 0;
+      const pinB = b.isPinned ? 1 : 0;
+      if (pinB !== pinA) {
+        return pinB - pinA;
+      }
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
     });
   }, [resumes, searchQuery]);
+
+  const handleTogglePin = async (resume: Resume) => {
+    const nextPinned = !resume.isPinned;
+    setIsPinning(resume.id);
+    try {
+      const result = await updateResume({
+        id: resume.id,
+        isPinned: nextPinned,
+      });
+      if (result.success) {
+        setResumes((prev) =>
+          prev.map((r) => (r.id === resume.id ? { ...r, isPinned: nextPinned } : r))
+        );
+        toast({
+          title: nextPinned ? "Resume pinned" : "Resume unpinned",
+          description: nextPinned
+            ? `"${resume.name}" pinned to top of your list.`
+            : `"${resume.name}" unpinned.`,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to update pin status",
+          variant: "destructive",
+        });
+      }
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to update pin status",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPinning(null);
+    }
+  };
 
   const handleDeleteResume = async (id: string, name: string) => {
     if (!confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
@@ -174,6 +224,7 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
       const createRes = await createResume({
         name: cleanName || "Uploaded Resume",
         data: resumeData,
+        rawLatex: extracted.fileType === "latex" ? extracted.text : undefined,
       });
 
       if (!createRes.success || !createRes.data?.id) {
@@ -463,6 +514,12 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
 
                         {/* Metadata Pills */}
                         <div className="flex items-center gap-1.5 flex-wrap text-[10px] text-neutral-500">
+                          {item.isPinned && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400 font-medium">
+                              <Pin className="w-2.5 h-2.5 fill-amber-500 text-amber-500 rotate-45" />
+                              <span>Pinned</span>
+                            </span>
+                          )}
                           <span className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 font-mono text-neutral-600 dark:text-neutral-400">
                             LaTeX
                           </span>
@@ -553,6 +610,26 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
                             <span>PDF</span>
                           </>
                         )}
+                      </Button>
+
+                      {/* Pin / Unpin Button */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={isPinning === item.id}
+                        onClick={() => handleTogglePin(item)}
+                        className={`h-8 w-8 p-0 cursor-pointer ${
+                          item.isPinned
+                            ? "text-amber-500 hover:text-amber-600 bg-amber-50/60 dark:bg-amber-950/30"
+                            : "text-neutral-400 hover:text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-900"
+                        }`}
+                        title={item.isPinned ? "Unpin resume" : "Pin resume to top"}
+                      >
+                        <Pin
+                          className={`w-3.5 h-3.5 ${
+                            item.isPinned ? "fill-amber-500 text-amber-500 rotate-45" : ""
+                          }`}
+                        />
                       </Button>
 
                       {/* Rename Button */}
