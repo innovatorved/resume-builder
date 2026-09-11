@@ -11,7 +11,7 @@ import {
 import { Type, type Tool } from "@google/genai";
 
 function cleanJsonText(raw: string): string {
-  let text = raw.trim();
+  const text = raw.trim();
   const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
   if (codeBlockMatch) {
     return codeBlockMatch[1].trim();
@@ -203,7 +203,7 @@ Please modify or generate the LaTeX document to fulfill this request using the c
   "suggestedPrompts": ["Next prompt suggestion 1", "Next prompt suggestion 2"]
 }`;
 
-    let currentContents: any[] = [
+    const currentContents: any[] = [
       ...recentHistory,
       {
         role: "user",
