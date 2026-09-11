@@ -1,9 +1,7 @@
 import {
   ChevronDown,
-  Code,
   Download,
   FileCode,
-  FileText,
   History,
   Loader2,
   Save,
@@ -19,7 +17,6 @@ import type { ResumeData } from "@/types/resume";
 import { MonacoLatexEditor } from "./monaco-latex-editor";
 import { PdfPreviewPane } from "./pdf-preview-pane";
 import { PrismAiBar } from "./prism-ai-bar";
-import { StructuredFormEditor } from "./structured-form-editor";
 import { VersionHistoryModal, type VersionItem } from "./version-history-modal";
 
 interface LatexEditorSplitProps {
@@ -37,7 +34,6 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
   const { toast } = useToast();
 
   const [resumeName, setResumeName] = useState(initialResume.name || "Untitled Resume");
-  const [leftViewMode, setLeftViewMode] = useState<"code" | "form">("code");
   const [structuredData, setStructuredData] = useState<ResumeData>(initialResume.data);
   const [currentVersionId, setCurrentVersionId] = useState<string | undefined>(
     initialResume.currentVersionId || undefined
@@ -125,15 +121,6 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
   useEffect(() => {
     runCompile(latexSource);
   }, [runCompile, latexSource]);
-
-  // Update LaTeX when structured form data changes
-  const handleFormDataChange = (newData: ResumeData) => {
-    setStructuredData(newData);
-    const newSource = generateCleanModern(newData);
-    setLatexSource(newSource);
-    runCompile(newSource);
-    triggerAutoSave(newSource, newData, resumeName);
-  };
 
   // Handle Monaco code edit
   const handleLatexChange = (newCode: string) => {
@@ -388,34 +375,6 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
           </div>
         </div>
 
-        {/* Center: View Switcher (LaTeX Code vs Form Builder) */}
-        <div className="flex items-center p-0.5 bg-neutral-900 border border-neutral-800 rounded-lg">
-          <button
-            type="button"
-            onClick={() => setLeftViewMode("code")}
-            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${
-              leftViewMode === "code"
-                ? "bg-white text-black shadow-xs font-semibold"
-                : "text-neutral-400 hover:text-white"
-            }`}
-          >
-            <Code className="w-3.5 h-3.5" />
-            <span>LaTeX Code</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setLeftViewMode("form")}
-            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${
-              leftViewMode === "form"
-                ? "bg-white text-black shadow-xs font-semibold"
-                : "text-neutral-400 hover:text-white"
-            }`}
-          >
-            <FileText className="w-3.5 h-3.5" />
-            <span>Form Builder</span>
-          </button>
-        </div>
-
         {/* Right: Actions */}
         <div className="flex items-center gap-2">
           {/* Version History Button */}
@@ -485,16 +444,12 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
 
       {/* MAIN SPLIT-PANE BODY */}
       <div className="flex-1 flex overflow-hidden relative">
-        {/* Left Pane: Monaco Editor or Form Builder */}
+        {/* Left Pane: Monaco Editor */}
         <div
           style={{ width: `${splitRatio}%` }}
           className="h-full flex flex-col border-r border-neutral-800 overflow-hidden bg-neutral-950"
         >
-          {leftViewMode === "code" ? (
-            <MonacoLatexEditor value={latexSource} onChange={handleLatexChange} />
-          ) : (
-            <StructuredFormEditor data={structuredData} onChange={handleFormDataChange} />
-          )}
+          <MonacoLatexEditor value={latexSource} onChange={handleLatexChange} />
         </div>
 
         {/* Resizer Divider */}

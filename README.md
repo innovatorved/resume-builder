@@ -8,7 +8,7 @@ Live URL: https://resume.vedgupta.in/
 
 ### Resume Management
 - Create, rename, duplicate, and delete resumes from a central dashboard.
-- Dual-mode editing: visual form interface and direct LaTeX code editor.
+- Direct LaTeX code editor with live syntax validation and vector PDF preview.
 - Live PDF preview generated on demand.
 - Version history with point-in-time snapshots and restore options.
 - AI-assisted tailoring for job descriptions and section rewriting.
