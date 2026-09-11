@@ -11,7 +11,14 @@ export { KnowledgeAgent, KnowledgeIngestionWorkflow };
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
     if (env && typeof env === "object") {
-      Object.assign(process.env, env);
+      for (const [key, value] of Object.entries(env)) {
+        if (value !== undefined && value !== "") {
+          process.env[key] = value as string;
+        }
+      }
+      if ((env as any).SSO_SERVICE) {
+        (globalThis as any).__SSO_SERVICE__ = (env as any).SSO_SERVICE;
+      }
     }
 
     const url = new URL(request.url);

@@ -4,6 +4,16 @@ import { genericOAuth } from "better-auth/plugins";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
 
+async function ssoFetch(url: string | URL, init?: RequestInit): Promise<Response> {
+  const ssoService = (globalThis as any).__SSO_SERVICE__ || (process.env as any).SSO_SERVICE;
+  if (ssoService && typeof ssoService.fetch === "function") {
+    console.log("[SSO ssoFetch] Calling via Cloudflare Service Binding:", url.toString());
+    return ssoService.fetch(url.toString(), init);
+  }
+  console.log("[SSO ssoFetch] Calling via global fetch:", url.toString());
+  return fetch(url, init);
+}
+
 function initAuth() {
   const secret = process.env.BETTER_AUTH_SECRET?.trim();
   if (!secret) throw new Error("BETTER_AUTH_SECRET is required");
@@ -50,7 +60,7 @@ function initAuth() {
           {
             providerId: "vedgupta-sso",
             clientId: process.env.SSO_CLIENT_ID || "resume-builder-app",
-            clientSecret: process.env.SSO_CLIENT_SECRET || "",
+            clientSecret: process.env.SSO_CLIENT_SECRET || "ZRkRBGALUztlpJWabalsHKWdMkvPaUDh",
             authorizationUrl: "https://sso.vedgupta.in/api/auth/oauth2/authorize",
             tokenUrl: "https://sso.vedgupta.in/api/auth/oauth2/token",
             userInfoUrl: "https://sso.vedgupta.in/api/auth/oauth2/userinfo",
@@ -73,31 +83,61 @@ function initAuth() {
               });
 
               const redirectURI = data.redirectURI || `${baseURL}/api/auth/callback/vedgupta-sso`;
+              const clientId = (process.env.SSO_CLIENT_ID || "resume-builder-app").trim();
+              const clientSecret = (
+                process.env.SSO_CLIENT_SECRET || "ZRkRBGALUztlpJWabalsHKWdMkvPaUDh"
+              ).trim();
+
               const body = new URLSearchParams({
                 grant_type: "authorization_code",
                 code: data.code,
-                client_id: process.env.SSO_CLIENT_ID || "resume-builder-app",
                 redirect_uri: redirectURI,
               });
 
               if (data.codeVerifier) {
                 body.set("code_verifier", data.codeVerifier);
               }
-              if (process.env.SSO_CLIENT_SECRET) {
-                body.set("client_secret", process.env.SSO_CLIENT_SECRET);
+
+              const headers: Record<string, string> = {
+                "content-type": "application/x-www-form-urlencoded",
+                accept: "application/json",
+              };
+
+              // Better Auth OAuth provider with token_endpoint_auth_method: "client_secret_basic"
+              // expects HTTP Basic Authentication header and NO client_secret in the body
+              if (clientSecret) {
+                const credentials = btoa(`${clientId}:${clientSecret}`);
+                headers["authorization"] = `Basic ${credentials}`;
+              } else {
+                body.set("client_id", clientId);
               }
 
-              const response = await fetch("https://sso.vedgupta.in/api/auth/oauth2/token", {
+              let response = await ssoFetch("https://sso.vedgupta.in/api/auth/oauth2/token", {
                 method: "POST",
-                headers: {
-                  "content-type": "application/x-www-form-urlencoded",
-                  accept: "application/json",
-                },
+                headers,
                 body: body.toString(),
               });
 
-              const responseText = await response.text();
+              let responseText = await response.text();
               console.log(`[SSO getToken] Token response ${response.status}:`, responseText);
+
+              // If the server failed due to method mismatch expecting client_secret_post, fallback and retry
+              if (!response.ok && responseText.includes("client_secret_post") && clientSecret) {
+                console.log("[SSO getToken] Retrying with client_secret_post...");
+                const postBody = new URLSearchParams(body);
+                postBody.set("client_id", clientId);
+                postBody.set("client_secret", clientSecret);
+                response = await ssoFetch("https://sso.vedgupta.in/api/auth/oauth2/token", {
+                  method: "POST",
+                  headers: {
+                    "content-type": "application/x-www-form-urlencoded",
+                    accept: "application/json",
+                  },
+                  body: postBody.toString(),
+                });
+                responseText = await response.text();
+                console.log(`[SSO getToken retry] Response ${response.status}:`, responseText);
+              }
 
               if (!response.ok) {
                 console.error(`[SSO getToken ERROR] Status ${response.status}: ${responseText}`);
@@ -126,7 +166,7 @@ function initAuth() {
             },
             getUserInfo: async (tokens) => {
               console.log("[SSO getUserInfo] Fetching user info with access token");
-              const response = await fetch("https://sso.vedgupta.in/api/auth/oauth2/userinfo", {
+              const response = await ssoFetch("https://sso.vedgupta.in/api/auth/oauth2/userinfo", {
                 headers: {
                   authorization: `Bearer ${tokens.accessToken}`,
                   accept: "application/json",

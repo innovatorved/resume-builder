@@ -54,6 +54,12 @@
   "ai": {
     "binding": "AI"
   },
+  "services": [
+    {
+      "binding": "SSO_SERVICE",
+      "service": "vedgupta-sso"
+    }
+  ],
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1,
@@ -75,7 +81,6 @@
     "TURSO_DATABASE_URL": "libsql://resume-builder-innovatorved.aws-ap-south-1.turso.io",
     "SSO_BASE_URL": "https://sso.vedgupta.in",
     "SSO_CLIENT_ID": "resume-builder-app",
-    "SSO_CLIENT_SECRET": "",
     "R2_ACCOUNT_ID": "b4ca0337fb21e846c53e1f2611ba436c",
     "R2_ENDPOINT": "https://b4ca0337fb21e846c53e1f2611ba436c.r2.cloudflarestorage.com",
     "R2_BUCKET": "resume-builder-private"
