@@ -952,6 +952,20 @@ export function KnowledgePage() {
                 <span className="hidden sm:inline">Dashboard</span>
               </a>
             </Button>
+            <button
+              type="button"
+              onClick={handleCreateResumeFromKnowledge}
+              disabled={isGeneratingResume}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4 decoration-border hover:decoration-foreground cursor-pointer disabled:opacity-50"
+              title="Build ATS Resume from Knowledge"
+            >
+              {isGeneratingResume ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Sparkles className="h-3.5 w-3.5" />
+              )}
+              <span>{isGeneratingResume ? "Building..." : "Build Resume"}</span>
+            </button>
             <AuthNav />
           </div>
         </div>
@@ -972,24 +986,20 @@ export function KnowledgePage() {
               accessible to the AI resume tailor.
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row lg:flex-col items-start lg:items-end gap-3">
-            <Button
+          <div className="flex flex-col sm:flex-row lg:flex-col items-start lg:items-end gap-2.5">
+            <button
+              type="button"
               onClick={handleCreateResumeFromKnowledge}
               disabled={isGeneratingResume}
-              className="h-9 px-4 bg-white text-black hover:bg-neutral-200 font-medium text-xs gap-1.5 shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4 decoration-border hover:decoration-foreground cursor-pointer disabled:opacity-50"
             >
               {isGeneratingResume ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  <span>Creating ATS Resume...</span>
-                </>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
-                <>
-                  <Sparkles className="h-3.5 w-3.5" />
-                  <span>Create Resume from Knowledge</span>
-                </>
+                <Sparkles className="h-3.5 w-3.5" />
               )}
-            </Button>
+              <span>{isGeneratingResume ? "Building..." : "Build Resume"}</span>
+            </button>
             <div className="font-mono text-[11px] text-muted-foreground">
               {sources.length} source{sources.length === 1 ? "" : "s"} ·{" "}
               {processingCount ? `${processingCount} processing` : "up to date"}
@@ -1516,21 +1526,20 @@ export function KnowledgePage() {
                     </div>
                     <div className="flex items-center gap-2">
                       {activeDocument === "profile.md" && (
-                        <Button
-                          size="sm"
-                          variant="outline"
+                        <button
+                          type="button"
                           onClick={handleCreateResumeFromKnowledge}
                           disabled={isGeneratingResume}
-                          className="h-6 px-2.5 text-[11px] gap-1 border-border text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-900 font-medium cursor-pointer"
-                          title="Generate ATS LaTeX Resume from this profile"
+                          className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4 decoration-border hover:decoration-foreground cursor-pointer disabled:opacity-50 mr-1"
+                          title="Build ATS LaTeX Resume from profile"
                         >
                           {isGeneratingResume ? (
                             <Loader2 className="h-3 w-3 animate-spin" />
                           ) : (
                             <Sparkles className="h-3 w-3" />
                           )}
-                          <span>Create Resume</span>
-                        </Button>
+                          <span>{isGeneratingResume ? "Building..." : "Build Resume"}</span>
+                        </button>
                       )}
                       {documentContent && (
                         <Button
