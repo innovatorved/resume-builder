@@ -60,7 +60,7 @@ export function AiAssistPanel({
         }),
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as any;
       if (data.success) {
         setTailorResult(data.data);
       } else {
@@ -90,7 +90,7 @@ export function AiAssistPanel({
         }),
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as any;
       if (data.success) {
         setRewriteResult(data.data);
       } else {

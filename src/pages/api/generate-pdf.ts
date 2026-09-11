@@ -5,7 +5,7 @@ import type { ResumeData } from "@/types/resume";
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const body = await request.json();
+    const body = (await request.json()) as { rawLatex?: string } & Partial<ResumeData>;
 
     if (!body) {
       return new Response(JSON.stringify({ error: "Request payload is required" }), {

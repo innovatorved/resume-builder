@@ -28,11 +28,7 @@ interface BrandLockupProps {
   className?: string;
 }
 
-export function BrandLockup({
-  size = "md",
-  showTagline = true,
-  className = "",
-}: BrandLockupProps) {
+export function BrandLockup({ size = "md", showTagline = true, className = "" }: BrandLockupProps) {
   const isSm = size === "sm";
   const isLg = size === "lg";
 
@@ -56,9 +52,7 @@ export function BrandLockup({
           />
         </div>
 
-        <span className="text-neutral-400 dark:text-neutral-500 font-mono text-xs px-0.5">
-          ✕
-        </span>
+        <span className="text-neutral-400 dark:text-neutral-500 font-mono text-xs px-0.5">✕</span>
 
         <div
           className={`flex items-center justify-center rounded-md border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 shadow-xs ${

@@ -46,7 +46,7 @@ export function MonacoLatexEditor({ value, onChange, readOnly = false }: MonacoL
 
     // Register LaTeX language if not already registered
     const existingLangs = monaco.languages.getLanguages();
-    if (!existingLangs.some((l) => l.id === "latex")) {
+    if (!existingLangs.some((l: any) => l.id === "latex")) {
       monaco.languages.register({ id: "latex" });
     }
 
@@ -202,7 +202,7 @@ export function MonacoLatexEditor({ value, onChange, readOnly = false }: MonacoL
 
     // Register custom LaTeX snippet completions
     monaco.languages.registerCompletionItemProvider("latex", {
-      provideCompletionItems: (model, position) => {
+      provideCompletionItems: (model: any, position: any) => {
         const word = model.getWordUntilPosition(position);
         const range = {
           startLineNumber: position.lineNumber,
@@ -328,7 +328,8 @@ export function MonacoLatexEditor({ value, onChange, readOnly = false }: MonacoL
             >
               <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
               <span>
-                {syntaxIssues.length} Syntax Error{syntaxIssues.length > 1 ? "s" : ""} (Click to jump)
+                {syntaxIssues.length} Syntax Error{syntaxIssues.length > 1 ? "s" : ""} (Click to
+                jump)
               </span>
             </button>
           )}

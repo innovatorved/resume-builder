@@ -18,7 +18,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
 
-    const body = await request.json();
+    const body = (await request.json()) as {
+      resumeId?: string;
+      versionId?: string;
+      type?: string;
+      contentType?: string;
+      extension?: string;
+    };
     const { resumeId, versionId, type, contentType, extension } = body;
 
     if (!resumeId || !versionId || !type || !contentType) {

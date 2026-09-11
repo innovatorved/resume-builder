@@ -1,0 +1,19 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "resume-builder-knowledge-agent",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-11",
+  "compatibility_flags": ["nodejs_compat"],
+  "durable_objects": { "bindings": [{ "name": "KnowledgeAgent", "class_name": "KnowledgeAgent" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["KnowledgeAgent"] }],
+  "workflows": [{ "binding": "KNOWLEDGE_INGESTION", "name": "resume-builder-knowledge-ingestion", "class_name": "KnowledgeIngestionWorkflow" }],
+  "r2_buckets": [{ "binding": "KNOWLEDGE_BUCKET", "bucket_name": "resume-builder-knowledge" }],
+  "browser": { "binding": "BROWSER", "remote": true },
+  "ai": { "binding": "AI" },
+  // "ai_search": [{ "binding": "KNOWLEDGE_SEARCH", "instance_name": "resume-builder-knowledge", "remote": true }],
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 0.01 }
+  }
+}

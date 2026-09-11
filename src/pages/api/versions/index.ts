@@ -66,7 +66,7 @@ export const GET: APIRoute = async ({ request }) => {
   }
 };
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const session = await auth.api.getSession({
       headers: request.headers,
@@ -79,7 +79,15 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    const body = await request.json();
+    const body = (await request.json()) as {
+      resumeId?: string;
+      sourceKey?: string;
+      pdfKey?: string;
+      structuredData?: ResumeData;
+      rawLatex?: string;
+      isLatexCustom?: boolean;
+      changeSummary?: string;
+    };
     const { resumeId, sourceKey, pdfKey, structuredData, rawLatex, isLatexCustom, changeSummary } =
       body;
 
@@ -141,6 +149,37 @@ export const POST: APIRoute = async ({ request }) => {
         data: structuredData as ResumeData,
       })
       .where(eq(resume.id, resumeId));
+
+    const knowledgeService = locals.runtime?.env.KNOWLEDGE_AGENT;
+    if (knowledgeService) {
+      const target = new URL(
+        `/users/${encodeURIComponent(session.user.id)}/resumes/sync`,
+        "https://knowledge-agent.internal"
+      );
+      try {
+        const syncResponse = await knowledgeService.fetch(
+          new Request(target, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              resumeId,
+              versionId,
+              name: ownedResume.name,
+              data: structuredData,
+              rawLatex: rawLatex || "",
+            }),
+          })
+        );
+        if (!syncResponse.ok) {
+          console.warn("[create-version] Knowledge sync warning:", syncResponse.status);
+        }
+      } catch (error) {
+        console.warn(
+          "[create-version] Knowledge sync unavailable:",
+          error instanceof Error ? error.message : "unknown error"
+        );
+      }
+    }
 
     return new Response(
       JSON.stringify({

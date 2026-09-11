@@ -93,7 +93,9 @@ if (!found) {
 }
 
 // Fetch the version snapshot by currentVersionId first, then fallback to latest by number
-let latestVersion: { id: string; versionNumber: number; rawLatex: string | null; structuredData: unknown } | undefined;
+let latestVersion:
+  | { id: string; versionNumber: number; rawLatex: string | null; structuredData: unknown }
+  | undefined;
 
 if (found.currentVersionId) {
   const [byId] = await db

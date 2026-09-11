@@ -4,6 +4,9 @@ import { genericOAuth } from "better-auth/plugins";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
 
+const secret = process.env.BETTER_AUTH_SECRET?.trim();
+if (!secret) throw new Error("BETTER_AUTH_SECRET is required");
+
 const trustedOrigins = Array.from(
   new Set(
     [
@@ -17,7 +20,7 @@ const trustedOrigins = Array.from(
 );
 
 export const auth = betterAuth({
-  secret: process.env.BETTER_AUTH_SECRET || "bQmYpTAaLHwRCAj2tqGXVkC2mfaBOFns0ujXrOG+EQQ=",
+  secret,
   database: drizzleAdapter(db, {
     provider: "sqlite",
     schema: {

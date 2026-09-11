@@ -1,0 +1,17 @@
+---
+import { KnowledgePage } from "@/components/knowledge-page";
+import Layout from "@/layouts/Layout.astro";
+import { auth } from "@/lib/auth";
+
+const session = await auth.api.getSession({
+  headers: Astro.request.headers,
+});
+
+if (!session?.user) {
+  return Astro.redirect("/login");
+}
+---
+
+<Layout title="Knowledge | Resume Builder">
+  <KnowledgePage client:load />
+</Layout>

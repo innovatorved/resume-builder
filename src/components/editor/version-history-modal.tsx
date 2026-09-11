@@ -52,7 +52,11 @@ export function VersionHistoryModal({
         setIsLoading(true);
         setError(null);
         const res = await fetch(`/api/versions?resumeId=${resumeId}`);
-        const data = await res.json();
+        const data = (await res.json()) as {
+          success?: boolean;
+          error?: string;
+          data?: VersionItem[];
+        };
         if (data.success) {
           setVersions(data.data || []);
         } else {

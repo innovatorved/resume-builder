@@ -92,7 +92,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
     }
 
     const { id } = params;
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
     const validated = updateResumeSchema.parse({ ...body, id });
 
     const [existing] = await db
@@ -169,7 +169,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
   }
 };
 
-export const DELETE: APIRoute = async ({ params, request }) => {
+export const DELETE: APIRoute = async ({ params, request, locals }) => {
   try {
     const session = await auth.api.getSession({
       headers: request.headers,
@@ -204,6 +204,23 @@ export const DELETE: APIRoute = async ({ params, request }) => {
     }
 
     await db.delete(resume).where(eq(resume.id, id));
+    const knowledgeService = locals.runtime?.env.KNOWLEDGE_AGENT;
+    if (knowledgeService) {
+      try {
+        const target = new URL(
+          `/users/${encodeURIComponent(session.user.id)}/resumes/${encodeURIComponent(id)}`,
+          "https://knowledge-agent.internal"
+        );
+        const response = await knowledgeService.fetch(new Request(target, { method: "DELETE" }));
+        if (!response.ok)
+          console.warn("[delete-resume] Knowledge cleanup warning:", response.status);
+      } catch (error) {
+        console.warn(
+          "[delete-resume] Knowledge cleanup unavailable:",
+          error instanceof Error ? error.message : "unknown error"
+        );
+      }
+    }
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
@@ -235,10 +252,16 @@ export const POST: APIRoute = async ({ params, request }) => {
     }
 
     const { id } = params;
+    if (!id) {
+      return new Response(JSON.stringify({ success: false, error: "ID is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
     const [existing] = await db
       .select()
       .from(resume)
-      .where(and(eq(resume.id, id!), eq(resume.userId, session.user.id)))
+      .where(and(eq(resume.id, id), eq(resume.userId, session.user.id)))
       .limit(1);
 
     if (!existing) {
@@ -263,7 +286,8 @@ export const POST: APIRoute = async ({ params, request }) => {
 
     const parsedData = parseResumeData(existing.data);
     const rawLatex = latestVersion?.rawLatex || generateCleanModern(parsedData);
-    const sourceKey = latestVersion?.sourceKey || `resumes/local/${newId}/source/${newVersionId}.tex`;
+    const sourceKey =
+      latestVersion?.sourceKey || `resumes/local/${newId}/source/${newVersionId}.tex`;
 
     // 1. Insert duplicated resume
     await db.insert(resume).values({

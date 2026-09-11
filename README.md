@@ -1,71 +1,84 @@
 # Resume Builder
 
-Create, edit, version, and download professional LaTeX resumes.
+A web application to create, edit, tailor, and store professional LaTeX resumes with an integrated career knowledge base.
 
-Live site: https://resume.vedgupta.in/
+Live URL: https://resume.vedgupta.in/
 
-## Features
+## What It Does
 
-- Resume dashboard with create, edit, duplicate, rename, and delete actions
-- Structured form and LaTeX editor with live PDF preview
-- AI-assisted resume edits and tailoring
-- Version history for saved resume snapshots
-- Private PDF and LaTeX source storage in Cloudflare R2
-- Short-lived, signed S3 URLs for uploads and downloads
+### Resume Management
+- Create, rename, duplicate, and delete resumes from a central dashboard.
+- Dual-mode editing: visual form interface and direct LaTeX code editor.
+- Live PDF preview generated on demand.
+- Version history with point-in-time snapshots and restore options.
+- AI-assisted tailoring for job descriptions and section rewriting.
 
-## Stack
+### Career Knowledge Hub
+- Connects multiple career sources to ground your resume data:
+  - GitHub: pulls public profile information, repositories, and pinned work.
+  - Portfolios: crawls sitemaps and key pages (about, projects, experience).
+  - Websites: captures single articles, blog posts, or project links.
+  - LinkedIn: profiles scraped with an option to upload the official PDF export for complete data.
+  - Resumes and Documents: direct file upload supporting PDF, LaTeX, Markdown, and plain text.
+- Cloudflare Durable Objects handle background fetching and extraction.
+- Live progress and logs stream directly to the browser through WebSockets.
+- Synthesizes extracted content into clean Markdown evidence files stored in Cloudflare R2.
+- Search and query interface to find facts and answer questions from your saved sources.
 
-- Astro and React
-- TypeScript and Tailwind CSS
-- Better Auth
-- Turso with Drizzle ORM
-- Cloudflare Pages and R2
-- AWS S3 SDK for R2-compatible signed URLs
+### Security and Storage
+- Files and generated PDFs are saved to private Cloudflare R2 buckets.
+- Uploads and downloads use short-lived, signed URLs. Files are never publicly exposed.
+- User accounts and sessions managed through Better Auth.
+- Relational data stored in Turso (libSQL) using Drizzle ORM.
 
-## Local development
+## Tech Stack
 
-Install dependencies and copy the environment example:
+- Frontend: Astro 5, React 19, Tailwind CSS v4, TypeScript
+- Backend: Cloudflare Pages SSR, Cloudflare Workers with Durable Objects
+- Database: Turso (libSQL) with Drizzle ORM
+- Storage: Cloudflare R2 with S3-compatible signed URLs
+- Auth: Better Auth
+- AI: Google Gemini API and Cloudflare AI Search
 
-```sh
-bun install
-cp .env.example .env
-```
+## Local Setup
 
-Set the required values in `.env`, then start the development server:
+- Install dependencies:
+  ```sh
+  bun install
+  ```
+- Copy environment configuration:
+  ```sh
+  cp .env.example .env
+  ```
+- Fill in required variables in `.env` (auth, database, R2, and AI keys).
+- Start the development server:
+  ```sh
+  bun run dev
+  ```
+- Open in browser: `http://localhost:3000`
 
-```sh
-bun run dev
-```
+## Tests and Verification
 
-The application runs at http://localhost:3000.
-
-## Environment variables
-
-Application authentication, database, and AI settings are documented in `.env.example`.
-
-For private R2 storage, configure:
-
-```env
-R2_ACCOUNT_ID=your-cloudflare-account-id
-R2_ACCESS_KEY_ID=your-r2-access-key-id
-R2_SECRET_ACCESS_KEY=your-r2-secret-access-key
-R2_BUCKET=resume-builder-private
-```
-
-Create an R2 API token with Object Read and Write access scoped to the configured bucket. Do not commit credentials. The browser uploads only through time-limited presigned URLs, and files are never publicly exposed.
-
-## Validation
-
-```sh
-bun test
-bun run build
-```
+- Run test suite:
+  ```sh
+  bun test
+  ```
+- Typecheck frontend and backend:
+  ```sh
+  bunx tsc --noEmit
+  cd workers/knowledge-agent && bunx tsc --noEmit
+  ```
 
 ## Deployment
 
-Production deploys from the `main` branch through Cloudflare Pages. To deploy manually:
+- Build and deploy frontend to Cloudflare Pages:
+  ```sh
+  bun run build
+  bunx wrangler pages deploy ./dist --project-name resume-builder --branch main
+  ```
+- Deploy the knowledge worker:
+  ```sh
+  cd workers/knowledge-agent
+  bunx wrangler deploy
+  ```
 
-```sh
-bun run build
-bun x wrangler pages deploy ./dist --project-name resume-builder --branch main
-```

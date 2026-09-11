@@ -17,7 +17,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
 
-    const body = await request.json();
+    const body = (await request.json()) as {
+      text?: string;
+      prompt?: string;
+      mode?: string;
+      resumeId?: string;
+    };
     const { text, prompt: userPrompt, mode, resumeId } = body;
 
     if (!text && !userPrompt) {

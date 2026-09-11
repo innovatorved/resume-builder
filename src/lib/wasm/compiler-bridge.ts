@@ -13,6 +13,7 @@ export interface CompileResult {
 }
 
 export class LatexCompilerBridge {
+  public isCompiling = false;
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private cache = new Map<string, { pdfData: Uint8Array; log: string }>();
 

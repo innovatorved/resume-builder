@@ -1,4 +1,13 @@
-import { Briefcase, ChevronDown, ChevronRight, GraduationCap, Plus, Trash2, User, Wrench } from "lucide-react";
+import {
+  Briefcase,
+  ChevronDown,
+  ChevronRight,
+  GraduationCap,
+  Plus,
+  Trash2,
+  User,
+  Wrench,
+} from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

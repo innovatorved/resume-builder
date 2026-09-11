@@ -22,21 +22,33 @@ interface PrismAiBarProps {
   currentLatex: string;
   resumeId: string;
   onApplyUpdatedLatex: (newLatex: string, summary: string) => void;
+  onSaveVersion: (summary?: string) => Promise<void>;
   hasCompileError?: boolean;
 }
 
+interface TailorPreview {
+  tailoredLatex: string;
+  alignmentAnalysis: {
+    matchedRequirements?: Array<{ requirement: string; evidence: string; citations?: string[] }>;
+    missingRequirements?: string[];
+    summaryOfChanges?: string;
+  };
+  citations?: Array<{ id: string; key: string }>;
+}
+
 const DEFAULT_CHIPS = [
+  "Build standard resume from my knowledge",
   "Tailor to a target job post",
+  "Highlight my certifications & skills",
   "Quantify bullets with Google XYZ formula",
-  "Make summary punchier & senior",
   "Fix LaTeX syntax or balance braces",
-  "Highlight distributed systems & cloud architecture",
 ];
 
 export function PrismAiBar({
   currentLatex,
   resumeId,
   onApplyUpdatedLatex,
+  onSaveVersion,
   hasCompileError = false,
 }: PrismAiBarProps) {
   const [isOpen, setIsOpen] = useState(true);
@@ -46,6 +58,9 @@ export function PrismAiBar({
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(DEFAULT_CHIPS);
   const [lastUndoLatex, setLastUndoLatex] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [jobDescription, setJobDescription] = useState("");
+  const [showTailor, setShowTailor] = useState(false);
+  const [tailorPreview, setTailorPreview] = useState<TailorPreview | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -94,26 +109,35 @@ export function PrismAiBar({
         }),
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as {
+        success?: boolean;
+        error?: string;
+        data?: {
+          reply?: string;
+          updatedLatex?: string;
+          suggestedPrompts?: string[];
+        };
+      };
 
       if (data.success && data.data) {
+        const payload = data.data;
         setLastUndoLatex(currentLatex);
         setMessages((prev) => [
           ...prev,
           {
             id: crypto.randomUUID(),
             role: "assistant",
-            content: data.data.reply || "Document updated.",
+            content: payload.reply || "Document updated.",
           },
         ]);
 
-        if (data.data.suggestedPrompts?.length > 0) {
-          setSuggestedPrompts(data.data.suggestedPrompts);
+        if (payload.suggestedPrompts && payload.suggestedPrompts.length > 0) {
+          setSuggestedPrompts(payload.suggestedPrompts);
         }
 
         // Apply updated LaTeX to editor & compile
-        if (data.data.updatedLatex) {
-          onApplyUpdatedLatex(data.data.updatedLatex, data.data.reply || "Updated by AI");
+        if (payload.updatedLatex) {
+          onApplyUpdatedLatex(payload.updatedLatex, payload.reply || "Updated by AI");
         }
       } else {
         setErrorMessage(data.error || "Failed to update resume. Please try again.");
@@ -129,7 +153,46 @@ export function PrismAiBar({
     if (!lastUndoLatex) return;
     onApplyUpdatedLatex(lastUndoLatex, "Reverted AI changes");
     setLastUndoLatex(null);
-    setMessages((prev) => [...prev, { role: "assistant", content: "Reverted previous change." }]);
+    setMessages((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), role: "assistant", content: "Reverted previous change." },
+    ]);
+  };
+
+  const handleTailor = async () => {
+    const description = jobDescription.trim();
+    if (!description || isLoading) return;
+    setIsLoading(true);
+    setErrorMessage(null);
+    setTailorPreview(null);
+    try {
+      const response = await fetch("/api/ai/tailor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resumeId, jobDescription: description, currentLatex }),
+      });
+      const result = (await response.json()) as {
+        success?: boolean;
+        error?: string;
+        data?: TailorPreview;
+      };
+      if (!response.ok || !result.success) throw new Error(result.error || "Tailoring failed.");
+      if (!result.data) throw new Error("Tailoring returned no preview.");
+      setTailorPreview(result.data);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Tailoring failed.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleApplyTailor = async () => {
+    if (!tailorPreview?.tailoredLatex) return;
+    const summary = tailorPreview.alignmentAnalysis.summaryOfChanges || "Applied tailored resume";
+    setLastUndoLatex(currentLatex);
+    onApplyUpdatedLatex(tailorPreview.tailoredLatex, summary);
+    setTailorPreview(null);
+    await onSaveVersion(summary);
   };
 
   return (
@@ -238,6 +301,79 @@ export function PrismAiBar({
         </div>
       )}
 
+      {isOpen && showTailor && (
+        <div className="border-t border-neutral-900 p-3 space-y-2 text-xs">
+          <label htmlFor="job-description" className="block font-medium text-neutral-200">
+            Paste the job description
+          </label>
+          <textarea
+            id="job-description"
+            value={jobDescription}
+            onChange={(event) => setJobDescription(event.target.value)}
+            rows={4}
+            maxLength={50000}
+            disabled={isLoading}
+            className="w-full resize-y rounded-md border border-neutral-800 bg-neutral-900 p-2 text-neutral-100 outline-none focus:border-neutral-600"
+            placeholder="Include responsibilities and required qualifications."
+          />
+          <Button
+            type="button"
+            size="sm"
+            disabled={isLoading || !jobDescription.trim()}
+            onClick={handleTailor}
+          >
+            {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Create preview"}
+          </Button>
+          {tailorPreview && (
+            <div className="rounded-md border border-neutral-800 bg-neutral-900/70 p-3 space-y-3">
+              <p className="text-neutral-200">
+                {tailorPreview.alignmentAnalysis.summaryOfChanges || "Tailored draft ready."}
+              </p>
+              <div>
+                <p className="mb-1 font-medium text-emerald-400">Matched requirements</p>
+                <ul className="space-y-1 text-neutral-300">
+                  {(tailorPreview.alignmentAnalysis.matchedRequirements || []).map((match) => (
+                    <li key={match.requirement}>
+                      {match.requirement} — {match.evidence}
+                      {match.citations?.length ? ` [${match.citations.join(", ")}]` : ""}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p className="mb-1 font-medium text-amber-400">Missing requirements</p>
+                <ul className="space-y-1 text-neutral-300">
+                  {(tailorPreview.alignmentAnalysis.missingRequirements || []).map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+              {tailorPreview.citations?.length ? (
+                <p className="text-[11px] text-neutral-500">
+                  Evidence:{" "}
+                  {tailorPreview.citations
+                    .map((citation) => `${citation.id} ${citation.key}`)
+                    .join(" · ")}
+                </p>
+              ) : null}
+              <div className="flex gap-2">
+                <Button type="button" size="sm" onClick={handleApplyTailor}>
+                  Apply and save version
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setTailorPreview(null)}
+                >
+                  Discard
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Main Prompt Bar */}
       {isOpen && (
         <div className="p-2 sm:px-3 sm:pb-2.5">
@@ -248,6 +384,13 @@ export function PrismAiBar({
             }}
             className="flex items-center gap-2 bg-neutral-900/90 border border-neutral-800 focus-within:border-neutral-600 rounded-lg px-3 py-1.5 shadow-inner transition-colors"
           >
+            <button
+              type="button"
+              onClick={() => setShowTailor((value) => !value)}
+              className="shrink-0 rounded px-1.5 py-1 text-[11px] text-neutral-300 hover:bg-neutral-800 hover:text-white"
+            >
+              Tailor
+            </button>
             <Terminal className="w-4 h-4 text-neutral-500 shrink-0" />
             <input
               ref={inputRef}

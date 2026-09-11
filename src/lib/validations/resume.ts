@@ -54,7 +54,14 @@ export const languageSchema = z.object({
 
 // Main Resume Data Schema
 export const resumeDataSchema = z.object({
-  personalInfo: personalInfoSchema.default({ name: "" }),
+  personalInfo: personalInfoSchema.default({
+    name: "",
+    title: "",
+    phone: "",
+    email: "",
+    linkedin: "",
+    location: "",
+  }),
   summary: z.string().optional().default(""),
   experience: z.array(experienceSchema).default([]),
   education: z.array(educationSchema).default([]),

@@ -62,6 +62,11 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
 
   const isResizingRef = useRef<boolean>(false);
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latexSourceRef = useRef(latexSource);
+
+  useEffect(() => {
+    latexSourceRef.current = latexSource;
+  }, [latexSource]);
 
   // Debounced auto-save function to persist drafts in real time
   const triggerAutoSave = useCallback(
@@ -198,7 +203,11 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
           }),
         });
 
-        const signData = await signResponse.json().catch(() => ({}));
+        const signData = (await signResponse.json().catch(() => ({}))) as {
+          success?: boolean;
+          error?: string;
+          data?: { uploadUrl: string; key: string };
+        };
         if (!signResponse.ok || !signData.success || !signData.data?.uploadUrl) {
           throw new Error(signData.error || `Failed to prepare ${type} upload.`);
         }
@@ -215,7 +224,8 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
         return signData.data.key as string;
       };
 
-      const sourceKey = await uploadToR2("source", "application/x-latex", "tex", latexSource);
+      const source = latexSourceRef.current;
+      const sourceKey = await uploadToR2("source", "application/x-latex", "tex", source);
       const pdfKey = await uploadToR2(
         "pdf",
         "application/pdf",
@@ -232,14 +242,18 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
           sourceKey,
           pdfKey,
           structuredData,
-          rawLatex: latexSource,
+          rawLatex: source,
           isLatexCustom: true,
           changeSummary: summary || `Saved at ${new Date().toLocaleTimeString()}`,
         }),
       });
 
-      const versionData = await versionRes.json().catch(() => ({}));
-      if (!versionRes.ok || !versionData.success) {
+      const versionData = (await versionRes.json().catch(() => ({}))) as {
+        success?: boolean;
+        error?: string;
+        data?: { id: string; versionNumber: number };
+      };
+      if (!versionRes.ok || !versionData.success || !versionData.data) {
         throw new Error(versionData.error || "Failed to record the saved version.");
       }
 
@@ -251,7 +265,7 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
           id: initialResume.id,
           name: resumeName.trim() || initialResume.name,
           data: structuredData,
-          rawLatex: latexSource,
+          rawLatex: source,
         }),
       });
 
@@ -510,6 +524,7 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
         currentLatex={latexSource}
         resumeId={initialResume.id}
         onApplyUpdatedLatex={handleApplyAiLatex}
+        onSaveVersion={handleSaveVersion}
         hasCompileError={Boolean(compileError)}
       />
 
