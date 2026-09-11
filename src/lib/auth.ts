@@ -55,9 +55,94 @@ function initAuth() {
             tokenUrl: "https://sso.vedgupta.in/api/auth/oauth2/token",
             userInfoUrl: "https://sso.vedgupta.in/api/auth/oauth2/userinfo",
             redirectURI: `${baseURL}/api/auth/callback/vedgupta-sso`,
-            scopes: ["openid", "email", "profile"],
+            scopes: ["openid", "email", "profile", "offline_access"],
             pkce: true,
             responseType: "code",
+            accountSubject: ({ profile }) => (profile.sub || profile.id || "") as string,
+            mapProfileToUser: (profile) => ({
+              name: (profile.name || profile.email?.split("@")[0] || "User") as string,
+              email: profile.email as string,
+              image: (profile.picture || profile.image) as string | undefined,
+              emailVerified: Boolean(profile.email_verified ?? profile.emailVerified ?? true),
+            }),
+            getToken: async (data) => {
+              console.log("[SSO getToken] Starting token exchange:", {
+                hasCode: Boolean(data.code),
+                hasVerifier: Boolean(data.codeVerifier),
+                redirectURI: data.redirectURI,
+              });
+
+              const redirectURI = data.redirectURI || `${baseURL}/api/auth/callback/vedgupta-sso`;
+              const body = new URLSearchParams({
+                grant_type: "authorization_code",
+                code: data.code,
+                client_id: process.env.SSO_CLIENT_ID || "resume-builder-app",
+                redirect_uri: redirectURI,
+              });
+
+              if (data.codeVerifier) {
+                body.set("code_verifier", data.codeVerifier);
+              }
+              if (process.env.SSO_CLIENT_SECRET) {
+                body.set("client_secret", process.env.SSO_CLIENT_SECRET);
+              }
+
+              const response = await fetch("https://sso.vedgupta.in/api/auth/oauth2/token", {
+                method: "POST",
+                headers: {
+                  "content-type": "application/x-www-form-urlencoded",
+                  accept: "application/json",
+                },
+                body: body.toString(),
+              });
+
+              const responseText = await response.text();
+              console.log(`[SSO getToken] Token response ${response.status}:`, responseText);
+
+              if (!response.ok) {
+                console.error(`[SSO getToken ERROR] Status ${response.status}: ${responseText}`);
+                throw new Error(`SSO token exchange failed: ${responseText}`);
+              }
+
+              const json = JSON.parse(responseText);
+              return {
+                tokenType: json.token_type,
+                accessToken: json.access_token,
+                refreshToken: json.refresh_token,
+                accessTokenExpiresAt: json.expires_in
+                  ? new Date(Date.now() + json.expires_in * 1000)
+                  : undefined,
+                refreshTokenExpiresAt: json.refresh_token_expires_in
+                  ? new Date(Date.now() + json.refresh_token_expires_in * 1000)
+                  : undefined,
+                scopes: json.scope
+                  ? Array.isArray(json.scope)
+                    ? json.scope
+                    : json.scope.split(" ")
+                  : [],
+                idToken: json.id_token,
+                raw: json,
+              };
+            },
+            getUserInfo: async (tokens) => {
+              console.log("[SSO getUserInfo] Fetching user info with access token");
+              const response = await fetch("https://sso.vedgupta.in/api/auth/oauth2/userinfo", {
+                headers: {
+                  authorization: `Bearer ${tokens.accessToken}`,
+                  accept: "application/json",
+                },
+              });
+
+              const responseText = await response.text();
+              console.log(`[SSO getUserInfo] Response ${response.status}:`, responseText);
+
+              if (!response.ok) {
+                console.error(`[SSO getUserInfo ERROR] Status ${response.status}: ${responseText}`);
+                throw new Error(`SSO userinfo fetch failed: ${responseText}`);
+              }
+
+              return JSON.parse(responseText);
+            },
           },
         ],
       }),
