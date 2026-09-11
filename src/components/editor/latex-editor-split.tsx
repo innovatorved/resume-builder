@@ -1,6 +1,8 @@
 import {
   ChevronDown,
+  Code2,
   Download,
+  Eye,
   FileCode,
   History,
   Loader2,
@@ -52,6 +54,7 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
 
   // Layout states
   const [splitRatio, setSplitRatio] = useState<number>(50); // percentage for left editor pane
+  const [mobileTab, setMobileTab] = useState<"editor" | "preview">("editor");
   const [showVersionModal, setShowVersionModal] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
@@ -338,12 +341,12 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-black text-white font-sans selection:bg-neutral-800 selection:text-white">
       {/* TOP PRISM NAVIGATION BAR */}
-      <header className="h-12 border-b border-neutral-800 bg-neutral-950 flex items-center justify-between px-3.5 z-20 select-none">
+      <header className="h-12 border-b border-neutral-800 bg-neutral-950 flex items-center justify-between px-2.5 sm:px-3.5 z-20 select-none gap-2">
         {/* Left: Brand Badge + Back + Document Title */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
           <a
             href="/"
-            className="flex items-center gap-1.5 px-2 py-1 rounded-md border border-neutral-800 bg-neutral-900 hover:bg-neutral-800 hover:border-neutral-700 text-white transition-colors"
+            className="flex items-center gap-1.5 px-2 py-1 rounded-md border border-neutral-800 bg-neutral-900 hover:bg-neutral-800 hover:border-neutral-700 text-white transition-colors shrink-0"
             title="Back to Dashboard"
           >
             <VLogo className="shrink-0 h-3.5 w-3.5 text-white" />
@@ -351,8 +354,8 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
             <ResumeMark className="shrink-0 h-3.5 w-3.5 text-white" />
           </a>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-neutral-500 font-mono">resume /</span>
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <span className="text-xs text-neutral-500 font-mono hidden sm:inline">resume /</span>
             <input
               type="text"
               value={resumeName}
@@ -361,7 +364,7 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
                 setResumeName(val);
                 triggerAutoSave(latexSource, structuredData, val);
               }}
-              className="bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 text-xs sm:text-sm font-semibold tracking-tight text-white px-2 py-1 rounded border border-transparent focus:border-neutral-700 outline-none transition-all w-36 sm:w-56"
+              className="bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 text-xs sm:text-sm font-semibold tracking-tight text-white px-1.5 sm:px-2 py-1 rounded border border-transparent focus:border-neutral-700 outline-none transition-all w-28 sm:w-56 truncate"
               placeholder="Resume Title"
             />
             <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono border border-neutral-800 bg-neutral-900">
@@ -375,13 +378,14 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Version History Button */}
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 text-xs text-neutral-300 hover:text-white hover:bg-neutral-900 gap-1.5 rounded-md"
+            className="h-8 px-2 sm:px-3 text-xs text-neutral-300 hover:text-white hover:bg-neutral-900 gap-1.5 rounded-md"
             onClick={() => setShowVersionModal(true)}
+            title="Version History"
           >
             <History className="w-3.5 h-3.5 text-neutral-400" />
             <span className="hidden md:inline">History</span>
@@ -390,7 +394,7 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
           {/* Save Version Button */}
           <Button
             size="sm"
-            className="h-8 text-xs bg-white text-black hover:bg-neutral-200 font-medium rounded-md gap-1.5 shadow-xs transition-colors"
+            className="h-8 px-2.5 sm:px-3 text-xs bg-white text-black hover:bg-neutral-200 font-medium rounded-md gap-1.5 shadow-xs transition-colors"
             disabled={isSaving}
             onClick={() => handleSaveVersion()}
           >
@@ -402,7 +406,7 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
             ) : (
               <>
                 <Save className="w-3.5 h-3.5" />
-                <span>Save</span>
+                <span className="hidden xs:inline sm:inline">Save</span>
               </>
             )}
           </Button>
@@ -412,10 +416,10 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
             <Button
               variant="outline"
               size="sm"
-              className="h-8 text-xs text-neutral-200 border-neutral-800 bg-neutral-900 hover:bg-neutral-800 gap-1 rounded-md"
+              className="h-8 px-2 sm:px-2.5 text-xs text-neutral-200 border-neutral-800 bg-neutral-900 hover:bg-neutral-800 gap-1 rounded-md"
             >
               <Download className="w-3.5 h-3.5 text-neutral-400" />
-              <span>Export</span>
+              <span className="hidden sm:inline">Export</span>
               <ChevronDown className="w-3 h-3 text-neutral-400" />
             </Button>
 
@@ -441,8 +445,60 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
         </div>
       </header>
 
-      {/* MAIN SPLIT-PANE BODY */}
-      <div className="flex-1 flex overflow-hidden relative">
+      {/* MOBILE SEGMENTED VIEW SWITCHER (Only rendered on < md screens) */}
+      <div className="flex md:hidden items-center justify-between px-2.5 py-1.5 bg-neutral-950 border-b border-neutral-800 z-10">
+        <div className="flex items-center rounded-lg bg-neutral-900 p-0.5 border border-neutral-800 text-xs font-medium w-full">
+          <button
+            type="button"
+            onClick={() => setMobileTab("editor")}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md transition-all cursor-pointer ${
+              mobileTab === "editor"
+                ? "bg-neutral-800 text-white shadow-xs font-semibold"
+                : "text-neutral-400 hover:text-neutral-200"
+            }`}
+          >
+            <Code2 className="w-3.5 h-3.5" />
+            <span>LaTeX Source</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileTab("preview")}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md transition-all cursor-pointer ${
+              mobileTab === "preview"
+                ? "bg-neutral-800 text-white shadow-xs font-semibold"
+                : "text-neutral-400 hover:text-neutral-200"
+            }`}
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>PDF Preview</span>
+            {isCompiling && <Loader2 className="w-3 h-3 animate-spin text-amber-400 ml-0.5" />}
+          </button>
+        </div>
+      </div>
+
+      {/* MAIN BODY: Mobile View (Tabbed) */}
+      <div className="flex-1 flex overflow-hidden md:hidden relative pb-12">
+        {mobileTab === "editor" ? (
+          <div className="w-full h-full flex flex-col overflow-hidden bg-neutral-950">
+            <MonacoLatexEditor value={latexSource} onChange={handleLatexChange} />
+          </div>
+        ) : (
+          <div className="w-full h-full overflow-hidden bg-neutral-950">
+            <PdfPreviewPane
+              pdfData={pdfData}
+              isCompiling={isCompiling}
+              compileError={compileError}
+              compileDurationMs={compileDurationMs}
+              onRecompile={() => runCompile(latexSource)}
+              onDownloadPdf={handleDownloadPdf}
+              onDownloadTex={handleDownloadTex}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* MAIN BODY: Desktop View (Split Panes with Resizer) */}
+      <div className="hidden md:flex flex-1 overflow-hidden relative pb-12">
         {/* Left Pane: Monaco Editor */}
         <div
           style={{ width: `${splitRatio}%` }}

@@ -196,13 +196,13 @@ export function PrismAiBar({
   };
 
   return (
-    <div className="border-t border-neutral-800 bg-neutral-950/98 backdrop-blur-md shadow-2xl flex flex-col z-30 transition-all font-sans">
+    <div className="border-t border-neutral-800 bg-neutral-950/98 backdrop-blur-md shadow-2xl flex flex-col z-30 transition-all font-sans max-h-[80vh] sm:max-h-[65vh] overflow-hidden">
       {/* Header bar */}
-      <div className="flex items-center justify-between px-3.5 py-1.5 border-b border-neutral-900 bg-neutral-900/40 text-xs">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 font-medium text-neutral-200">
+      <div className="flex items-center justify-between px-2.5 sm:px-3.5 py-1.5 border-b border-neutral-900 bg-neutral-900/40 text-xs shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+          <div className="flex items-center gap-1.5 font-medium text-neutral-200 shrink-0">
             <Sparkles className="w-3.5 h-3.5 text-neutral-400" />
-            <span className="tracking-tight font-semibold">Chat</span>
+            <span className="tracking-tight font-semibold">AI Copilot</span>
           </div>
 
           {hasCompileError && (
@@ -211,10 +211,11 @@ export function PrismAiBar({
               onClick={() =>
                 handleSubmit("Fix the LaTeX syntax and compilation errors in this document")
               }
-              className="ml-2 inline-flex items-center gap-1 text-[11px] bg-red-500/10 text-red-400 border border-red-500/30 px-2 py-0.5 rounded hover:bg-red-500/20 transition-colors"
+              className="ml-1 sm:ml-2 inline-flex items-center gap-1 text-[10px] sm:text-[11px] bg-red-500/10 text-red-400 border border-red-500/30 px-1.5 sm:px-2 py-0.5 rounded hover:bg-red-500/20 transition-colors shrink-0"
             >
-              <Wand2 className="w-3 h-3 text-red-400" />
-              Fix LaTeX Error
+              <Wand2 className="w-3 h-3 text-red-400 shrink-0" />
+              <span className="hidden sm:inline">Fix LaTeX Error</span>
+              <span className="sm:hidden">Fix</span>
             </button>
           )}
 
@@ -222,10 +223,11 @@ export function PrismAiBar({
             <button
               type="button"
               onClick={handleUndo}
-              className="inline-flex items-center gap-1 text-[11px] text-neutral-400 hover:text-white ml-2 transition-colors"
+              className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] text-neutral-400 hover:text-white ml-1 sm:ml-2 transition-colors shrink-0"
             >
-              <RotateCcw className="w-3 h-3" />
-              Undo AI Edit
+              <RotateCcw className="w-3 h-3 shrink-0" />
+              <span className="hidden sm:inline">Undo AI Edit</span>
+              <span className="sm:hidden">Undo</span>
             </button>
           )}
         </div>
@@ -404,8 +406,8 @@ export function PrismAiBar({
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               disabled={isLoading}
-              placeholder="Ask anything or request edits to your resume..."
-              className="flex-1 bg-transparent text-xs sm:text-sm text-neutral-100 placeholder:text-neutral-500 outline-none"
+              placeholder="Ask AI or request edits to your resume..."
+              className="flex-1 bg-transparent text-sm text-neutral-100 placeholder:text-neutral-500 outline-none min-w-0"
             />
             <Button
               type="submit"

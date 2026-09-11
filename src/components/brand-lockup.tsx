@@ -75,13 +75,13 @@ export function BrandLockup({ size = "md", showTagline = true, className = "" }:
       <div>
         <div className="flex items-center gap-1.5">
           <span
-            className={`font-semibold tracking-tight text-foreground ${
+            className={`hidden sm:inline font-semibold tracking-tight text-foreground ${
               isSm ? "text-xs" : isLg ? "text-base" : "text-sm"
             }`}
           >
             Ved Gupta
           </span>
-          <span className="text-neutral-400 dark:text-neutral-500 font-mono text-xs">×</span>
+          <span className="hidden sm:inline text-neutral-400 dark:text-neutral-500 font-mono text-xs">×</span>
           <span
             className={`font-semibold tracking-tight text-foreground ${
               isSm ? "text-xs" : isLg ? "text-base" : "text-sm"

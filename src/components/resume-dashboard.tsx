@@ -345,15 +345,16 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
           <div className="flex items-center justify-between gap-4">
             <BrandLockup size="md" showTagline={false} />
 
-            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
               <Button
                 onClick={() => navigate("/knowledge")}
                 variant="ghost"
                 size="sm"
-                className="h-8 gap-1.5 px-2.5 text-xs text-muted-foreground hover:text-foreground"
+                className="h-8 gap-1.5 px-2 sm:px-2.5 text-xs text-muted-foreground hover:text-foreground"
+                title="Evidence Library"
               >
                 <Library className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Knowledge</span>
+                <span className="hidden md:inline">Knowledge</span>
               </Button>
 
               {/* Upload Existing Resume CTA */}
@@ -361,20 +362,23 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
                 onClick={() => setUploadModalOpen(true)}
                 variant="outline"
                 size="sm"
-                className="h-8 border-neutral-700 bg-neutral-900 text-neutral-200 hover:bg-neutral-800 hover:text-white font-medium text-xs gap-1.5 cursor-pointer"
+                className="h-8 px-2 sm:px-3 border-neutral-700 bg-neutral-900 text-neutral-200 hover:bg-neutral-800 hover:text-white font-medium text-xs gap-1.5 cursor-pointer"
+                title="Upload Existing Resume"
               >
                 <Upload className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Upload Resume</span>
+                <span className="hidden sm:inline">Upload</span>
               </Button>
 
               {/* Primary New Resume CTA */}
               <Button
                 onClick={() => navigate("/resume/new")}
                 size="sm"
-                className="h-8 bg-white text-black hover:bg-neutral-200 font-medium text-xs gap-1.5 shadow-xs cursor-pointer"
+                className="h-8 px-2.5 sm:px-3 bg-white text-black hover:bg-neutral-200 font-medium text-xs gap-1.5 shadow-xs cursor-pointer"
+                title="Create New Resume"
               >
                 <Plus className="h-3.5 w-3.5" />
-                <span>New Resume</span>
+                <span>New</span>
+                <span className="hidden sm:inline">Resume</span>
               </Button>
 
               <AuthNav />
@@ -573,22 +577,22 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
                       })}
                     </span>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
                       {/* Duplicate Button */}
                       <Button
                         variant="ghost"
                         size="sm"
                         disabled={isDuplicating === item.id}
                         onClick={() => handleDuplicateResume(item)}
-                        className="h-8 px-2.5 text-xs text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer"
-                        title="Duplicate Resume (creates clone of structured data and raw LaTeX)"
+                        className="h-8 w-8 p-0 sm:w-auto sm:px-2.5 text-xs text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer"
+                        title="Duplicate Resume"
                       >
                         {isDuplicating === item.id ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         ) : (
                           <>
-                            <Copy className="w-3.5 h-3.5 mr-1.5" />
-                            <span>Duplicate</span>
+                            <Copy className="w-3.5 h-3.5 sm:mr-1.5" />
+                            <span className="hidden sm:inline">Duplicate</span>
                           </>
                         )}
                       </Button>
@@ -599,15 +603,15 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
                         size="sm"
                         disabled={isDownloading === item.id}
                         onClick={() => handleDownloadPDF(item)}
-                        className="h-8 px-2.5 text-xs text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer"
+                        className="h-8 w-8 p-0 sm:w-auto sm:px-2.5 text-xs text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer"
                         title="Download compiled PDF"
                       >
                         {isDownloading === item.id ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         ) : (
                           <>
-                            <Download className="w-3.5 h-3.5 mr-1.5" />
-                            <span>PDF</span>
+                            <Download className="w-3.5 h-3.5 sm:mr-1.5" />
+                            <span className="hidden sm:inline">PDF</span>
                           </>
                         )}
                       </Button>

@@ -895,25 +895,28 @@ export function KnowledgePage() {
               Knowledge Agent
             </span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {isStreamingNeeded && (
-              <div className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <div className="inline-flex items-center gap-1.5 rounded-full px-2 sm:px-2.5 py-1 text-[11px] font-medium border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Processing live...</span>
+                <span className="hidden sm:inline">Processing live...</span>
+                <span className="sm:hidden">Live</span>
               </div>
             )}
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowRunsView(!showRunsView)}
-              className="h-8 gap-1.5 text-xs"
+              className="h-8 px-2 sm:px-3 gap-1.5 text-xs"
+              title="Toggle Run History"
             >
               <History className="h-3.5 w-3.5" />
-              {showRunsView ? "Hide Run History" : "Run History"}
+              <span className="hidden sm:inline">{showRunsView ? "Hide History" : "Run History"}</span>
             </Button>
-            <Button variant="ghost" size="sm" asChild className="h-8 gap-1.5 text-xs">
+            <Button variant="ghost" size="sm" asChild className="h-8 px-2 sm:px-3 gap-1.5 text-xs">
               <a href="/">
-                <ArrowLeft className="h-3.5 w-3.5" /> Dashboard
+                <ArrowLeft className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Dashboard</span>
               </a>
             </Button>
             <AuthNav />
