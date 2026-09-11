@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { PdfCanvasViewer } from "./pdf-canvas-viewer";
 
 interface PdfPreviewPaneProps {
   pdfData: Uint8Array | null;
@@ -33,6 +34,7 @@ export function PdfPreviewPane({
   const [showLogDrawer, setShowLogDrawer] = useState<boolean>(false);
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
   const [zoomLevel, setZoomLevel] = useState<number>(100);
+  const [viewMode, setViewMode] = useState<"canvas" | "iframe">("canvas");
 
   // Generate object URL whenever new PDF bytes are compiled
   useEffect(() => {
@@ -135,6 +137,23 @@ export function PdfPreviewPane({
             </Button>
           )}
 
+          {/* Desktop Toggle between Canvas and Native Iframe */}
+          {pdfData && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="hidden md:inline-flex h-6 px-1.5 text-[10px] font-mono text-neutral-400 hover:text-white hover:bg-neutral-900 rounded"
+              onClick={() => setViewMode(viewMode === "canvas" ? "iframe" : "canvas")}
+              title={
+                viewMode === "canvas"
+                  ? "Switch to native browser PDF iframe"
+                  : "Switch to inline high-res canvas renderer"
+              }
+            >
+              {viewMode === "canvas" ? "Canvas" : "Native"}
+            </Button>
+          )}
+
           {onDownloadPdf && (
             <Button
               variant="outline"
@@ -151,15 +170,15 @@ export function PdfPreviewPane({
       </div>
 
       {/* Main Vector PDF Viewer Container */}
-      <div className="flex-1 overflow-hidden p-1 sm:p-3 flex justify-center items-center bg-black relative">
-        {isCompiling && !pdfBlobUrl && (
+      <div className="flex-1 overflow-hidden p-0 sm:p-2 flex justify-center items-center bg-neutral-950 relative">
+        {isCompiling && !pdfData && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-10 text-neutral-400">
             <Loader2 className="w-8 h-8 animate-spin text-white mb-2" />
             <p className="text-sm">Compiling LaTeX document...</p>
           </div>
         )}
 
-        {compileError && !pdfBlobUrl && (
+        {compileError && !pdfData && (
           <div className="m-auto max-w-md p-4 bg-neutral-900 border border-red-500/30 rounded-lg text-red-200 text-sm">
             <div className="flex items-center gap-2 font-semibold text-red-400 mb-2">
               <AlertCircle className="w-5 h-5" />
@@ -181,7 +200,11 @@ export function PdfPreviewPane({
           </div>
         )}
 
-        {pdfBlobUrl && (
+        {pdfData && viewMode === "canvas" && (
+          <PdfCanvasViewer pdfData={pdfData} zoomLevel={zoomLevel} />
+        )}
+
+        {pdfBlobUrl && viewMode === "iframe" && (
           <div
             className="w-full h-full flex items-center justify-center transition-all"
             style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: "top center" }}
@@ -194,7 +217,7 @@ export function PdfPreviewPane({
           </div>
         )}
 
-        {!pdfBlobUrl && !isCompiling && !compileError && (
+        {!pdfData && !isCompiling && !compileError && (
           <div className="m-auto text-neutral-500 text-sm flex flex-col items-center">
             <FileText className="w-10 h-10 mb-2 opacity-30" />
             <p>No compiled PDF yet. Start typing to compile.</p>
