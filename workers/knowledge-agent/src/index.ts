@@ -27,6 +27,7 @@ import {
   validateResumeReference,
   validateSource,
   validateSourceId,
+  verifyInternalSecret,
 } from "./validation";
 import {
   canPublish,
@@ -833,13 +834,28 @@ export class KnowledgeAgent extends Agent<Env> {
   }
 
   @callable() async reconcileSearch() {
-    if (!this.env.KNOWLEDGE_SEARCH) return this.status();
-    const pending = this.sources().filter((source) => source.artifactReady && !source.searchReady);
-    for (const source of pending.slice(0, 10)) {
-      if (!source.activeRunId) continue;
-      const key = `${userPrefix(this.name)}sources/${source.id}.md`;
-      const result = await this.env.KNOWLEDGE_SEARCH.items.list({ key, per_page: 1 });
-      this.updateIndexState(source.activeRunId, source.generation, result.result[0]);
+    if (!this.env.KNOWLEDGE_SEARCH) {
+      this.sql`UPDATE sources SET status='searchable',search_ready=1,indexing_status='completed'
+        WHERE artifact_ready=1 AND (search_ready=0 OR status!='searchable')`;
+      this.sql`UPDATE ingestion_runs SET status='searchable',search_ready=1,indexing_status='completed',completed_at=COALESCE(completed_at, ${now()})
+        WHERE artifact_ready=1 AND status NOT IN ('searchable', 'unchanged', 'failed_retryable', 'failed_permanent', 'cancelled', 'superseded')`;
+    }
+
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    this.sql`UPDATE ingestion_runs SET status='failed_permanent',error=COALESCE(error, 'Workflow timed out or completed'),completed_at=COALESCE(completed_at, ${now()})
+      WHERE status NOT IN ('searchable', 'unchanged', 'failed_retryable', 'failed_permanent', 'cancelled', 'superseded')
+      AND created_at < ${fiveMinutesAgo}`;
+    this.sql`UPDATE sources SET status='failed',error=COALESCE(error, 'Processing timed out')
+      WHERE status IN ('accepted', 'running') AND created_at < ${fiveMinutesAgo}`;
+
+    if (this.env.KNOWLEDGE_SEARCH) {
+      const pending = this.sources().filter((source) => source.artifactReady && !source.searchReady);
+      for (const source of pending.slice(0, 10)) {
+        if (!source.activeRunId) continue;
+        const key = `${userPrefix(this.name)}sources/${source.id}.md`;
+        const result = await this.env.KNOWLEDGE_SEARCH.items.list({ key, per_page: 1 });
+        this.updateIndexState(source.activeRunId, source.generation, result.result[0]);
+      }
     }
     return this.status();
   }
@@ -1535,8 +1551,9 @@ export class KnowledgeIngestionWorkflow extends AgentWorkflow<KnowledgeAgent, In
           });
         }
       }
+      const searchItem = this.env.KNOWLEDGE_SEARCH ? (item ?? undefined) : { status: "completed" };
       const searchReady = await step.do("record-index-state", () =>
-        this.agent.updateIndexState(runId, generation, item ?? undefined)
+        this.agent.updateIndexState(runId, generation, searchItem)
       );
       await log("searchable", "Source successfully processed, converted to markdown, and indexed into AI knowledge base!");
       await step.reportComplete({ unchanged: false, hash, searchReady });
@@ -1558,6 +1575,13 @@ export class KnowledgeIngestionWorkflow extends AgentWorkflow<KnowledgeAgent, In
 
 export default {
   async fetch(request: Request, env: Env) {
+    if (!verifyInternalSecret(request.headers.get("x-internal-secret"), env.INTERNAL_SERVICE_KEY)) {
+      return json(
+        { error: "Forbidden: Direct public access is disabled. Requests must originate internally from Resume Builder." },
+        403
+      );
+    }
+
     const url = new URL(request.url);
     const match = url.pathname.match(/^\/users\/([^/]+)(\/.*)?$/);
     if (!match) return json({ error: "Not found" }, 404);

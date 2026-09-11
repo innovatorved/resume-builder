@@ -156,11 +156,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
         `/users/${encodeURIComponent(session.user.id)}/resumes/sync`,
         "https://knowledge-agent.internal"
       );
+      const internalSecret =
+        locals.runtime?.env?.INTERNAL_SERVICE_KEY ||
+        process.env.INTERNAL_SERVICE_KEY ||
+        "rb_internal_agent_sec_2026";
       try {
         const syncResponse = await knowledgeService.fetch(
           new Request(target, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              "x-internal-secret": internalSecret,
+            },
             body: JSON.stringify({
               resumeId,
               versionId,

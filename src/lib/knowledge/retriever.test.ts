@@ -50,4 +50,24 @@ describe("knowledge retriever", () => {
     expect(profile.profileMarkdown).toBe(mockProfile);
     expect(profile.sources).toEqual(mockSources);
   });
+
+  it("attaches internal security secret header to all requests", async () => {
+    let capturedHeader: string | null = null;
+    const mockLocals = {
+      runtime: {
+        env: {
+          INTERNAL_SERVICE_KEY: "custom-test-secret-key",
+          KNOWLEDGE_AGENT: {
+            fetch: async (req: Request) => {
+              capturedHeader = req.headers.get("x-internal-secret");
+              return Response.json([]);
+            },
+          },
+        },
+      },
+    };
+
+    await fetchUserProfile(mockLocals, "user-secret-test");
+    expect(String(capturedHeader)).toBe("custom-test-secret-key");
+  });
 });

@@ -6,5 +6,8 @@
     "nodejs_compat"
   ],
   "pages_build_output_dir": "./dist",
-  "services": [{ "binding": "KNOWLEDGE_AGENT", "service": "resume-builder-knowledge-agent" }]
+  "services": [{ "binding": "KNOWLEDGE_AGENT", "service": "resume-builder-knowledge-agent" }],
+  "vars": {
+    "INTERNAL_SERVICE_KEY": "rb_internal_agent_sec_2026"
+  }
 }

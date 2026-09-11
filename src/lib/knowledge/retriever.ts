@@ -14,6 +14,18 @@ export interface UserCareerContext {
   existingResumeSummary: string | null;
 }
 
+export const DEFAULT_INTERNAL_SECRET = "rb_internal_agent_sec_2026";
+
+// biome-ignore lint/suspicious/noExplicitAny: env bindings can come from multiple runtime contexts
+export function getInternalServiceKey(locals?: any): string {
+  const env = locals?.runtime?.env || process.env;
+  return (
+    env?.INTERNAL_SERVICE_KEY ||
+    process.env.INTERNAL_SERVICE_KEY ||
+    DEFAULT_INTERNAL_SECRET
+  );
+}
+
 // biome-ignore lint/suspicious/noExplicitAny: env bindings can come from multiple runtime contexts
 function getKnowledgeBaseUrl(locals: any): string {
   const env = locals?.runtime?.env || process.env;
@@ -33,6 +45,11 @@ export async function callKnowledgeAgent(
 ): Promise<Response | null> {
   const service = locals?.runtime?.env?.KNOWLEDGE_AGENT;
   const cleanSubPath = subPath.replace(/^\/+/, "");
+  const internalSecret = getInternalServiceKey(locals);
+
+  const headers = new Headers(options.headers || {});
+  headers.set("x-internal-secret", internalSecret);
+  const optionsWithSecret: RequestInit = { ...options, headers };
 
   if (service) {
     try {
@@ -40,7 +57,7 @@ export async function callKnowledgeAgent(
         `/users/${encodeURIComponent(userId)}/${cleanSubPath}`,
         "https://knowledge-agent.internal"
       );
-      return await service.fetch(new Request(target, options));
+      return await service.fetch(new Request(target, optionsWithSecret));
     } catch (err) {
       console.warn("[knowledge-retriever] Service binding fetch warning:", err);
     }
@@ -50,7 +67,7 @@ export async function callKnowledgeAgent(
   const baseUrl = getKnowledgeBaseUrl(locals);
   try {
     const target = new URL(`/users/${encodeURIComponent(userId)}/${cleanSubPath}`, baseUrl);
-    return await fetch(target.toString(), options);
+    return await fetch(target.toString(), optionsWithSecret);
   } catch (err) {
     console.warn("[knowledge-retriever] HTTP fallback warning:", err);
     return null;

@@ -17,8 +17,15 @@ const handler: APIRoute = async ({ request, locals, params, url }) => {
   );
   target.search = url.search;
 
-  if (request.headers.get("Upgrade") === "websocket" || path === "ws") {
-    return service.fetch(new Request(target, request));
+  const internalSecret =
+    locals.runtime?.env?.INTERNAL_SERVICE_KEY ||
+    process.env.INTERNAL_SERVICE_KEY ||
+    "rb_internal_agent_sec_2026";
+
+  if (request.headers.get("Upgrade") === "websocket" || path === "ws" || path.endsWith("/ws")) {
+    const wsHeaders = new Headers(request.headers);
+    wsHeaders.set("x-internal-secret", internalSecret);
+    return service.fetch(new Request(target, { method: request.method, headers: wsHeaders }));
   }
 
   const contentLength = Number(request.headers.get("content-length") || "0");
@@ -30,6 +37,7 @@ const handler: APIRoute = async ({ request, locals, params, url }) => {
   if (contentType) headers.set("content-type", contentType);
   const idempotencyKey = request.headers.get("x-idempotency-key");
   if (idempotencyKey) headers.set("x-idempotency-key", idempotencyKey);
+  headers.set("x-internal-secret", internalSecret);
   return service.fetch(
     new Request(target, {
       method: request.method,

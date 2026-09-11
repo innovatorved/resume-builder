@@ -132,6 +132,7 @@ const terminalRuns = new Set<RunStatus>([
   "failed_permanent",
   "cancelled",
   "superseded",
+  "completed" as RunStatus,
 ]);
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -373,18 +374,25 @@ export function KnowledgePage() {
     void loadDocument(activeDocument);
   }, [activeDocument, loadDocument]);
 
-  useEffect(() => {
-    if (!runs.some((run) => !terminalRuns.has(run.status))) return;
-    const timer = window.setInterval(() => void loadStatus(), 2500);
-    return () => window.clearInterval(timer);
-  }, [runs, loadStatus]);
-
   // Only connect WebSocket stream when an agent run is active or currently being inspected
   const isStreamingNeeded = useMemo(() => {
     if (isAdding) return true;
     if (selectedRunForLogs && !terminalRuns.has(selectedRunForLogs.status)) return true;
-    return runs.some((r) => !terminalRuns.has(r.status));
-  }, [isAdding, selectedRunForLogs, runs, terminalRuns]);
+    const tenMinutesAgo = Date.now() - 10 * 60 * 1000;
+    return runs.some((r) => {
+      if (terminalRuns.has(r.status)) return false;
+      if (r.artifactReady && (r.indexingStatus === "completed" || !r.indexingStatus)) return false;
+      const createdTime = new Date(r.createdAt).getTime();
+      if (Number.isFinite(createdTime) && createdTime < tenMinutesAgo) return false;
+      return true;
+    });
+  }, [isAdding, selectedRunForLogs, runs]);
+
+  useEffect(() => {
+    if (!isStreamingNeeded) return;
+    const timer = window.setInterval(() => void loadStatus(), 2500);
+    return () => window.clearInterval(timer);
+  }, [isStreamingNeeded, loadStatus]);
 
   // Connect to Durable Object WebSocket strictly on-demand for active instances
   useEffect(() => {
@@ -545,7 +553,18 @@ export function KnowledgePage() {
         // Best effort
       });
 
-    // 2. Connect WebSocket stream to receive live analysis frames
+    // 2. Only connect WebSocket stream if the inspected source is actively processing
+    const isSourceActive =
+      activeInspectedSource.status === "accepted" || activeInspectedSource.status === "running";
+    if (!isSourceActive) {
+      if (sourceWsRef.current) {
+        sourceWsRef.current.close();
+        sourceWsRef.current = null;
+      }
+      setSourceWsConnected(false);
+      return;
+    }
+
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const sourceWsUrl = `${protocol}//${window.location.host}/api/knowledge/sources/${encodeURIComponent(activeInspectedSource.id)}/ws`;
     const ws = new WebSocket(sourceWsUrl);

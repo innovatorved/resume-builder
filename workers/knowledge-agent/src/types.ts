@@ -76,4 +76,5 @@ export interface Env {
   KNOWLEDGE_SEARCH?: AiSearchInstance;
   GITHUB_TOKEN?: string;
   AI?: Ai;
+  INTERNAL_SERVICE_KEY?: string;
 }

@@ -6,6 +6,12 @@ declare namespace App {
   interface Locals {
     user?: import("better-auth").User;
     session?: import("better-auth").Session;
-    runtime?: { env: { KNOWLEDGE_AGENT?: Fetcher } };
+    runtime?: {
+      env: {
+        KNOWLEDGE_AGENT?: Fetcher;
+        INTERNAL_SERVICE_KEY?: string;
+        KNOWLEDGE_AGENT_URL?: string;
+      };
+    };
   }
 }

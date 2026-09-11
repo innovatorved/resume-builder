@@ -211,7 +211,16 @@ export const DELETE: APIRoute = async ({ params, request, locals }) => {
           `/users/${encodeURIComponent(session.user.id)}/resumes/${encodeURIComponent(id)}`,
           "https://knowledge-agent.internal"
         );
-        const response = await knowledgeService.fetch(new Request(target, { method: "DELETE" }));
+        const internalSecret =
+          locals.runtime?.env?.INTERNAL_SERVICE_KEY ||
+          process.env.INTERNAL_SERVICE_KEY ||
+          "rb_internal_agent_sec_2026";
+        const response = await knowledgeService.fetch(
+          new Request(target, {
+            method: "DELETE",
+            headers: { "x-internal-secret": internalSecret },
+          })
+        );
         if (!response.ok)
           console.warn("[delete-resume] Knowledge cleanup warning:", response.status);
       } catch (error) {
