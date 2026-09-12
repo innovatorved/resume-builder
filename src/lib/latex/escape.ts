@@ -23,6 +23,25 @@ export function escapeLatex(input: string | undefined | null): string {
 }
 
 /**
+ * Escapes LaTeX special characters and converts markdown bold **text** to \textbf{text}.
+ */
+export function formatLatexText(input: string | undefined | null): string {
+  if (!input) return "";
+
+  const text = String(input);
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts
+    .map((part) => {
+      if (part.startsWith("**") && part.endsWith("**") && part.length > 4) {
+        const inner = part.slice(2, -2);
+        return `\\textbf{${escapeLatex(inner)}}`;
+      }
+      return escapeLatex(part);
+    })
+    .join("");
+}
+
+/**
  * Strips dangerous LaTeX commands from raw user LaTeX inputs
  * if shell escape or arbitrary system access was ever attempted.
  */

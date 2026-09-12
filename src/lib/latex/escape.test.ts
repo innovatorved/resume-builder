@@ -58,3 +58,25 @@ describe("sanitizeRawLatex", () => {
     expect(sanitized).toBe(safe);
   });
 });
+
+describe("formatLatexText", () => {
+  it("should escape special characters while converting markdown bold to textbf", () => {
+    const { formatLatexText } = require("./escape");
+    const input = "Optimized API saving **40% latency** and **$50K/yr** in R&D costs.";
+    const result = formatLatexText(input);
+
+    expect(result).toContain("\\textbf{40\\% latency}");
+    expect(result).toContain("\\textbf{\\$50K/yr}");
+    expect(result).toContain("R\\&D");
+    expect(result).not.toContain("**");
+  });
+
+  it("should handle text without bold markers safely", () => {
+    const { formatLatexText } = require("./escape");
+    const input = "Engineered microservices with 99.9% uptime.";
+    const result = formatLatexText(input);
+
+    expect(result).toBe("Engineered microservices with 99.9\\% uptime.");
+  });
+});
+

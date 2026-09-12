@@ -78,9 +78,14 @@ export async function callKnowledgeAgent(
 export async function fetchUserProfile(
   locals: any,
   userId: string
-): Promise<{ profileMarkdown: string | null; sources: any[] }> {
+): Promise<{
+  profileMarkdown: string | null;
+  sources: any[];
+  sourceDocuments: Array<{ id: string; name?: string; type: string; content: string }>;
+}> {
   let profileMarkdown: string | null = null;
   let sources: any[] = [];
+  const sourceDocuments: Array<{ id: string; name?: string; type: string; content: string }> = [];
 
   try {
     const [docRes, sourcesRes] = await Promise.all([
@@ -95,13 +100,34 @@ export async function fetchUserProfile(
 
     if (sourcesRes && sourcesRes.ok) {
       const data = (await sourcesRes.json()) as any[];
-      if (Array.isArray(data)) sources = data;
+      if (Array.isArray(data)) {
+        sources = data;
+        const ready = sources.filter((s: any) => s.artifactReady).slice(0, 8);
+        const docPromises = ready.map(async (s: any) => {
+          try {
+            const res = await callKnowledgeAgent(locals, userId, `documents?path=sources/${s.id}.md`);
+            if (res && res.ok) {
+              const d = (await res.json()) as { content?: string } | null;
+              if (d?.content) {
+                return { id: s.id, name: s.name || s.url, type: s.type, content: d.content };
+              }
+            }
+          } catch {
+            // best-effort
+          }
+          return null;
+        });
+        const results = await Promise.all(docPromises);
+        for (const r of results) {
+          if (r) sourceDocuments.push(r);
+        }
+      }
     }
   } catch (err) {
     console.warn("[knowledge-retriever] fetchUserProfile error:", err);
   }
 
-  return { profileMarkdown, sources };
+  return { profileMarkdown, sources, sourceDocuments };
 }
 
 // biome-ignore lint/suspicious/noExplicitAny: env bindings can come from multiple runtime contexts

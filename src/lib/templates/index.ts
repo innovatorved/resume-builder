@@ -1,4 +1,4 @@
-import { escapeLatex } from "@/lib/latex/escape";
+import { escapeLatex, formatLatexText } from "@/lib/latex/escape";
 import type { ResumeData } from "@/types/resume";
 
 export interface ResumeTemplate {
@@ -62,12 +62,22 @@ export function generateCleanModern(data: ResumeData): string {
         );
       }
       if (personalInfo?.linkedin?.trim()) {
-        const cleanLi = personalInfo.linkedin.trim().replace(/^https?:\/\//, "");
+        let cleanLi = personalInfo.linkedin.trim().replace(/^https?:\/\//, "");
+        if (!cleanLi.startsWith("linkedin.com") && !cleanLi.startsWith("www.linkedin.com")) {
+          cleanLi = `linkedin.com/in/${cleanLi}`;
+        }
         parts.push(`\\href{https://${escapeLatex(cleanLi)}}{Linkedin}`);
       }
       if (personalInfo?.github?.trim()) {
-        const cleanGh = personalInfo.github.trim().replace(/^https?:\/\//, "");
+        let cleanGh = personalInfo.github.trim().replace(/^https?:\/\//, "");
+        if (!cleanGh.startsWith("github.com") && !cleanGh.startsWith("www.github.com")) {
+          cleanGh = `github.com/${cleanGh}`;
+        }
         parts.push(`\\href{https://${escapeLatex(cleanGh)}}{Github}`);
+      }
+      if (personalInfo?.website?.trim()) {
+        const cleanWeb = personalInfo.website.trim().replace(/^https?:\/\//, "");
+        parts.push(`\\href{https://${escapeLatex(cleanWeb)}}{Portfolio}`);
       }
       if (personalInfo?.location?.trim()) parts.push(escapeLatex(personalInfo.location.trim()));
       return parts.join(" \\ $|$ \\ ");
@@ -86,11 +96,11 @@ export function generateCleanModern(data: ResumeData): string {
     filteredSkills.forEach((skill) => {
       const colonIndex = skill.indexOf(":");
       if (colonIndex !== -1) {
-        const cat = skill.slice(0, colonIndex).trim();
+        const cat = skill.slice(0, colonIndex).trim().replace(/^[-*•]\s*/, "");
         const items = skill.slice(colonIndex + 1).trim();
         tex += `    \\item \\textbf{${escapeLatex(cat)}:} ${escapeLatex(items)}\n`;
       } else {
-        tex += `    \\item ${escapeLatex(skill)}\n`;
+        tex += `    \\item ${escapeLatex(skill.trim().replace(/^[-*•]\s*/, ""))}\n`;
       }
     });
     tex += `\\end{itemize}\n`;
@@ -107,11 +117,13 @@ export function generateCleanModern(data: ResumeData): string {
       if (exp.description?.trim()) {
         tex += `\\\\ ${escapeLatex(exp.description.trim())}\n`;
       }
-      const filteredResps = (exp.responsibilities || []).filter((r) => r?.trim());
+      const filteredResps = (exp.responsibilities || [])
+        .map((r) => r?.trim().replace(/^[-*•]\s*/, ""))
+        .filter(Boolean);
       if (filteredResps.length > 0) {
         tex += `\\begin{itemize}[noitemsep, topsep=2pt]\n`;
         filteredResps.forEach((resp) => {
-          tex += `    \\item ${escapeLatex(resp.trim())}\n`;
+          tex += `    \\item ${formatLatexText(resp)}\n`;
         });
         tex += `\\end{itemize}\n`;
       }
@@ -144,9 +156,12 @@ export function generateCleanModern(data: ResumeData): string {
       tex += `${projHeader}\n`;
       if (proj.description) {
         tex += `\\begin{itemize}[noitemsep, topsep=0pt]\n`;
-        const descLines = proj.description.split("\n").filter((l) => l.trim());
+        const descLines = proj.description
+          .split("\n")
+          .map((l) => l.trim().replace(/^[-*•]\s*/, ""))
+          .filter(Boolean);
         descLines.forEach((line) => {
-          tex += `    \\item ${escapeLatex(line.trim())}\n`;
+          tex += `    \\item ${formatLatexText(line)}\n`;
         });
         tex += `\\end{itemize}\n`;
       }
