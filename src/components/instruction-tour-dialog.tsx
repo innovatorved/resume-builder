@@ -135,9 +135,9 @@ export function InstructionTourDialog({
           {/* Top Mockup App Bar */}
           <div className="flex items-center justify-between border-b border-neutral-800 pb-2 mb-2 shrink-0">
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-red-500/80" />
-              <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-amber-500/80" />
-              <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-emerald-500/80" />
+              <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-neutral-700" />
+              <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-neutral-700" />
+              <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-neutral-700" />
               <span className="text-[10px] sm:text-[11px] font-mono text-neutral-400 ml-1 sm:ml-2 flex items-center gap-1">
                 <span className="text-white font-semibold">Ved Gupta × Resume Builder</span> / Evidence Library
               </span>
@@ -151,7 +151,7 @@ export function InstructionTourDialog({
                 onClick={() => onSelect("h1")}
                 className={`relative px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] font-medium rounded transition-all cursor-pointer flex items-center gap-1 ${
                   activeId === "h1"
-                    ? "bg-white text-black ring-2 ring-blue-500 shadow-lg"
+                    ? "bg-white text-black ring-2 ring-white/70 shadow-lg"
                     : "bg-neutral-800 text-neutral-200 hover:bg-neutral-700"
                 }`}
               >
@@ -174,7 +174,7 @@ export function InstructionTourDialog({
                 onClick={() => onSelect("h2")}
                 className={`p-1.5 sm:p-2 rounded-lg border text-left transition-all cursor-pointer ${
                   activeId === "h2"
-                    ? "border-blue-500 bg-blue-950/20 ring-1 ring-blue-500/50"
+                    ? "border-neutral-500 bg-neutral-900/90 ring-1 ring-white/50 shadow-md"
                     : "border-neutral-800 bg-neutral-900/60 hover:border-neutral-700"
                 }`}
               >
@@ -199,10 +199,10 @@ export function InstructionTourDialog({
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
-                    <Link2 className="w-3.5 h-3.5 text-blue-400" />
+                    <Link2 className="w-3.5 h-3.5 text-neutral-400" />
                     <span className="text-[11px] sm:text-xs font-semibold text-neutral-300">linkedin_profile.pdf</span>
                   </div>
-                  <span className="text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded bg-blue-950 border border-blue-800 text-blue-300">
+                  <span className="text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded bg-neutral-800 border border-neutral-700 text-neutral-300">
                     artifact_ready
                   </span>
                 </div>
@@ -217,21 +217,21 @@ export function InstructionTourDialog({
               onClick={() => onSelect("h3")}
               className={`md:col-span-5 rounded-lg border p-1.5 sm:p-2 flex flex-col justify-between transition-all cursor-pointer ${
                 activeId === "h3"
-                  ? "border-blue-500 bg-blue-950/20 ring-1 ring-blue-500/50"
+                  ? "border-neutral-500 bg-neutral-900/90 ring-1 ring-white/50"
                   : "border-neutral-800 bg-neutral-900/40 hover:border-neutral-700"
               }`}
             >
               <div className="flex items-center justify-between text-[9px] sm:text-[10px] font-semibold text-neutral-300">
                 <span className="flex items-center gap-1.5">
-                  <Bot className="w-3.5 h-3.5 text-blue-400" />
+                  <Bot className="w-3.5 h-3.5 text-neutral-300" />
                   Ask your knowledge
                 </span>
                 <span className="text-[8px] text-neutral-400 flex items-center gap-1">
-                  <Sparkles className="w-2.5 h-2.5 text-amber-400" /> Build Resume
+                  <Sparkles className="w-2.5 h-2.5 text-neutral-300" /> Build Resume
                 </span>
               </div>
               <div className="bg-neutral-950/80 rounded p-1.5 border border-neutral-800/60 my-1 text-[9px] sm:text-[10px] text-neutral-300">
-                <span className="text-blue-400 font-medium">[1] profile.md:</span> Built distributed sync
+                <span className="text-white font-medium">[1] profile.md:</span> Built distributed sync
                 protocol handling 1.2M queries/day.
               </div>
               <div className="flex items-center gap-1 bg-neutral-800/80 rounded px-2 py-1 text-[8px] sm:text-[9px] text-neutral-400 border border-neutral-700/60">
@@ -318,9 +318,9 @@ export function InstructionTourDialog({
           {/* Top Bar */}
           <div className="flex items-center justify-between border-b border-neutral-800 pb-2 mb-2 shrink-0">
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-red-500/80" />
-              <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-amber-500/80" />
-              <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-emerald-500/80" />
+              <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-neutral-700" />
+              <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-neutral-700" />
+              <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-neutral-700" />
               <span className="text-[10px] sm:text-[11px] font-mono text-neutral-300 ml-1 sm:ml-2">
                 Ved Gupta × Resume Builder
               </span>
@@ -330,7 +330,7 @@ export function InstructionTourDialog({
                 onClick={() => onSelect("h2")}
                 className={`px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] font-medium rounded border transition-all cursor-pointer flex items-center gap-1 ${
                   activeId === "h2"
-                    ? "bg-blue-600 text-white border-blue-400 shadow-md ring-2 ring-blue-500"
+                    ? "bg-neutral-800 text-white border-neutral-600 ring-2 ring-white/50"
                     : "bg-neutral-900 border-neutral-700 text-neutral-200 hover:bg-neutral-800"
                 }`}
               >
@@ -341,7 +341,7 @@ export function InstructionTourDialog({
                 onClick={() => onSelect("h1")}
                 className={`px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] font-medium rounded transition-all cursor-pointer flex items-center gap-1 ${
                   activeId === "h1"
-                    ? "bg-white text-black ring-2 ring-blue-500 shadow-lg"
+                    ? "bg-white text-black ring-2 ring-white/70 shadow-lg"
                     : "bg-neutral-100 text-black hover:bg-neutral-200"
                 }`}
               >
@@ -371,7 +371,7 @@ export function InstructionTourDialog({
               onClick={() => onSelect("h3")}
               className={`p-2 sm:p-2.5 flex items-center justify-between transition-all cursor-pointer ${
                 activeId === "h3"
-                  ? "bg-blue-950/30 border-blue-500 ring-1 ring-blue-500/50"
+                  ? "bg-neutral-900/90 border-neutral-500 ring-1 ring-white/50"
                   : "hover:bg-neutral-900/80"
               }`}
             >
@@ -531,7 +531,7 @@ export function InstructionTourDialog({
             <div
               onClick={() => onSelect("h3")}
               className={`flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded transition-all cursor-pointer ${
-                activeId === "h3" ? "ring-2 ring-blue-500 bg-blue-950/40" : ""
+                activeId === "h3" ? "ring-2 ring-white/60 bg-neutral-900" : ""
               }`}
             >
               <span className="hidden xs:flex text-[9px] sm:text-[10px] text-neutral-400 items-center gap-1 hover:text-white">
@@ -553,32 +553,32 @@ export function InstructionTourDialog({
               onClick={() => onSelect("h1")}
               className={`rounded-lg border p-2 bg-neutral-900/90 font-mono text-[9px] sm:text-[10px] overflow-hidden flex flex-col transition-all cursor-pointer ${
                 activeId === "h1"
-                  ? "border-blue-500 ring-1 ring-blue-500/50"
+                  ? "border-neutral-500 ring-1 ring-white/50"
                   : "border-neutral-800 hover:border-neutral-700"
               }`}
             >
               <div className="flex items-center justify-between text-neutral-500 pb-1 border-b border-neutral-800 text-[8px] sm:text-[9px]">
                 <span className="flex items-center gap-1">
-                  <Code2 className="w-3 h-3 text-blue-400" /> main.tex
+                  <Code2 className="w-3 h-3 text-neutral-300" /> main.tex
                 </span>
                 <span>UTF-8</span>
               </div>
               <div className="mt-1 space-y-0.5 leading-tight text-neutral-300">
                 <p>
-                  <span className="text-pink-400">\documentclass</span>
+                  <span className="text-neutral-400">\documentclass</span>
                   <span className="text-neutral-500">[11pt]&#123;article&#125;</span>
                 </p>
                 <p>
-                  <span className="text-pink-400">\begin</span>
+                  <span className="text-neutral-400">\begin</span>
                   <span className="text-neutral-500">&#123;document&#125;</span>
                 </p>
-                <p className="text-amber-300 font-semibold">\textbf&#123;Alex Chen&#125;</p>
-                <p className="text-blue-300">\section&#123;Experience&#125;</p>
+                <p className="text-white font-semibold">\textbf&#123;Alex Chen&#125;</p>
+                <p className="text-neutral-300 font-medium">\section&#123;Experience&#125;</p>
                 <p className="text-neutral-400 pl-2">
-                  <span className="text-purple-400">\resumeItem</span>&#123;Architected...&#125;
+                  <span className="text-neutral-300">\resumeItem</span>&#123;Architected...&#125;
                 </p>
                 <p>
-                  <span className="text-pink-400">\end</span>
+                  <span className="text-neutral-400">\end</span>
                   <span className="text-neutral-500">&#123;document&#125;</span>
                 </p>
               </div>
@@ -589,7 +589,7 @@ export function InstructionTourDialog({
               onClick={() => onSelect("h2")}
               className={`rounded-lg border bg-neutral-900/60 p-2 items-center justify-center transition-all cursor-pointer hidden sm:flex ${
                 activeId === "h2"
-                  ? "border-blue-500 ring-1 ring-blue-500/50"
+                  ? "border-neutral-500 ring-1 ring-white/50"
                   : "border-neutral-800 hover:border-neutral-700"
               }`}
             >
@@ -712,13 +712,13 @@ export function InstructionTourDialog({
             onClick={() => onSelect("h1")}
             className={`rounded-xl border p-2 sm:p-2.5 bg-neutral-900/95 backdrop-blur-md shadow-2xl transition-all cursor-pointer shrink-0 ${
               activeId === "h1"
-                ? "border-blue-500 ring-2 ring-blue-500/50"
+                ? "border-neutral-500 ring-2 ring-white/50"
                 : "border-neutral-700/80 hover:border-neutral-600"
             }`}
           >
             <div className="flex items-center justify-between pb-1.5 border-b border-neutral-800">
               <div className="flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <Sparkles className="w-3.5 h-3.5 text-neutral-300" />
                 <span className="text-[11px] sm:text-xs font-semibold text-white">AI Copilot</span>
                 <span className="text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded bg-neutral-800 border border-neutral-700 text-neutral-300 font-mono">
                   ⌘K
@@ -733,13 +733,13 @@ export function InstructionTourDialog({
             {/* Quick action suggestion chips */}
             <div className="flex items-center gap-1.5 py-1 text-[8px] sm:text-[9px] overflow-x-auto no-scrollbar">
               <span className="text-neutral-500 font-medium">Quick actions:</span>
-              <span className="px-1.5 py-0.5 rounded bg-blue-900/40 border border-blue-700 text-blue-300 font-medium">
+              <span className="px-1.5 py-0.5 rounded bg-neutral-800 border border-neutral-600 text-white font-medium">
                 Tailor to target job post
               </span>
-              <span className="px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-300 hidden sm:inline">
+              <span className="px-1.5 py-0.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-300 hidden sm:inline">
                 Quantify achievements
               </span>
-              <span className="px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-300 hidden sm:inline">
+              <span className="px-1.5 py-0.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-300 hidden sm:inline">
                 Improve action verbs
               </span>
             </div>
@@ -753,7 +753,7 @@ export function InstructionTourDialog({
                 }}
                 className={`sm:col-span-7 rounded-lg border p-1.5 bg-neutral-950 text-left transition-all ${
                   activeId === "h2"
-                    ? "border-blue-500 ring-1 ring-blue-500"
+                    ? "border-neutral-500 ring-1 ring-white/50"
                     : "border-neutral-800 hover:border-neutral-700"
                 }`}
               >
@@ -774,7 +774,7 @@ export function InstructionTourDialog({
                 }}
                 className={`sm:col-span-5 rounded-lg border p-1.5 flex flex-col justify-between transition-all ${
                   activeId === "h3"
-                    ? "border-blue-500 ring-1 ring-blue-500 bg-blue-950/20"
+                    ? "border-neutral-500 ring-1 ring-white/50 bg-neutral-900/60"
                     : "border-neutral-800 bg-neutral-950/60"
                 }`}
               >
@@ -883,18 +883,18 @@ export function InstructionTourDialog({
                 onClick={() => onSelect("h2")}
                 className={`px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] font-medium rounded border transition-all cursor-pointer flex items-center gap-1 ${
                   activeId === "h2"
-                    ? "bg-blue-600 text-white border-blue-400 ring-2 ring-blue-500 shadow-md"
+                    ? "bg-white text-black border-white ring-2 ring-white/70 shadow-md"
                     : "bg-neutral-900 border-neutral-800 text-neutral-200 hover:bg-neutral-800"
                 }`}
               >
-                <History className="w-3 h-3 text-amber-400" />
+                <History className="w-3 h-3 text-neutral-400" />
                 <span>History</span>
               </div>
               <div
                 onClick={() => onSelect("h1")}
                 className={`relative px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] font-medium rounded transition-all cursor-pointer flex items-center gap-1 ${
                   activeId === "h1"
-                    ? "bg-white text-black ring-2 ring-blue-500 shadow-lg"
+                    ? "bg-white text-black ring-2 ring-white/70 shadow-lg"
                     : "bg-neutral-800 text-neutral-200 hover:bg-neutral-700"
                 }`}
               >
@@ -909,13 +909,13 @@ export function InstructionTourDialog({
           <div className="flex-1 bg-neutral-900/70 rounded-lg border border-neutral-800 p-2 sm:p-2.5 flex flex-col gap-1.5 sm:gap-2 overflow-hidden min-h-0">
             <div className="flex items-center justify-between text-[9px] sm:text-[10px] text-neutral-400 border-b border-neutral-800 pb-1 shrink-0">
               <span className="font-semibold text-neutral-200 flex items-center gap-1">
-                <History className="w-3 h-3 text-blue-400" /> Version History
+                <History className="w-3 h-3 text-neutral-300" /> Version History
               </span>
               <span>3 snapshots recorded</span>
             </div>
 
             {/* Version item 3 (Current) */}
-            <div className="p-1.5 sm:p-2 rounded bg-neutral-950/80 border border-blue-500/60 flex items-center justify-between text-left shrink-0">
+            <div className="p-1.5 sm:p-2 rounded bg-neutral-950/80 border border-neutral-700 flex items-center justify-between text-left shrink-0">
               <div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-[11px] sm:text-xs font-bold text-white">Version 3</span>
@@ -941,7 +941,7 @@ export function InstructionTourDialog({
               onClick={() => onSelect("h3")}
               className={`p-1.5 sm:p-2 rounded border flex items-center justify-between text-left transition-all cursor-pointer shrink-0 ${
                 activeId === "h3"
-                  ? "bg-blue-950/30 border-blue-500 ring-1 ring-blue-500"
+                  ? "bg-neutral-900/90 border-neutral-500 ring-1 ring-white/50"
                   : "bg-neutral-950/40 border-neutral-800/80 hover:border-neutral-700"
               }`}
             >
@@ -1068,10 +1068,10 @@ export function InstructionTourDialog({
         showCloseButton={false}
         className="w-[96vw] max-w-[96vw] sm:max-w-2xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 max-h-[92vh] flex flex-col gap-0 overflow-hidden bg-neutral-950 border border-neutral-800 text-white shadow-2xl rounded-2xl sm:rounded-3xl duration-200"
       >
-        {/* Top Sequence & Progress Bar */}
-        <div className="relative w-full bg-neutral-900 h-1.5 shrink-0">
+        {/* Top Monochromatic Sequence & Progress Bar */}
+        <div className="relative w-full bg-neutral-900 h-1 shrink-0">
           <div
-            className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-400 transition-all duration-300"
+            className="h-full bg-white transition-all duration-300"
             style={{ width: `${((currentSlideIndex + 1) / slides.length) * 100}%` }}
           />
         </div>
@@ -1079,7 +1079,7 @@ export function InstructionTourDialog({
         {/* Modal Header */}
         <div className="px-4 sm:px-6 pt-3.5 sm:pt-4 pb-2.5 sm:pb-3 flex items-center justify-between border-b border-neutral-800/80 shrink-0">
           <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-            <span className="p-1 sm:p-1.5 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20 shrink-0">
+            <span className="p-1 sm:p-1.5 rounded-md bg-neutral-900 text-white border border-neutral-800 shrink-0">
               <Compass className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
             </span>
             <div className="min-w-0">
@@ -1094,12 +1094,12 @@ export function InstructionTourDialog({
 
           <div className="flex items-center gap-2 shrink-0 ml-2">
             <span className="hidden md:inline-block text-[11px] text-neutral-400 font-mono">
-              Use <kbd className="px-1 py-0.5 rounded bg-neutral-800 border border-neutral-700 text-neutral-300">←</kbd> <kbd className="px-1 py-0.5 rounded bg-neutral-800 border border-neutral-700 text-neutral-300">→</kbd> to navigate
+              Use <kbd className="px-1 py-0.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-300">←</kbd> <kbd className="px-1 py-0.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-300">→</kbd> to navigate
             </span>
             <button
               type="button"
               onClick={handleDismiss}
-              className="p-1.5 sm:p-2 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer z-50 touch-manipulation"
+              className="p-1.5 sm:p-2 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-900 transition-colors cursor-pointer z-50 touch-manipulation"
               aria-label="Close guide"
               title="Close guide"
             >
@@ -1115,10 +1115,10 @@ export function InstructionTourDialog({
             {currentSlide.renderMockup(activeHotspotId, (id) => setActiveHotspotId(id))}
           </div>
 
-          {/* Highlight Sequence Selector Tabs */}
+          {/* Highlight Sequence Selector Tabs in Monochromatic Theme */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 no-scrollbar flex-nowrap sm:flex-wrap shrink-0">
             <span className="text-[10px] sm:text-[11px] font-semibold text-neutral-400 uppercase tracking-wider mr-1 flex items-center gap-1 shrink-0">
-              <MousePointer className="w-3 h-3 text-blue-400" /> Sequence:
+              <MousePointer className="w-3 h-3 text-neutral-400" /> Sequence:
             </span>
             {currentSlide.hotspots.map((h) => (
               <button
@@ -1127,13 +1127,13 @@ export function InstructionTourDialog({
                 onClick={() => setActiveHotspotId(h.id)}
                 className={`px-2.5 py-1 text-[11px] sm:text-xs font-medium rounded-lg transition-all flex items-center gap-1.5 cursor-pointer border shrink-0 touch-manipulation ${
                   activeHotspotId === h.id
-                    ? "bg-blue-600 text-white border-blue-500 shadow-md ring-1 ring-blue-400"
+                    ? "bg-white text-black border-white shadow-xs font-semibold"
                     : "bg-neutral-900/90 text-neutral-300 border-neutral-800 hover:border-neutral-700 hover:text-white"
                 }`}
               >
                 <span
                   className={`w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center ${
-                    activeHotspotId === h.id ? "bg-white text-blue-700" : "bg-neutral-800 text-neutral-400"
+                    activeHotspotId === h.id ? "bg-black text-white" : "bg-neutral-800 text-neutral-400"
                   }`}
                 >
                   {h.num}
@@ -1144,31 +1144,31 @@ export function InstructionTourDialog({
           </div>
 
           {/* Active Highlight Detail Callout Card */}
-          <div className="p-3 sm:p-4 rounded-xl border border-neutral-800 bg-neutral-900/70 flex flex-col gap-1.5 sm:gap-2 transition-all shrink-0">
+          <div className="p-3 sm:p-4 rounded-xl border border-neutral-800 bg-neutral-900/60 flex flex-col gap-1.5 sm:gap-2 transition-all shrink-0">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2">
-                <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-500 text-white text-[10px] sm:text-xs font-bold flex items-center justify-center shrink-0">
+                <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white text-black text-[10px] sm:text-xs font-bold flex items-center justify-center shrink-0 shadow-xs">
                   {activeHotspot.num}
                 </span>
                 <div className="min-w-0 flex-1">
                   <h4 className="text-xs sm:text-sm font-semibold text-white truncate">
                     {activeHotspot.targetName}
                   </h4>
-                  <p className="text-[11px] sm:text-xs text-blue-300 font-medium">{activeHotspot.actionText}</p>
+                  <p className="text-[11px] sm:text-xs text-neutral-300 font-medium">{activeHotspot.actionText}</p>
                 </div>
               </div>
             </div>
 
             <p className="text-[11px] sm:text-xs text-neutral-300 pl-7 sm:pl-8 leading-relaxed">
-              <span className="text-neutral-400 font-medium">Result: </span>
+              <span className="text-neutral-500 font-medium">Result: </span>
               {activeHotspot.effectText}
             </p>
 
             {activeHotspot.tip && (
-              <div className="ml-7 sm:ml-8 mt-0.5 px-2.5 py-1.5 rounded-lg bg-neutral-950/80 border border-neutral-800 text-[10px] sm:text-[11px] text-amber-300 flex items-start gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 shrink-0 mt-0.5 text-amber-400" />
+              <div className="ml-7 sm:ml-8 mt-0.5 px-2.5 py-1.5 rounded-lg bg-neutral-950 border border-neutral-800/80 text-[10px] sm:text-[11px] text-neutral-300 flex items-start gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 shrink-0 mt-0.5 text-neutral-400" />
                 <span>
-                  <strong className="font-semibold text-amber-200">Pro Tip:</strong>{" "}
+                  <strong className="font-semibold text-white">Pro Tip:</strong>{" "}
                   {activeHotspot.tip}
                 </span>
               </div>
@@ -1189,7 +1189,7 @@ export function InstructionTourDialog({
                 className={`h-1.5 sm:h-2 rounded-full transition-all cursor-pointer ${
                   i === currentSlideIndex
                     ? "w-5 sm:w-6 bg-white"
-                    : "w-1.5 sm:w-2 bg-neutral-700 hover:bg-neutral-500"
+                    : "w-1.5 sm:w-2 bg-neutral-800 hover:bg-neutral-600"
                 }`}
               />
             ))}
@@ -1259,7 +1259,7 @@ export function InstructionTourDialog({
   );
 }
 
-// Interactive Hotspot Badge overlaid directly on the mockups
+// Interactive Hotspot Badge overlaid directly on the mockups in Resume Builder neutral theme
 function HotspotBadge({
   num,
   active,
@@ -1288,17 +1288,17 @@ function HotspotBadge({
       <span
         className={`absolute -inset-1 sm:-inset-1.5 rounded-full opacity-75 transition-all ${
           active
-            ? "bg-blue-400 animate-ping"
-            : "bg-neutral-400 group-hover:bg-blue-400 group-hover:animate-ping opacity-30"
+            ? "bg-white/40 animate-ping"
+            : "bg-neutral-500/20 group-hover:bg-white/30 group-hover:animate-ping opacity-30"
         }`}
       />
 
       {/* Number Badge */}
       <span
-        className={`relative flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full text-[10px] sm:text-xs font-bold shadow-lg transition-transform duration-200 ${
+        className={`relative flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full text-[10px] sm:text-xs font-bold shadow-xl transition-transform duration-200 ${
           active
-            ? "bg-blue-500 text-white scale-110 ring-2 ring-white"
-            : "bg-neutral-900 text-neutral-200 border border-neutral-600 group-hover:scale-105 group-hover:border-blue-400"
+            ? "bg-white text-black scale-110 ring-2 ring-white"
+            : "bg-neutral-900 text-neutral-300 border border-neutral-700 group-hover:scale-105 group-hover:border-neutral-400 group-hover:text-white"
         }`}
       >
         {num}
