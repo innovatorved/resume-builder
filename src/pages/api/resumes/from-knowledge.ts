@@ -105,30 +105,32 @@ export const POST: APIRoute = async ({ request, locals }) => {
       try {
         const client = getGeminiClient(locals);
 
-        const systemInstruction = `You are an elite ATS resume architect and technical career strategist.
-Your task is to analyze the candidate's verified career evidence and construct a high-impact, ATS-optimized structured resume.
+        const systemInstruction = `You are a world-class executive resume architect and Silicon Valley technical career strategist.
+Your objective is to transform raw candidate background and evidence into an extraordinary, high-converting ATS resume.
 
-CRITICAL RULES & CONSTRAINTS:
-1. STRICT FACTUAL ACCURACY:
-   - Use ONLY verified facts, companies, technologies, projects, and achievements from the candidate's evidence.
-   - NEVER hallucinate, invent, or infer unverified companies, degrees, dates, metrics, or certifications.
-2. INTELLIGENT CURATION (HIGH IMPACT & CONCISE):
-   - Choose ONLY the most necessary, high-impact career facts suitable for a pristine single-page resume.
-   - Professional Experience: Select 2-4 most impactful professional roles (or all if candidate has fewer).
-   - Accomplishment Bullets: Write 2-4 bullet points per role following Google's XYZ formula ("Accomplished [X] as measured by [Y], by doing [Z]").
-   - Highlight key metrics and results using markdown bold (e.g. "**35% reduction in latency**", "**10k+ active users**", "**\$2M revenue impact**").
-   - Technical Skills: Group skills into 3-5 clear categories (e.g. "Cloud & Infrastructure: ...", "DevOps & Tools: ...", "Languages & Frameworks: ...", "Databases: ..."). List specific tools and technologies.
-   - Key Projects: Select 2-3 standout projects featuring verified technologies and measurable achievements.
-   - Education: Include verified degrees, institutions, and graduation years.
-   - Certifications: Include ONLY if verified in evidence.
-   - Languages: Include ONLY if verified in evidence.
-3. CLEAN OMISSION:
-   - If any section or contact detail (Phone, Location, LinkedIn, GitHub, Portfolio Website, Certifications, Languages) is NOT in the verified evidence, leave it empty or null.
-   - NEVER output fake placeholders (like "city, state", "+1 234-567-8900", "example.com", or "Candidate Title").
-4. ACCURATE PERSONAL INFO:
-   - Name: Use candidate's real name from evidence or account.
-   - Title: Precise, professional headline reflecting their verified background (e.g. "Cloud Engineer", "DevOps Engineer", "Full Stack Software Engineer").
-   - Email, Phone, LinkedIn, GitHub, Website, Location: Extract exact values from evidence if available.
+CRITICAL DIRECTIVE: NEVER COPY-PASTE VERBATIM!
+- DO NOT copy or parrot existing job descriptions, responsibilities, or summaries verbatim from the evidence or prior resume.
+- You must ACTIVELY REWRITE, RE-ENGINEER, and ELEVATE every single bullet point, summary, and project description into compelling, high-leverage accomplishments.
+- Transform passive daily duties (such as "responsible for managing Azure", "worked on Python scripts", "designed and managed environments") into high-impact, results-driven accomplishments (e.g., "Architected enterprise Azure IaaS solutions supporting high-traffic workloads, boosting infrastructure reliability to **99.9%** and reducing operational overhead by **35%**").
+- Every bullet point must be unique and showcase a distinct technical pillar (e.g., Cloud/IaaS Architecture, AI & LLM Systems, CI/CD Automation & DevOps, Security & IAM). DO NOT generate repetitive bullets saying the same thing in different words.
+
+CORE WRITING STANDARDS:
+1. GOOGLE XYZ ACCOMPLISHMENT FORMULA:
+   - Structure: "Accomplished [X] as measured by [Y], by doing [Z]".
+   - Lead with power action verbs: Architected, Engineered, Orchestrated, Automated, Spearheaded, Optimized, Scaled, Deployed, Accelerated.
+   - Quantify achievements and highlight key metrics in markdown bold (e.g., "**40% latency reduction**", "**99.9% availability**", "**426+ GitHub stars**", "**60% faster CI/CD cycles**", "**10k+ requests/sec**").
+2. CONTEXTUAL REASONING & METRIC INFERENCE:
+   - Ground all technologies, companies, roles, and project domains strictly in the verified evidence.
+   - If exact percentages or metrics were not explicitly recorded in the raw notes, synthesize realistic, industry-standard engineering impact benchmarks (e.g., latency cuts, automated provisioning time, throughput, uptime) that reflect the candidate's actual architecture and scale, highlighting the metrics in **bold**.
+3. TECHNICAL DEPTH & ATS KEYWORDS:
+   - Weave specific tools, frameworks, and protocols (e.g., Azure IaaS, Terraform, Docker, Kubernetes, Azure OpenAI, Whisper ASR, Python, GitHub Actions) directly into the accomplishment bullets.
+4. INTELLIGENT CURATION:
+   - Experience: Synthesize 3-4 powerful, distinct achievement bullets per role.
+   - Projects: Select 2-3 standout projects with crisp 2-line descriptions highlighting architectural design, stack, and quantified adoption.
+   - Skills: Categorize cleanly into 4-5 well-organized, deduplicated groups (e.g., "Cloud & Infrastructure", "DevOps & CI/CD", "Backend & APIs", "AI & Machine Learning", "Databases").
+   - Summary: Craft a compelling, punchy 2-3 sentence executive profile that immediately positions the candidate as a top-tier engineer.
+5. CLEAN OMISSION:
+   - If contact details (phone, location, linkedin, github, website) or sections (certifications, languages) are NOT present in the candidate's evidence, leave them empty or omitted. NEVER output dummy placeholders like "City, Country" or "+1234567890".
 
 OUTPUT FORMAT:
 Return a JSON object conforming strictly to:
@@ -144,7 +146,7 @@ Return a JSON object conforming strictly to:
     "website": "example.com",
     "location": "City, Country"
   },
-  "summary": "Brief 2-3 sentence executive summary highlighting core expertise, major domains, and top accomplishments.",
+  "summary": "Compelling 2-3 sentence executive summary highlighting core expertise, specialized engineering domains, and major impact.",
   "skills": [
     "Category Name: Tech1, Tech2, Tech3, Tech4",
     "Category Name: Tech1, Tech2, Tech3, Tech4"
@@ -157,8 +159,8 @@ Return a JSON object conforming strictly to:
       "startDate": "Month YYYY",
       "endDate": "Month YYYY or Present",
       "responsibilities": [
-        "Accomplished [X] as measured by **[metric Y]**, by doing [Z].",
-        "Engineered [X] resulting in **[metric Y]**, utilizing [Z]."
+        "Architected [X] resulting in **[metric Y]**, by utilizing [Z].",
+        "Automated [X] accelerating delivery by **[metric Y]**, leveraging [Z]."
       ]
     }
   ],
@@ -194,12 +196,21 @@ Return a JSON object conforming strictly to:
   ]
 }`;
 
+        const prompt = `Synthesize an exceptional, high-converting ATS resume from the following candidate evidence.
+
+MANDATORY INSTRUCTION:
+Do not copy existing descriptions or bullet points verbatim. Actively rewrite, elevate, and engineer every bullet point into a high-impact Google XYZ accomplishment with bolded metrics, distinct technical pillars, and strong action verbs.
+
+Candidate Verified Evidence:
+${contextText}`;
+
         const response = await client.models.generateContent({
           model: "gemini-2.5-flash",
-          contents: `Synthesize a high-converting, ATS-optimized resume from the following candidate verified evidence:\n\n${contextText}`,
+          contents: prompt,
           config: {
             systemInstruction,
             responseMimeType: "application/json",
+            temperature: 0.35,
           },
         });
 
@@ -236,26 +247,54 @@ Return a JSON object conforming strictly to:
         const rawCert = parsed.certifications || parsed.data?.certifications || [];
         const rawLang = parsed.languages || parsed.data?.languages || [];
 
+        let skillsArray: string[] = [];
+        const rawSkills = parsed.skills || parsed.data?.skills;
+        if (Array.isArray(rawSkills)) {
+          skillsArray = rawSkills.filter(Boolean);
+        } else if (rawSkills && typeof rawSkills === "object") {
+          skillsArray = Object.entries(rawSkills).map(([cat, list]) =>
+            `${cat}: ${Array.isArray(list) ? list.join(", ") : String(list)}`
+          );
+        }
+
         const data: ResumeData = {
           personalInfo,
           summary: parsed.summary || parsed.data?.summary || "",
-          skills: parsed.skills || parsed.data?.skills || [],
-          experience: rawExp.map((exp) => ({
-            company: exp.company || "",
-            title: exp.title || "",
-            location: exp.location || "",
-            startDate: exp.startDate || "",
-            endDate: exp.endDate || "",
-            description: exp.description || "",
-            responsibilities: Array.isArray(exp.responsibilities) ? exp.responsibilities : [],
-          })),
-          projects: rawProj.map((proj) => ({
-            title: proj.title || "",
-            description: proj.description || "",
-            technologies: proj.technologies || "",
-            date: proj.date || "",
-            link: proj.link || undefined,
-          })),
+          skills: skillsArray,
+          experience: rawExp.map((exp: any) => {
+            const responsibilities = Array.isArray(exp.responsibilities)
+              ? exp.responsibilities
+              : typeof exp.responsibilities === "string"
+                ? [exp.responsibilities]
+                : Array.isArray(exp.highlights)
+                  ? exp.highlights
+                  : [];
+            return {
+              company: exp.company || "",
+              title: exp.title || "",
+              location: exp.location || "",
+              startDate: exp.startDate || "",
+              endDate: exp.endDate || "",
+              description: exp.description || "",
+              responsibilities: responsibilities.filter(Boolean),
+            };
+          }),
+          projects: rawProj.map((proj: any) => {
+            const description = Array.isArray(proj.description)
+              ? proj.description.join("\n")
+              : typeof proj.description === "string"
+                ? proj.description
+                : Array.isArray(proj.highlights)
+                  ? proj.highlights.join("\n")
+                  : "";
+            return {
+              title: proj.title || "",
+              description,
+              technologies: proj.technologies || (Array.isArray(proj.tech) ? proj.tech.join(", ") : ""),
+              date: proj.date || "",
+              link: proj.link || undefined,
+            };
+          }),
           education: rawEdu.map((edu) => ({
             institution: edu.institution || "",
             degree: edu.degree || "",
