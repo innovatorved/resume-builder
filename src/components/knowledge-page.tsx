@@ -9,6 +9,7 @@ import {
   ChevronRight,
   CircleAlert,
   Code2,
+  Compass,
   Copy,
   FileText,
   Globe,
@@ -36,6 +37,7 @@ import {
 } from "react";
 import { AuthNav } from "@/components/auth-nav";
 import { BrandLockup } from "@/components/brand-lockup";
+import { InstructionTourDialog } from "@/components/instruction-tour-dialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -345,6 +347,7 @@ export function KnowledgePage() {
   const [linkedInPdfFile, setLinkedInPdfFile] = useState<File | null>(null);
   const [resumeUploadFile, setResumeUploadFile] = useState<File | null>(null);
   const [isGeneratingResume, setIsGeneratingResume] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
 
   // Dedicated per-source Durable Object state & WebSocket
@@ -945,6 +948,16 @@ export function KnowledgePage() {
               <span className="hidden sm:inline">
                 {showRunsView ? "Hide History" : "Run History"}
               </span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setTourOpen(true)}
+              className="h-8 px-2 sm:px-3 gap-1.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+              title="How this app works (Interactive Walkthrough)"
+            >
+              <Compass className="h-3.5 w-3.5 text-blue-400" />
+              <span className="hidden sm:inline">How it works</span>
             </Button>
             <Button variant="ghost" size="sm" asChild className="h-8 px-2 sm:px-3 gap-1.5 text-xs">
               <a href="/">
@@ -2099,6 +2112,9 @@ export function KnowledgePage() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Interactive App Guide & Tour Dialog */}
+        <InstructionTourDialog open={tourOpen} onOpenChange={setTourOpen} />
       </main>
     </div>
   );

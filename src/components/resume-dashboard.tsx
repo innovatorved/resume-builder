@@ -3,6 +3,7 @@
 import {
   ArrowRight,
   Briefcase,
+  Compass,
   Copy,
   Download,
   Edit2,
@@ -16,9 +17,10 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AuthNav } from "@/components/auth-nav";
 import { BrandLockup } from "@/components/brand-lockup";
+import { InstructionTourDialog } from "@/components/instruction-tour-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -56,11 +58,26 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
   const [renameValue, setRenameValue] = useState("");
   const [descValue, setDescValue] = useState("");
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
   const [isUploadingResume, setIsUploadingResume] = useState(false);
   const [uploadProgressText, setUploadProgressText] = useState("");
   const [syncToKnowledge, setSyncToKnowledge] = useState(true);
   const [dragOver, setDragOver] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const hasSeen = localStorage.getItem("resume_builder_instruction_tour_seen_v1");
+        if (!hasSeen) {
+          setTourOpen(true);
+          localStorage.setItem("resume_builder_instruction_tour_seen_v1", "true");
+        }
+      } catch {
+        // ignore storage access errors
+      }
+    }
+  }, []);
 
   const navigate = (path: string) => {
     window.location.href = path;
@@ -346,6 +363,18 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
             <BrandLockup size="md" showTagline={false} />
 
             <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+              {/* How it works Walkthrough Tour */}
+              <Button
+                onClick={() => setTourOpen(true)}
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-1.5 px-2 sm:px-2.5 text-xs text-neutral-300 hover:text-white hover:bg-neutral-900 border border-neutral-800/80 cursor-pointer"
+                title="How this app works (Interactive Walkthrough & Guide)"
+              >
+                <Compass className="h-3.5 w-3.5 text-blue-400" />
+                <span className="hidden sm:inline">How it works</span>
+              </Button>
+
               <Button
                 onClick={() => navigate("/knowledge")}
                 variant="ghost"
@@ -859,6 +888,9 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Interactive Instructional Walkthrough Tour Slider */}
+        <InstructionTourDialog open={tourOpen} onOpenChange={setTourOpen} />
       </main>
     </div>
   );

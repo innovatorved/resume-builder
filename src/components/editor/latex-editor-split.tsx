@@ -1,6 +1,7 @@
-import { ChevronDown, Code2, Download, Eye, FileCode, History, Loader2, Save } from "lucide-react";
+import { ChevronDown, Code2, Compass, Download, Eye, FileCode, History, Loader2, Save } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ResumeMark } from "@/components/brand-lockup";
+import { InstructionTourDialog } from "@/components/instruction-tour-dialog";
 import { Button } from "@/components/ui/button";
 import { VLogo } from "@/components/v-logo";
 import { useToast } from "@/hooks/use-toast";
@@ -47,6 +48,7 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
   const [splitRatio, setSplitRatio] = useState<number>(50); // percentage for left editor pane
   const [mobileTab, setMobileTab] = useState<"editor" | "preview">("editor");
   const [showVersionModal, setShowVersionModal] = useState<boolean>(false);
+  const [showTourModal, setShowTourModal] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
 
@@ -370,6 +372,18 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
 
         {/* Right: Actions */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Interactive Guide / Tour */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2 sm:px-2.5 text-xs text-neutral-300 hover:text-white hover:bg-neutral-900 gap-1.5 rounded-md cursor-pointer border border-neutral-800/80"
+            onClick={() => setShowTourModal(true)}
+            title="App Walkthrough & How to Use"
+          >
+            <Compass className="w-3.5 h-3.5 text-blue-400" />
+            <span className="hidden sm:inline">Guide</span>
+          </Button>
+
           {/* Version History Button */}
           <Button
             variant="ghost"
@@ -536,6 +550,12 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
         resumeId={initialResume.id}
         currentVersionId={currentVersionId}
         onRestoreVersion={handleRestoreVersion}
+      />
+
+      {/* Interactive App Tour / Guide Modal */}
+      <InstructionTourDialog
+        open={showTourModal}
+        onOpenChange={setShowTourModal}
       />
     </div>
   );
