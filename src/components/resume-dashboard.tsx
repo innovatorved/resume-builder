@@ -371,7 +371,7 @@ export function ResumeDashboard({ initialResumes }: ResumeDashboardProps) {
                 className="h-8 gap-1.5 px-2 sm:px-2.5 text-xs text-neutral-300 hover:text-white hover:bg-neutral-900 border border-neutral-800/80 cursor-pointer"
                 title="How this app works (Interactive Walkthrough & Guide)"
               >
-                <Compass className="h-3.5 w-3.5 text-blue-400" />
+                <Compass className="h-3.5 w-3.5 text-emerald-400" />
                 <span className="hidden sm:inline">How it works</span>
               </Button>
 

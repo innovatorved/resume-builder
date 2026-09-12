@@ -956,7 +956,7 @@ export function KnowledgePage() {
               className="h-8 px-2 sm:px-3 gap-1.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
               title="How this app works (Interactive Walkthrough)"
             >
-              <Compass className="h-3.5 w-3.5 text-blue-400" />
+              <Compass className="h-3.5 w-3.5 text-emerald-400" />
               <span className="hidden sm:inline">How it works</span>
             </Button>
             <Button variant="ghost" size="sm" asChild className="h-8 px-2 sm:px-3 gap-1.5 text-xs">

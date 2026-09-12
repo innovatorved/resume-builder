@@ -380,7 +380,7 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
             onClick={() => setShowTourModal(true)}
             title="App Walkthrough & How to Use"
           >
-            <Compass className="w-3.5 h-3.5 text-blue-400" />
+            <Compass className="w-3.5 h-3.5 text-emerald-400" />
             <span className="hidden sm:inline">Guide</span>
           </Button>
 
