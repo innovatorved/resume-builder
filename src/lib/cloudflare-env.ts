@@ -36,7 +36,7 @@ export async function getCloudflareEnv(locals?: any): Promise<Record<string, any
     }
   }
 
-  const result = envObj || (process.env || {}) as Record<string, any>;
+  const result = envObj || ((process.env || {}) as Record<string, any>);
   if (result.KnowledgeAgent && !result.KNOWLEDGE_AGENT) {
     result.KNOWLEDGE_AGENT = createKnowledgeFetcher(result);
   }
@@ -58,7 +58,7 @@ export function getSyncCloudflareEnv(locals?: any): Record<string, any> {
     }
   }
 
-  const result = envObj || (process.env || {}) as Record<string, any>;
+  const result = envObj || ((process.env || {}) as Record<string, any>);
   if (result.KnowledgeAgent && !result.KNOWLEDGE_AGENT) {
     result.KNOWLEDGE_AGENT = createKnowledgeFetcher(result);
   }

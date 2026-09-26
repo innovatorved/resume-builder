@@ -42,8 +42,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { extractResumeText } from "@/lib/pdf/extract-text";
 import { createResumeFromKnowledge } from "@/lib/actions/resume";
+import { extractResumeText } from "@/lib/pdf/extract-text";
 
 type SourceType = "github" | "portfolio" | "website" | "linkedin" | "resume" | "upload";
 type SourceStatus =
@@ -1558,26 +1558,26 @@ export function KnowledgePage() {
                         <Button
                           size="sm"
                           variant="outline"
-                        onClick={() => {
-                          navigator.clipboard.writeText(documentContent);
-                          setCopiedDoc(true);
-                          setTimeout(() => setCopiedDoc(false), 2000);
-                        }}
-                        className="h-6 px-2 text-[11px] gap-1 text-muted-foreground hover:text-foreground"
-                      >
-                        {copiedDoc ? (
-                          <>
-                            <Check className="h-3 w-3 text-emerald-500" />
-                            <span>Copied!</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="h-3 w-3" />
-                            <span>Copy</span>
-                          </>
-                        )}
-                      </Button>
-                    )}
+                          onClick={() => {
+                            navigator.clipboard.writeText(documentContent);
+                            setCopiedDoc(true);
+                            setTimeout(() => setCopiedDoc(false), 2000);
+                          }}
+                          className="h-6 px-2 text-[11px] gap-1 text-muted-foreground hover:text-foreground"
+                        >
+                          {copiedDoc ? (
+                            <>
+                              <Check className="h-3 w-3 text-emerald-500" />
+                              <span>Copied!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-3 w-3" />
+                              <span>Copy</span>
+                            </>
+                          )}
+                        </Button>
+                      )}
                     </div>
                   </div>
                   {/* Scrollable Markdown / Content Body */}

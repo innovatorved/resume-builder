@@ -1,4 +1,14 @@
-import { ChevronDown, Code2, Compass, Download, Eye, FileCode, History, Loader2, Save } from "lucide-react";
+import {
+  ChevronDown,
+  Code2,
+  Compass,
+  Download,
+  Eye,
+  FileCode,
+  History,
+  Loader2,
+  Save,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ResumeMark } from "@/components/brand-lockup";
 import { InstructionTourDialog } from "@/components/instruction-tour-dialog";
@@ -553,10 +563,7 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
       />
 
       {/* Interactive App Tour / Guide Modal */}
-      <InstructionTourDialog
-        open={showTourModal}
-        onOpenChange={setShowTourModal}
-      />
+      <InstructionTourDialog open={showTourModal} onOpenChange={setShowTourModal} />
     </div>
   );
 }

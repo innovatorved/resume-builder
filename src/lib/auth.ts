@@ -46,6 +46,13 @@ function initAuth() {
         verification: schema.verification,
       },
     }),
+    account: {
+      storeStateStrategy: "database",
+      skipStateCookieCheck: true,
+    },
+    onAPIError: {
+      errorURL: `${baseURL}/auth/error`,
+    },
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: false,
@@ -189,6 +196,11 @@ function initAuth() {
     ],
     advanced: {
       trustedProxyHeaders: true,
+      defaultCookieAttributes: {
+        sameSite: "lax",
+        httpOnly: true,
+        secure: baseURL.startsWith("https://"),
+      },
     },
     trustedOrigins,
   });
@@ -213,3 +225,51 @@ export const auth = new Proxy({} as AuthInstance, {
 });
 
 export type Session = AuthInstance["$Infer"]["Session"];
+
+export async function reportAuthErrorToSso(data: {
+  eventType?: string;
+  error?: string;
+  actorEmail?: string;
+  targetUserId?: string;
+  metadata?: Record<string, unknown>;
+}) {
+  try {
+    const ssoService = (globalThis as any).__SSO_SERVICE__ || (process.env as any).SSO_SERVICE;
+    const ssoUrl = "https://sso.vedgupta.in/api/auth/audit-log/record";
+    const clientId = (process.env.SSO_CLIENT_ID || "resume-builder-app").trim();
+    const clientSecret = (
+      process.env.SSO_CLIENT_SECRET || "ZRkRBGALUztlpJWabalsHKWdMkvPaUDh"
+    ).trim();
+
+    const payload = {
+      eventType: data.eventType || "oauth_client_error",
+      clientId,
+      clientSecret,
+      actorEmail: data.actorEmail,
+      targetUserId: data.targetUserId,
+      status: "failure" as const,
+      severity: "warning" as const,
+      metadata: {
+        app: "resume-builder",
+        error: data.error,
+        ...data.metadata,
+      },
+    };
+
+    if (ssoService && typeof ssoService.fetch === "function") {
+      await ssoService.fetch(ssoUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } else {
+      await fetch(ssoUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    }
+  } catch (err) {
+    console.error("[reportAuthErrorToSso] Failed to report error to SSO:", err);
+  }
+}

@@ -21,13 +21,21 @@ describe("knowledge source validation", () => {
   });
   test("restricts provider hosts and upload types", () => {
     expect(() => validateSource({ type: "github", url: "https://example.com/user" })).toThrow();
-    expect(validateSource({ type: "linkedin", url: "https://www.linkedin.com/in/user" }).type).toBe("linkedin");
-    expect(validateSource({ type: "portfolio", url: "https://example.com" }).type).toBe("portfolio");
+    expect(validateSource({ type: "linkedin", url: "https://www.linkedin.com/in/user" }).type).toBe(
+      "linkedin"
+    );
+    expect(validateSource({ type: "portfolio", url: "https://example.com" }).type).toBe(
+      "portfolio"
+    );
     expect(() => validateSource({ type: "upload", content: "x", mimeType: "text/html" })).toThrow();
-    expect(() => validateSource({ type: "upload", content: "x", mimeType: "application/pdf" })).toThrow();
+    expect(() =>
+      validateSource({ type: "upload", content: "x", mimeType: "application/pdf" })
+    ).toThrow();
   });
   test("rejects malformed optional fields and source IDs", () => {
-    expect(() => validateSource({ type: "website", url: "https://example.com", name: {} })).toThrow();
+    expect(() =>
+      validateSource({ type: "website", url: "https://example.com", name: {} })
+    ).toThrow();
     expect(() => validateSourceId("../other")).toThrow();
     expect(validateSourceId("123e4567-e89b-12d3-a456-426614174000")).toBe(
       "123e4567-e89b-12d3-a456-426614174000"

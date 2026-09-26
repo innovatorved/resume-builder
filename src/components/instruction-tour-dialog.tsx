@@ -40,10 +40,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface Hotspot {
   id: string;
@@ -103,8 +100,10 @@ export function InstructionTourDialog({
           targetName: "Source Form: 'Add source' / 'Upload resume'",
           position: { top: "18px", right: "20px" },
           pointerDirection: "bottom",
-          actionText: "Select source type (GitHub, LinkedIn, Portfolio, Website, or Resume) and click 'Add source'",
-          effectText: "Durable Objects crawl the source, extract career facts, and store verified evidence in Cloudflare R2",
+          actionText:
+            "Select source type (GitHub, LinkedIn, Portfolio, Website, or Resume) and click 'Add source'",
+          effectText:
+            "Durable Objects crawl the source, extract career facts, and store verified evidence in Cloudflare R2",
           tip: "Choose 'Resume' to upload PDF, LaTeX (.tex), Markdown, or plain text.",
         },
         {
@@ -126,7 +125,8 @@ export function InstructionTourDialog({
           position: { top: "65%", right: "15%" },
           pointerDirection: "top",
           actionText: "Ask natural questions like 'What evidence shows my backend experience?'",
-          effectText: "Retrieves grounded answers directly cited from your saved sources with clickable citations like [1] profile.md",
+          effectText:
+            "Retrieves grounded answers directly cited from your saved sources with clickable citations like [1] profile.md",
           tip: "Click 'Build Resume' at the top to generate a complete resume from your entire knowledge base.",
         },
       ],
@@ -139,7 +139,8 @@ export function InstructionTourDialog({
               <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-neutral-700" />
               <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-neutral-700" />
               <span className="text-[10px] sm:text-[11px] font-mono text-neutral-400 ml-1 sm:ml-2 flex items-center gap-1">
-                <span className="text-white font-semibold">Ved Gupta × Resume Builder</span> / Evidence Library
+                <span className="text-white font-semibold">Ved Gupta × Resume Builder</span> /
+                Evidence Library
               </span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -181,7 +182,9 @@ export function InstructionTourDialog({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <Code2 className="w-3.5 h-3.5 text-white" />
-                    <span className="text-[11px] sm:text-xs font-semibold text-white">github.com/innovatorved</span>
+                    <span className="text-[11px] sm:text-xs font-semibold text-white">
+                      github.com/innovatorved
+                    </span>
                   </div>
                   <span className="text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded bg-emerald-950 border border-emerald-800 text-emerald-300">
                     searchable
@@ -200,7 +203,9 @@ export function InstructionTourDialog({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <Link2 className="w-3.5 h-3.5 text-neutral-400" />
-                    <span className="text-[11px] sm:text-xs font-semibold text-neutral-300">linkedin_profile.pdf</span>
+                    <span className="text-[11px] sm:text-xs font-semibold text-neutral-300">
+                      linkedin_profile.pdf
+                    </span>
                   </div>
                   <span className="text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded bg-neutral-800 border border-neutral-700 text-neutral-300">
                     artifact_ready
@@ -231,8 +236,8 @@ export function InstructionTourDialog({
                 </span>
               </div>
               <div className="bg-neutral-950/80 rounded p-1.5 border border-neutral-800/60 my-1 text-[9px] sm:text-[10px] text-neutral-300">
-                <span className="text-emerald-400 font-medium">[1] profile.md:</span> Built distributed sync
-                protocol handling 1.2M queries/day.
+                <span className="text-emerald-400 font-medium">[1] profile.md:</span> Built
+                distributed sync protocol handling 1.2M queries/day.
               </div>
               <div className="flex items-center gap-1 bg-neutral-800/80 rounded px-2 py-1 text-[8px] sm:text-[9px] text-neutral-400 border border-neutral-700/60">
                 <Search className="w-2.5 h-2.5" />
@@ -287,7 +292,8 @@ export function InstructionTourDialog({
           position: { top: "18px", right: "20px" },
           pointerDirection: "bottom",
           actionText: "Click '+ New' in the header navigation to initialize a new LaTeX resume",
-          effectText: "Generates a clean template, creates Version 1 snapshot, and opens the split studio",
+          effectText:
+            "Generates a clean template, creates Version 1 snapshot, and opens the split studio",
           tip: "Pre-fills your profile name and contact information automatically from your account.",
         },
         {
@@ -298,7 +304,8 @@ export function InstructionTourDialog({
           position: { top: "18px", right: "95px" },
           pointerDirection: "bottom",
           actionText: "Click 'Upload' to import an existing PDF, LaTeX (.tex), or Markdown resume",
-          effectText: "Parses your experience and optionally syncs it directly into the Evidence Library",
+          effectText:
+            "Parses your experience and optionally syncs it directly into the Evidence Library",
           tip: "Check 'Sync into AI Knowledge Base' during upload to ground future AI tailoring.",
         },
         {
@@ -308,7 +315,8 @@ export function InstructionTourDialog({
           targetName: "Document Actions: 'Duplicate', 'PDF', 'Pin', & Click to open studio",
           position: { top: "62%", left: "50%" },
           pointerDirection: "top",
-          actionText: "Click any document title to open LaTeX Studio, or click 'Duplicate', 'PDF', or 'Pin'",
+          actionText:
+            "Click any document title to open LaTeX Studio, or click 'Duplicate', 'PDF', or 'Pin'",
           effectText: "Opens the dual-pane editor or downloads the latest compiled PDF in 1 click",
           tip: "Pin your master resume to keep it at the top of your list.",
         },
@@ -356,7 +364,9 @@ export function InstructionTourDialog({
           <div className="flex items-center justify-between gap-2 mb-2 shrink-0">
             <div className="flex items-center gap-2">
               <span className="text-[11px] sm:text-xs font-semibold text-white">My Resumes</span>
-              <span className="text-[9px] text-neutral-400 bg-neutral-900 border border-neutral-800 px-1.5 py-0.2 rounded-full">2</span>
+              <span className="text-[9px] text-neutral-400 bg-neutral-900 border border-neutral-800 px-1.5 py-0.2 rounded-full">
+                2
+              </span>
             </div>
             <div className="w-48 sm:w-64 bg-neutral-900/80 border border-neutral-800 rounded px-2 py-0.5 text-[8px] sm:text-[9px] text-neutral-400 flex items-center gap-1">
               <Search className="w-2.5 h-2.5" />
@@ -387,9 +397,15 @@ export function InstructionTourDialog({
                     <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-amber-950/40 border border-amber-800 text-amber-400 text-[8px] sm:text-[9px] font-medium">
                       <Pin className="w-2 h-2 fill-amber-400 text-amber-400 rotate-45" /> Pinned
                     </span>
-                    <span className="px-1 py-0.2 rounded bg-neutral-800 text-neutral-300 text-[8px] font-mono">LaTeX</span>
-                    <span className="px-1 py-0.2 rounded bg-neutral-800 text-neutral-300 text-[8px]">4 exp</span>
-                    <span className="px-1 py-0.2 rounded bg-neutral-800 text-neutral-300 text-[8px]">8 skills</span>
+                    <span className="px-1 py-0.2 rounded bg-neutral-800 text-neutral-300 text-[8px] font-mono">
+                      LaTeX
+                    </span>
+                    <span className="px-1 py-0.2 rounded bg-neutral-800 text-neutral-300 text-[8px]">
+                      4 exp
+                    </span>
+                    <span className="px-1 py-0.2 rounded bg-neutral-800 text-neutral-300 text-[8px]">
+                      8 skills
+                    </span>
                   </div>
                   <div className="text-[8px] sm:text-[9px] text-neutral-400 truncate mt-0.5">
                     Senior Software Architect · Alex Chen • Updated 2 hours ago
@@ -425,8 +441,12 @@ export function InstructionTourDialog({
                     <span className="text-[11px] sm:text-xs font-semibold text-neutral-300 hover:underline truncate">
                       Cloudflare AI Architect
                     </span>
-                    <span className="px-1 py-0.2 rounded bg-neutral-800 text-neutral-300 text-[8px] font-mono">LaTeX</span>
-                    <span className="px-1 py-0.2 rounded bg-neutral-800 text-neutral-300 text-[8px]">3 exp</span>
+                    <span className="px-1 py-0.2 rounded bg-neutral-800 text-neutral-300 text-[8px] font-mono">
+                      LaTeX
+                    </span>
+                    <span className="px-1 py-0.2 rounded bg-neutral-800 text-neutral-300 text-[8px]">
+                      3 exp
+                    </span>
                   </div>
                   <div className="text-[8px] sm:text-[9px] text-neutral-400 truncate mt-0.5">
                     AI Systems Engineer · Alex Chen • Updated yesterday
@@ -490,8 +510,10 @@ export function InstructionTourDialog({
           targetName: "Left Pane: Monaco LaTeX Editor ('main.tex')",
           position: { top: "45%", left: "20%" },
           pointerDirection: "right",
-          actionText: "Edit LaTeX source code directly with full syntax highlighting and bracket matching",
-          effectText: "Real-time auto-save keeps drafts saved, showing 'saved' / 'saving...' status",
+          actionText:
+            "Edit LaTeX source code directly with full syntax highlighting and bracket matching",
+          effectText:
+            "Real-time auto-save keeps drafts saved, showing 'saved' / 'saving...' status",
           tip: "Press Cmd+S (or Ctrl+S) anytime to trigger an instant PDF compilation.",
         },
         {
@@ -512,7 +534,8 @@ export function InstructionTourDialog({
           targetName: "Top Action Bar: Title, 'Save', 'History', & 'Export'",
           position: { top: "18px", right: "60px" },
           pointerDirection: "bottom",
-          actionText: "Edit resume title, click 'Save' to record a snapshot, or click 'Export' for PDF / .tex",
+          actionText:
+            "Edit resume title, click 'Save' to record a snapshot, or click 'Export' for PDF / .tex",
           effectText: "Creates an immutable version in history or downloads files locally",
           tip: "Click 'Export' to choose between 'Download PDF' and 'Download .tex Source'.",
         },
@@ -522,8 +545,12 @@ export function InstructionTourDialog({
           {/* Header Bar */}
           <div className="flex items-center justify-between border-b border-neutral-800 pb-1.5 sm:pb-2 mb-1.5 px-1 shrink-0">
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className="text-[10px] text-neutral-500 font-mono hidden sm:inline">resume /</span>
-              <span className="text-[11px] sm:text-xs font-semibold text-white">Full-Stack Lead CV</span>
+              <span className="text-[10px] text-neutral-500 font-mono hidden sm:inline">
+                resume /
+              </span>
+              <span className="text-[11px] sm:text-xs font-semibold text-white">
+                Full-Stack Lead CV
+              </span>
               <span className="text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded bg-emerald-950 border border-emerald-800 text-emerald-400 font-mono">
                 saved
               </span>
@@ -667,7 +694,8 @@ export function InstructionTourDialog({
           position: { bottom: "78px", left: "25px" },
           pointerDirection: "top",
           actionText: "Press Cmd+K or click the bottom dock to expand the AI Copilot bar",
-          effectText: "Reveals AI chat input and quick action chips like 'Tailor to target job post'",
+          effectText:
+            "Reveals AI chat input and quick action chips like 'Tailor to target job post'",
           tip: "Press Cmd+K anytime from the editor to immediately toggle and focus the AI Copilot bar.",
         },
         {
@@ -677,8 +705,10 @@ export function InstructionTourDialog({
           targetName: "Job Tailoring: 'Paste the job description' -> 'Create preview'",
           position: { bottom: "25px", left: "25%" },
           pointerDirection: "bottom",
-          actionText: "Click 'Tailor to target job post', paste job description, and click 'Create preview'",
-          effectText: "Gemini analyzes job requirements against your Evidence Library without hallucinations",
+          actionText:
+            "Click 'Tailor to target job post', paste job description, and click 'Create preview'",
+          effectText:
+            "Gemini analyzes job requirements against your Evidence Library without hallucinations",
           tip: "The AI displays 'Matched requirements' and 'Missing requirements' with evidence citations.",
         },
         {
@@ -689,7 +719,8 @@ export function InstructionTourDialog({
           position: { bottom: "25px", right: "15%" },
           pointerDirection: "bottom",
           actionText: "Review alignment analysis and click 'Apply and save version'",
-          effectText: "Updates your LaTeX source code, recompiles the vector PDF, and saves a version snapshot",
+          effectText:
+            "Updates your LaTeX source code, recompiles the vector PDF, and saves a version snapshot",
           tip: "Use 'Undo AI Edit' or 'Version History' if you ever want to revert back.",
         },
       ],
@@ -725,7 +756,9 @@ export function InstructionTourDialog({
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[9px] sm:text-[10px] text-neutral-400 hidden sm:inline">Ask AI to refine, tailor, or balance LaTeX...</span>
+                <span className="text-[9px] sm:text-[10px] text-neutral-400 hidden sm:inline">
+                  Ask AI to refine, tailor, or balance LaTeX...
+                </span>
                 <ChevronDown className="w-3 h-3 text-neutral-400" />
               </div>
             </div>
@@ -757,12 +790,16 @@ export function InstructionTourDialog({
                     : "border-neutral-800 hover:border-neutral-700"
                 }`}
               >
-                <div className="text-[8px] sm:text-[9px] text-neutral-400 font-mono mb-0.5">Paste the job description:</div>
+                <div className="text-[8px] sm:text-[9px] text-neutral-400 font-mono mb-0.5">
+                  Paste the job description:
+                </div>
                 <div className="text-[9px] sm:text-[10px] text-neutral-200 line-clamp-1">
                   "Include responsibilities and required qualifications..."
                 </div>
                 <div className="mt-1">
-                  <span className="px-2 py-0.5 rounded bg-white text-black text-[8px] font-medium">Create preview</span>
+                  <span className="px-2 py-0.5 rounded bg-white text-black text-[8px] font-medium">
+                    Create preview
+                  </span>
                 </div>
               </div>
 
@@ -852,7 +889,8 @@ export function InstructionTourDialog({
           position: { top: "18px", right: "95px" },
           pointerDirection: "bottom",
           actionText: "Click 'History' in the top bar to open the Version History timeline modal",
-          effectText: "Lists all snapshots with version numbers, timestamps, change summaries, and 'Current' badge",
+          effectText:
+            "Lists all snapshots with version numbers, timestamps, change summaries, and 'Current' badge",
           tip: "Snapshots record both LaTeX source code and structured resume data in Turso & Cloudflare R2.",
         },
         {
@@ -872,8 +910,12 @@ export function InstructionTourDialog({
           {/* Top Bar Mockup */}
           <div className="flex items-center justify-between border-b border-neutral-800 pb-2 mb-2 shrink-0">
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className="text-[10px] text-neutral-500 font-mono hidden sm:inline">resume /</span>
-              <span className="text-[11px] sm:text-xs font-semibold text-white">Full-Stack Lead CV</span>
+              <span className="text-[10px] text-neutral-500 font-mono hidden sm:inline">
+                resume /
+              </span>
+              <span className="text-[11px] sm:text-xs font-semibold text-white">
+                Full-Stack Lead CV
+              </span>
               <span className="text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded bg-emerald-950 border border-emerald-800 text-emerald-400 font-mono">
                 saved
               </span>
@@ -931,8 +973,12 @@ export function InstructionTourDialog({
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <span className="px-1.5 py-0.5 text-[8px] sm:text-[9px] rounded bg-neutral-900 border border-neutral-800 text-neutral-300">PDF</span>
-                <span className="px-1.5 py-0.5 text-[8px] sm:text-[9px] rounded bg-neutral-900 border border-neutral-800 text-neutral-300">.tex</span>
+                <span className="px-1.5 py-0.5 text-[8px] sm:text-[9px] rounded bg-neutral-900 border border-neutral-800 text-neutral-300">
+                  PDF
+                </span>
+                <span className="px-1.5 py-0.5 text-[8px] sm:text-[9px] rounded bg-neutral-900 border border-neutral-800 text-neutral-300">
+                  .tex
+                </span>
               </div>
             </div>
 
@@ -947,7 +993,9 @@ export function InstructionTourDialog({
             >
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[11px] sm:text-xs font-semibold text-neutral-300">Version 2</span>
+                  <span className="text-[11px] sm:text-xs font-semibold text-neutral-300">
+                    Version 2
+                  </span>
                   <span className="text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded bg-neutral-800 text-neutral-400 flex items-center gap-0.5">
                     <FileCode className="w-2.5 h-2.5" /> Custom LaTeX
                   </span>
@@ -957,8 +1005,12 @@ export function InstructionTourDialog({
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <span className="px-1.5 py-0.5 text-[8px] sm:text-[9px] rounded bg-neutral-900 border border-neutral-800 text-neutral-300 hidden xs:inline">PDF</span>
-                <span className="px-1.5 py-0.5 text-[8px] sm:text-[9px] rounded bg-neutral-900 border border-neutral-800 text-neutral-300 hidden xs:inline">.tex</span>
+                <span className="px-1.5 py-0.5 text-[8px] sm:text-[9px] rounded bg-neutral-900 border border-neutral-800 text-neutral-300 hidden xs:inline">
+                  PDF
+                </span>
+                <span className="px-1.5 py-0.5 text-[8px] sm:text-[9px] rounded bg-neutral-900 border border-neutral-800 text-neutral-300 hidden xs:inline">
+                  .tex
+                </span>
                 <span className="px-2 py-0.5 text-[8px] sm:text-[9px] font-medium bg-white text-black hover:bg-neutral-200 rounded flex items-center gap-1 shadow-xs">
                   <RotateCcw className="w-2.5 h-2.5 text-black" /> Restore
                 </span>
@@ -1094,7 +1146,14 @@ export function InstructionTourDialog({
 
           <div className="flex items-center gap-2 shrink-0 ml-2">
             <span className="hidden md:inline-block text-[11px] text-neutral-400 font-mono">
-              Use <kbd className="px-1 py-0.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-300">←</kbd> <kbd className="px-1 py-0.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-300">→</kbd> to navigate
+              Use{" "}
+              <kbd className="px-1 py-0.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-300">
+                ←
+              </kbd>{" "}
+              <kbd className="px-1 py-0.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-300">
+                →
+              </kbd>{" "}
+              to navigate
             </span>
             <button
               type="button"
@@ -1133,7 +1192,9 @@ export function InstructionTourDialog({
               >
                 <span
                   className={`w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center ${
-                    activeHotspotId === h.id ? "bg-emerald-500 text-black" : "bg-neutral-800 text-neutral-400"
+                    activeHotspotId === h.id
+                      ? "bg-emerald-500 text-black"
+                      : "bg-neutral-800 text-neutral-400"
                   }`}
                 >
                   {h.num}
@@ -1154,7 +1215,9 @@ export function InstructionTourDialog({
                   <h4 className="text-xs sm:text-sm font-semibold text-white truncate">
                     {activeHotspot.targetName}
                   </h4>
-                  <p className="text-[11px] sm:text-xs text-emerald-400 font-medium">{activeHotspot.actionText}</p>
+                  <p className="text-[11px] sm:text-xs text-emerald-400 font-medium">
+                    {activeHotspot.actionText}
+                  </p>
                 </div>
               </div>
             </div>

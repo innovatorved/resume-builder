@@ -79,4 +79,3 @@ describe("formatLatexText", () => {
     expect(result).toBe("Engineered microservices with 99.9\\% uptime.");
   });
 });
-

@@ -1,5 +1,5 @@
-import { Loader2, ShieldCheck } from "lucide-react";
-import { useState } from "react";
+import { AlertCircle, Loader2, ShieldCheck } from "lucide-react";
+import { useEffect, useState } from "react";
 import { BrandLockup } from "@/components/brand-lockup";
 import { Button } from "@/components/ui/button";
 import { VLogo } from "@/components/v-logo";
@@ -8,9 +8,41 @@ import { signIn } from "@/lib/auth-client";
 
 export function LoginPage() {
   const [isSsoLoading, setIsSsoLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const { toast } = useToast();
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const err = params.get("error");
+    if (err) {
+      let friendlyMessage = "An error occurred during authentication. Please try again.";
+      if (err === "state_mismatch") {
+        friendlyMessage =
+          "Your sign-in session timed out or was interrupted. Please try continuing with Ved Gupta SSO again.";
+      } else if (err === "access_denied") {
+        friendlyMessage = "Sign-in was denied or cancelled.";
+      } else if (err === "oauth_error") {
+        friendlyMessage = "SSO authentication could not be completed. Please try again.";
+      }
+
+      setAuthError(friendlyMessage);
+      toast({
+        title: "Authentication Issue",
+        description: friendlyMessage,
+        variant: "destructive",
+      });
+
+      // Clean query params from URL without reloading
+      const url = new URL(window.location.href);
+      url.searchParams.delete("error");
+      url.searchParams.delete("error_description");
+      window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+    }
+  }, [toast]);
+
   const handleSsoLogin = async () => {
+    setAuthError(null);
     setIsSsoLoading(true);
     try {
       await signIn.social({
@@ -49,6 +81,16 @@ export function LoginPage() {
 
         {/* Single Sign-On Action */}
         <div className="space-y-4">
+          {authError && (
+            <div className="rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50/70 dark:bg-red-950/30 p-3.5 text-xs text-red-700 dark:text-red-400 flex items-start gap-2.5">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="font-medium text-red-900 dark:text-red-300">Sign-in interrupted</p>
+                <p className="leading-relaxed opacity-90">{authError}</p>
+              </div>
+            </div>
+          )}
+
           <Button
             type="button"
             size="lg"

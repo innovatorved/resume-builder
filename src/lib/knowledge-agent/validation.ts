@@ -47,8 +47,10 @@ export function validateSource(input: unknown): SourceInput {
   const source: SourceInput = { type, name, mimeType, content };
   if (source.type === "upload" || source.type === "resume") {
     if (!source.content) throw new Error("Content is required");
-    if (new TextEncoder().encode(source.content).byteLength > MAX_SOURCE_BYTES) throw new Error("Source is too large");
-    if (source.mimeType && !uploadTypes.has(source.mimeType)) throw new Error("Unsupported MIME type");
+    if (new TextEncoder().encode(source.content).byteLength > MAX_SOURCE_BYTES)
+      throw new Error("Source is too large");
+    if (source.mimeType && !uploadTypes.has(source.mimeType))
+      throw new Error("Unsupported MIME type");
     return source;
   }
   const sourceUrl = optionalText(value.url, "URL", 2_000);
@@ -56,14 +58,17 @@ export function validateSource(input: unknown): SourceInput {
   if (!isPublicHttpsUrl(sourceUrl)) throw new Error("Only public HTTPS URLs are allowed");
   const url = new URL(sourceUrl);
   const host = url.hostname.toLowerCase();
-  if (source.type === "github" && host !== "github.com") throw new Error("GitHub sources must use github.com");
-  if (source.type === "linkedin" && host !== "linkedin.com" && !host.endsWith(".linkedin.com")) throw new Error("LinkedIn sources must use linkedin.com");
+  if (source.type === "github" && host !== "github.com")
+    throw new Error("GitHub sources must use github.com");
+  if (source.type === "linkedin" && host !== "linkedin.com" && !host.endsWith(".linkedin.com"))
+    throw new Error("LinkedIn sources must use linkedin.com");
   source.url = url.toString();
   return source;
 }
 
 export function validateSourceId(value: unknown): string {
-  if (typeof value !== "string" || !/^[0-9a-f-]{36}$/.test(value)) throw new Error("Invalid source ID");
+  if (typeof value !== "string" || !/^[0-9a-f-]{36}$/.test(value))
+    throw new Error("Invalid source ID");
   return value;
 }
 
@@ -99,8 +104,14 @@ export function extractListingHeadingsAndLinks(html: string, origin: string): st
   let match: RegExpExecArray | null;
   while ((match = cardRegex.exec(html)) !== null) {
     const rawHref = match[1];
-    const title = match[2].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
-    const desc = match[3].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    const title = match[2]
+      .replace(/<[^>]+>/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    const desc = match[3]
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
     if (title && !seen.has(title)) {
       seen.add(title);
       let href = "";
@@ -123,7 +134,10 @@ export function extractListingHeadingsAndLinks(html: string, origin: string): st
       /<h[2-4][^>]*>[\s\S]*?<a[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>[\s\S]*?<\/h[2-4]>/gi;
     while ((match = headingLinkRegex.exec(html)) !== null) {
       const rawHref = match[1];
-      const title = match[2].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+      const title = match[2]
+        .replace(/<[^>]+>/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
       if (title && !seen.has(title)) {
         seen.add(title);
         let href = "";
@@ -173,4 +187,3 @@ export function verifyInternalSecret(
   if (!provided || typeof provided !== "string") return false;
   return provided === target;
 }
-

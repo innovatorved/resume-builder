@@ -1,8 +1,8 @@
 import { handle } from "@astrojs/cloudflare/handler";
 import {
+  handleKnowledgeRequest,
   KnowledgeAgent,
   KnowledgeIngestionWorkflow,
-  handleKnowledgeRequest,
 } from "./lib/knowledge-agent";
 import type { Env } from "./lib/knowledge-agent/types";
 

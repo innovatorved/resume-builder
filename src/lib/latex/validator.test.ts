@@ -97,7 +97,8 @@ Extra brace} here.
           title: "Audiobook AI",
           technologies: "Cloudflare, TypeScript, Gemini API",
           date: "2024",
-          description: "Engineered real-time speech synthesis pipeline with **500+ stars on GitHub**.",
+          description:
+            "Engineered real-time speech synthesis pipeline with **500+ stars on GitHub**.",
         },
       ],
       education: [
@@ -139,4 +140,3 @@ Extra brace} here.
     expect(errors).toEqual([]);
   });
 });
-

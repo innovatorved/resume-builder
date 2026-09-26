@@ -22,7 +22,13 @@ export type IngestionRunStatus =
   | "failed_permanent"
   | "cancelled"
   | "superseded";
-export type SourceInput = { type: SourceType; url?: string; name?: string; content?: string; mimeType?: string };
+export type SourceInput = {
+  type: SourceType;
+  url?: string;
+  name?: string;
+  content?: string;
+  mimeType?: string;
+};
 export type SourceRecord = SourceInput & {
   id: string;
   status: SourceStatus;
@@ -60,7 +66,13 @@ export type IngestionRunRecord = {
   completedAt?: string;
   steps?: IngestionStepRecord[];
 };
-export type ResumeReference = { resumeId: string; versionId?: string; name: string; data: unknown; rawLatex?: string };
+export type ResumeReference = {
+  resumeId: string;
+  versionId?: string;
+  name: string;
+  data: unknown;
+  rawLatex?: string;
+};
 export type IngestionParams = {
   userId: string;
   source: SourceRecord;

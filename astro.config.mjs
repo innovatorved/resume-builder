@@ -1,9 +1,9 @@
 // @ts-check
 
-import agents from "agents/vite"
 import cloudflare from "@astrojs/cloudflare"
 import react from "@astrojs/react"
 import tailwindcss from "@tailwindcss/vite"
+import agents from "agents/vite"
 import { defineConfig } from "astro/config"
 
 export default defineConfig({

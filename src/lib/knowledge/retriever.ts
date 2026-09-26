@@ -105,7 +105,11 @@ export async function fetchUserProfile(
         const ready = sources.filter((s: any) => s.artifactReady).slice(0, 8);
         const docPromises = ready.map(async (s: any) => {
           try {
-            const res = await callKnowledgeAgent(locals, userId, `documents?path=sources/${s.id}.md`);
+            const res = await callKnowledgeAgent(
+              locals,
+              userId,
+              `documents?path=sources/${s.id}.md`
+            );
             if (res && res.ok) {
               const d = (await res.json()) as { content?: string } | null;
               if (d?.content) {

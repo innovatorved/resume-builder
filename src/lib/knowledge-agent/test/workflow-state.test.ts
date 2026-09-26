@@ -1,11 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import {
-  canPublish,
-  classifyRetry,
-  searchStatus,
-  terminalRunStatuses,
-} from "../workflow-state";
 import type { SourceRecord } from "../types";
+import { canPublish, classifyRetry, searchStatus, terminalRunStatuses } from "../workflow-state";
 
 describe("workflow state & generation fencing", () => {
   const baseSource: SourceRecord = {

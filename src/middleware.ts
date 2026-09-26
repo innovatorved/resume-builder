@@ -7,6 +7,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const isPublicRoute =
     pathname.startsWith("/login") ||
     pathname.startsWith("/register") ||
+    pathname.startsWith("/auth") ||
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/_astro") ||
     pathname === "/favicon.ico";

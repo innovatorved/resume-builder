@@ -58,7 +58,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const hasSources = sources && sources.length > 0;
     const hasSourceDocs = sourceDocuments && sourceDocuments.length > 0;
     const hasEvidence = evidenceChunks && evidenceChunks.length > 0;
-    const hasExistingResume = Boolean(existingResumeContext && existingResumeContext.trim().length > 20);
+    const hasExistingResume = Boolean(
+      existingResumeContext && existingResumeContext.trim().length > 20
+    );
 
     if (!hasProfile && !hasSources && !hasEvidence && !hasExistingResume && !hasSourceDocs) {
       return new Response(
@@ -252,8 +254,8 @@ ${contextText}`;
         if (Array.isArray(rawSkills)) {
           skillsArray = rawSkills.filter(Boolean);
         } else if (rawSkills && typeof rawSkills === "object") {
-          skillsArray = Object.entries(rawSkills).map(([cat, list]) =>
-            `${cat}: ${Array.isArray(list) ? list.join(", ") : String(list)}`
+          skillsArray = Object.entries(rawSkills).map(
+            ([cat, list]) => `${cat}: ${Array.isArray(list) ? list.join(", ") : String(list)}`
           );
         }
 
@@ -290,7 +292,8 @@ ${contextText}`;
             return {
               title: proj.title || "",
               description,
-              technologies: proj.technologies || (Array.isArray(proj.tech) ? proj.tech.join(", ") : ""),
+              technologies:
+                proj.technologies || (Array.isArray(proj.tech) ? proj.tech.join(", ") : ""),
               date: proj.date || "",
               link: proj.link || undefined,
             };
@@ -319,7 +322,10 @@ ${contextText}`;
         if (parsed.name) generatedName = parsed.name;
         finalLatex = generateCleanModern(structuredResumeData);
       } catch (aiErr) {
-        console.warn("[from-knowledge] Gemini generation failed, falling back to deterministic template:", aiErr);
+        console.warn(
+          "[from-knowledge] Gemini generation failed, falling back to deterministic template:",
+          aiErr
+        );
       }
     }
 

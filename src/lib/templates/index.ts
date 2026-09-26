@@ -96,7 +96,10 @@ export function generateCleanModern(data: ResumeData): string {
     filteredSkills.forEach((skill) => {
       const colonIndex = skill.indexOf(":");
       if (colonIndex !== -1) {
-        const cat = skill.slice(0, colonIndex).trim().replace(/^[-*•]\s*/, "");
+        const cat = skill
+          .slice(0, colonIndex)
+          .trim()
+          .replace(/^[-*•]\s*/, "");
         const items = skill.slice(colonIndex + 1).trim();
         tex += `    \\item \\textbf{${escapeLatex(cat)}:} ${escapeLatex(items)}\n`;
       } else {

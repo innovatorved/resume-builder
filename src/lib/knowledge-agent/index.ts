@@ -1,13 +1,13 @@
+import type { WorkflowEvent } from "cloudflare:workers";
 import {
   Agent,
-  callable,
-  getAgentByName,
   type Connection,
   type ConnectionContext,
+  callable,
+  getAgentByName,
   type WSMessage,
 } from "agents";
 import { AgentWorkflow, type AgentWorkflowStep } from "agents/workflows";
-import type { WorkflowEvent } from "cloudflare:workers";
 import type {
   Env,
   IngestionParams,
@@ -29,16 +29,14 @@ import {
   validateSourceId,
   verifyInternalSecret,
 } from "./validation";
-import {
-  canPublish,
-  classifyRetry,
-  searchStatus,
-  terminalRunStatuses,
-} from "./workflow-state";
+import { canPublish, classifyRetry, searchStatus, terminalRunStatuses } from "./workflow-state";
 
 const json = (data: unknown, status = 200) => Response.json(data, { status });
 const now = () => new Date().toISOString();
-const text = (value: unknown) => String(value ?? "").replace(/\0/g, "").slice(0, 2_000_000);
+const text = (value: unknown) =>
+  String(value ?? "")
+    .replace(/\0/g, "")
+    .slice(0, 2_000_000);
 const documentPath = /^(profile\.md|manifest\.json|sources\/[a-f0-9-]+\.md)$/;
 const runIdPattern = /^[0-9a-f-]{36}$/;
 
@@ -52,11 +50,12 @@ export class KnowledgeAgent extends Agent<Env> {
       generation INTEGER NOT NULL DEFAULT 0, active_run_id TEXT, artifact_ready INTEGER NOT NULL DEFAULT 0,
       search_ready INTEGER NOT NULL DEFAULT 0, indexing_status TEXT
     )`;
-    const columns = new Set([...this.sql<{ name: string }>`PRAGMA table_info(sources)`].map((row) => row.name));
+    const columns = new Set(
+      [...this.sql<{ name: string }>`PRAGMA table_info(sources)`].map((row) => row.name)
+    );
     if (!columns.has("generation"))
       this.sql`ALTER TABLE sources ADD COLUMN generation INTEGER NOT NULL DEFAULT 0`;
-    if (!columns.has("active_run_id"))
-      this.sql`ALTER TABLE sources ADD COLUMN active_run_id TEXT`;
+    if (!columns.has("active_run_id")) this.sql`ALTER TABLE sources ADD COLUMN active_run_id TEXT`;
     if (!columns.has("artifact_ready"))
       this.sql`ALTER TABLE sources ADD COLUMN artifact_ready INTEGER NOT NULL DEFAULT 0`;
     if (!columns.has("search_ready"))
@@ -69,12 +68,14 @@ export class KnowledgeAgent extends Agent<Env> {
       artifact_ready INTEGER NOT NULL DEFAULT 0, search_ready INTEGER NOT NULL DEFAULT 0,
       indexing_status TEXT, error TEXT, created_at TEXT NOT NULL, completed_at TEXT
     )`;
-    this.sql`CREATE INDEX IF NOT EXISTS ingestion_runs_source_idx ON ingestion_runs(source_id, created_at DESC)`;
+    this
+      .sql`CREATE INDEX IF NOT EXISTS ingestion_runs_source_idx ON ingestion_runs(source_id, created_at DESC)`;
     this.sql`CREATE TABLE IF NOT EXISTS ingestion_steps (
       id TEXT PRIMARY KEY, run_id TEXT NOT NULL, stage TEXT NOT NULL, attempt INTEGER NOT NULL,
       detail TEXT, created_at TEXT NOT NULL
     )`;
-    this.sql`CREATE INDEX IF NOT EXISTS ingestion_steps_run_idx ON ingestion_steps(run_id, created_at)`;
+    this
+      .sql`CREATE INDEX IF NOT EXISTS ingestion_steps_run_idx ON ingestion_steps(run_id, created_at)`;
     this.sql`CREATE TABLE IF NOT EXISTS analysis_logs (
       id TEXT PRIMARY KEY, run_id TEXT NOT NULL, stage TEXT NOT NULL, message TEXT NOT NULL, created_at TEXT NOT NULL
     )`;
@@ -90,14 +91,19 @@ export class KnowledgeAgent extends Agent<Env> {
         const parts = this.name.split(":");
         const userId = parts[1];
         const sourceId = parts[2];
-        const logs = [...this.sql<DbRow>`SELECT * FROM analysis_logs ORDER BY created_at`].map((row) => ({
-          id: String(row.id),
-          runId: String(row.run_id),
-          stage: String(row.stage),
-          message: String(row.message),
-          createdAt: String(row.created_at),
-        }));
-        const mdRow = [...this.sql<DbRow>`SELECT markdown FROM converted_markdown ORDER BY updated_at DESC LIMIT 1`][0];
+        const logs = [...this.sql<DbRow>`SELECT * FROM analysis_logs ORDER BY created_at`].map(
+          (row) => ({
+            id: String(row.id),
+            runId: String(row.run_id),
+            stage: String(row.stage),
+            message: String(row.message),
+            createdAt: String(row.created_at),
+          })
+        );
+        const mdRow = [
+          ...this
+            .sql<DbRow>`SELECT markdown FROM converted_markdown ORDER BY updated_at DESC LIMIT 1`,
+        ][0];
         connection.send(
           JSON.stringify({
             type: "source_agent_init",
@@ -126,24 +132,34 @@ export class KnowledgeAgent extends Agent<Env> {
 
   override onMessage(connection: Connection, message: WSMessage) {
     try {
-      const raw = typeof message === "string" ? message : new TextDecoder().decode(message as ArrayBuffer);
+      const raw =
+        typeof message === "string" ? message : new TextDecoder().decode(message as ArrayBuffer);
       const parsed = JSON.parse(raw);
       if (parsed.type === "ping") {
         connection.send(JSON.stringify({ type: "pong", timestamp: now() }));
       } else if (parsed.type === "inspect_run" && parsed.runId) {
         const runData = this.inspectRun(String(parsed.runId));
-        connection.send(JSON.stringify({ type: "run_details", runId: parsed.runId, data: runData }));
+        connection.send(
+          JSON.stringify({ type: "run_details", runId: parsed.runId, data: runData })
+        );
       } else if (parsed.type === "refresh") {
-        connection.send(JSON.stringify({ type: "status_update", status: this.status(), timestamp: now() }));
+        connection.send(
+          JSON.stringify({ type: "status_update", status: this.status(), timestamp: now() })
+        );
       } else if (parsed.type === "get_source_state") {
-        const logs = [...this.sql<DbRow>`SELECT * FROM analysis_logs ORDER BY created_at`].map((row) => ({
-          id: String(row.id),
-          runId: String(row.run_id),
-          stage: String(row.stage),
-          message: String(row.message),
-          createdAt: String(row.created_at),
-        }));
-        const mdRow = [...this.sql<DbRow>`SELECT markdown FROM converted_markdown ORDER BY updated_at DESC LIMIT 1`][0];
+        const logs = [...this.sql<DbRow>`SELECT * FROM analysis_logs ORDER BY created_at`].map(
+          (row) => ({
+            id: String(row.id),
+            runId: String(row.run_id),
+            stage: String(row.stage),
+            message: String(row.message),
+            createdAt: String(row.created_at),
+          })
+        );
+        const mdRow = [
+          ...this
+            .sql<DbRow>`SELECT markdown FROM converted_markdown ORDER BY updated_at DESC LIMIT 1`,
+        ][0];
         connection.send(
           JSON.stringify({
             type: "source_state",
@@ -225,7 +241,10 @@ export class KnowledgeAgent extends Agent<Env> {
       completedAt: row.completed_at ? String(row.completed_at) : undefined,
     };
     if (includeSteps) {
-      record.steps = [...this.sql<DbRow>`SELECT * FROM ingestion_steps WHERE run_id=${record.id} ORDER BY created_at`].map(
+      record.steps = [
+        ...this
+          .sql<DbRow>`SELECT * FROM ingestion_steps WHERE run_id=${record.id} ORDER BY created_at`,
+      ].map(
         (step): IngestionStepRecord => ({
           id: String(step.id),
           runId: String(step.run_id),
@@ -244,12 +263,7 @@ export class KnowledgeAgent extends Agent<Env> {
     return row ? this.run(row, includeSteps) : undefined;
   }
 
-  private recordStep(
-    runId: string,
-    stage: IngestionRunStatus,
-    attempt: number,
-    detail?: string
-  ) {
+  private recordStep(runId: string, stage: IngestionRunStatus, attempt: number, detail?: string) {
     const id = `${runId}:${stage}:${attempt}:${Date.now()}`;
     const createdAt = now();
     this.sql`INSERT INTO ingestion_steps (id,run_id,stage,attempt,detail,created_at)
@@ -265,7 +279,8 @@ export class KnowledgeAgent extends Agent<Env> {
     const existing = [
       ...this.sql<DbRow>`SELECT * FROM ingestion_runs WHERE idempotency_key=${idempotencyKey}`,
     ][0];
-    if (existing) return { source: this.findSource(String(existing.source_id)), run: this.run(existing) };
+    if (existing)
+      return { source: this.findSource(String(existing.source_id)), run: this.run(existing) };
 
     const runId = crypto.randomUUID();
     const generation = source.generation + 1;
@@ -295,8 +310,10 @@ export class KnowledgeAgent extends Agent<Env> {
         { userId: this.name, source: current, runId, generation } satisfies IngestionParams,
         { id: runId, agentBinding: "KnowledgeAgent", metadata: { sourceId: source.id, generation } }
       );
-      this.sql`UPDATE ingestion_runs SET workflow_id=${workflowId},status='queued' WHERE id=${runId}`;
-      this.sql`UPDATE sources SET status='running' WHERE id=${source.id} AND active_run_id=${runId}`;
+      this
+        .sql`UPDATE ingestion_runs SET workflow_id=${workflowId},status='queued' WHERE id=${runId}`;
+      this
+        .sql`UPDATE sources SET status='running' WHERE id=${source.id} AND active_run_id=${runId}`;
       this.recordStep(runId, "queued", attempt);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Could not start ingestion";
@@ -310,7 +327,8 @@ export class KnowledgeAgent extends Agent<Env> {
   }
 
   @callable() async addSource(input: SourceInput, idempotencyKey: string) {
-    if (!idempotencyKey || idempotencyKey.length > 200) throw new Error("Idempotency key is required");
+    if (!idempotencyKey || idempotencyKey.length > 200)
+      throw new Error("Idempotency key is required");
     const existing = [
       ...this.sql<DbRow>`SELECT * FROM ingestion_runs WHERE idempotency_key=${idempotencyKey}`,
     ][0];
@@ -337,7 +355,8 @@ export class KnowledgeAgent extends Agent<Env> {
 
   @callable() async refreshSource(id: string, idempotencyKey: string) {
     id = validateSourceId(id);
-    if (!idempotencyKey || idempotencyKey.length > 200) throw new Error("Idempotency key is required");
+    if (!idempotencyKey || idempotencyKey.length > 200)
+      throw new Error("Idempotency key is required");
     const source = this.findSource(id);
     if (!source) throw new Error("Source not found");
     return this.startRun(source, idempotencyKey, 1);
@@ -427,7 +446,15 @@ export class KnowledgeAgent extends Agent<Env> {
       }
       return chunks;
     }
-    const result = await this.env.KNOWLEDGE_SEARCH.search({ query: q, ai_search_options: { retrieval: { max_num_results: 8, filters: { folder: { $eq: userPrefix(this.name).slice(0, -1) } } } } });
+    const result = await this.env.KNOWLEDGE_SEARCH.search({
+      query: q,
+      ai_search_options: {
+        retrieval: {
+          max_num_results: 8,
+          filters: { folder: { $eq: userPrefix(this.name).slice(0, -1) } },
+        },
+      },
+    });
     const allowed = new Set(
       this.sources()
         .filter((source) => source.searchReady)
@@ -441,12 +468,21 @@ export class KnowledgeAgent extends Agent<Env> {
 
   @callable() async syncResume(input: ResumeReference) {
     input = validateResumeReference(input);
-    const content = text(JSON.stringify({ name: input.name, data: input.data, rawLatex: input.rawLatex }));
+    const content = text(
+      JSON.stringify({ name: input.name, data: input.data, rawLatex: input.rawLatex })
+    );
     const key = `${userPrefix(this.name)}resumes/${input.resumeId}.md`;
     await this.env.KNOWLEDGE_BUCKET.put(
       key,
       `# ${text(input.name).slice(0, 200)}\n\n${content}\n\n---\nSource: first-party resume ${input.resumeId}\nVersion: ${text(input.versionId || "draft").slice(0, 200)}\nRetrieved: ${now()}\nConfidence: high\n`,
-      { httpMetadata: { contentType: "text/markdown" }, customMetadata: { folder: userPrefix(this.name).slice(0, -1), userId: this.name, resumeId: input.resumeId } }
+      {
+        httpMetadata: { contentType: "text/markdown" },
+        customMetadata: {
+          folder: userPrefix(this.name).slice(0, -1),
+          userId: this.name,
+          resumeId: input.resumeId,
+        },
+      }
     );
     return { key };
   }
@@ -463,7 +499,8 @@ export class KnowledgeAgent extends Agent<Env> {
     const chunks = await this.queryKnowledge(trimmed);
     if (!chunks.length) {
       return {
-        answer: "I couldn't find any indexed knowledge documents or sources yet. Please add a source (GitHub, LinkedIn, website, or resume file) and wait for ingestion to complete.",
+        answer:
+          "I couldn't find any indexed knowledge documents or sources yet. Please add a source (GitHub, LinkedIn, website, or resume file) and wait for ingestion to complete.",
         citations: [],
       };
     }
@@ -473,7 +510,10 @@ export class KnowledgeAgent extends Agent<Env> {
       try {
         const evidenceContext = chunks
           .slice(0, 6)
-          .map((c, i) => `[Source ${i + 1}: ${c.item.key.replace(/^users\/[^/]+\//, "")}]\n${c.text.slice(0, 3000)}`)
+          .map(
+            (c, i) =>
+              `[Source ${i + 1}: ${c.item.key.replace(/^users\/[^/]+\//, "")}]\n${c.text.slice(0, 3000)}`
+          )
           .join("\n\n---\n\n");
 
         const aiResponse = (await this.env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
@@ -498,7 +538,10 @@ export class KnowledgeAgent extends Agent<Env> {
           };
         }
       } catch (aiErr) {
-        console.warn("[chat] Workers AI inference warning, falling back to extractive summary:", aiErr);
+        console.warn(
+          "[chat] Workers AI inference warning, falling back to extractive summary:",
+          aiErr
+        );
       }
     }
 
@@ -509,7 +552,18 @@ export class KnowledgeAgent extends Agent<Env> {
       .filter(
         (w) =>
           w.length > 2 &&
-          !["what", "when", "where", "which", "show", "tell", "about", "your", "with", "have"].includes(w)
+          ![
+            "what",
+            "when",
+            "where",
+            "which",
+            "show",
+            "tell",
+            "about",
+            "your",
+            "with",
+            "have",
+          ].includes(w)
       );
 
     const allLines = chunks.flatMap((c) => c.text.split("\n"));
@@ -521,7 +575,9 @@ export class KnowledgeAgent extends Agent<Env> {
     if (matchingLines.length > 0) {
       const topMatches = matchingLines
         .slice(0, 8)
-        .map((l) => (l.trim().startsWith("-") || l.trim().startsWith("*") ? l.trim() : `- ${l.trim()}`));
+        .map((l) =>
+          l.trim().startsWith("-") || l.trim().startsWith("*") ? l.trim() : `- ${l.trim()}`
+        );
       return {
         answer: `Here is the relevant evidence found in your knowledge base for **"${trimmed}"**:\n\n${topMatches.join("\n")}`,
         citations: chunks.slice(0, 4).map((c) => ({ key: c.item.key, score: c.score })),
@@ -537,9 +593,9 @@ export class KnowledgeAgent extends Agent<Env> {
 
   @callable() status() {
     const sources = this.sources();
-    const runs = [...this.sql<DbRow>`SELECT * FROM ingestion_runs ORDER BY created_at DESC LIMIT 50`].map(
-      (row) => this.run(row, true)
-    );
+    const runs = [
+      ...this.sql<DbRow>`SELECT * FROM ingestion_runs ORDER BY created_at DESC LIMIT 50`,
+    ].map((row) => this.run(row, true));
     return { sources, runs };
   }
 
@@ -553,7 +609,8 @@ export class KnowledgeAgent extends Agent<Env> {
     const source = run && this.findSource(run.sourceId);
     if (!run || !source || !canPublish(source, runId, generation)) return false;
     this.sql`UPDATE ingestion_runs SET status=${stage} WHERE id=${runId}`;
-    this.sql`UPDATE sources SET status='running' WHERE id=${run.sourceId} AND active_run_id=${runId}`;
+    this
+      .sql`UPDATE sources SET status='running' WHERE id=${run.sourceId} AND active_run_id=${runId}`;
     this.recordStep(runId, stage, run.attempt, detail);
     this.broadcastEvent({
       type: "run_stage_changed",
@@ -615,7 +672,10 @@ export class KnowledgeAgent extends Agent<Env> {
       2
     );
     await Promise.all([
-      this.env.KNOWLEDGE_BUCKET.put(`${root}generations/${source.id}/${generation}/profile.md`, profile),
+      this.env.KNOWLEDGE_BUCKET.put(
+        `${root}generations/${source.id}/${generation}/profile.md`,
+        profile
+      ),
       this.env.KNOWLEDGE_BUCKET.put(
         `${root}generations/${source.id}/${generation}/manifest.json`,
         manifest
@@ -667,7 +727,8 @@ export class KnowledgeAgent extends Agent<Env> {
     if (!run || !source || !canPublish(source, runId, generation)) return false;
     this.sql`UPDATE sources SET status='unchanged',hash=${hash},refreshed_at=${now()},error=NULL
       WHERE id=${source.id} AND active_run_id=${runId}`;
-    this.sql`UPDATE ingestion_runs SET status='unchanged',artifact_ready=${source.artifactReady ? 1 : 0},
+    this
+      .sql`UPDATE ingestion_runs SET status='unchanged',artifact_ready=${source.artifactReady ? 1 : 0},
       search_ready=${source.searchReady ? 1 : 0},completed_at=${now()} WHERE id=${runId}`;
     this.recordStep(runId, "unchanged", run.attempt);
     this.broadcastEvent({
@@ -694,7 +755,8 @@ export class KnowledgeAgent extends Agent<Env> {
     this.sql`UPDATE sources SET status=${sourceStatus},search_ready=${state.searchReady ? 1 : 0},
       indexing_status=${state.indexingStatus ?? null},error=${state.error ?? null}
       WHERE id=${source.id} AND active_run_id=${runId}`;
-    this.sql`UPDATE ingestion_runs SET status=${runStatus},search_ready=${state.searchReady ? 1 : 0},
+    this
+      .sql`UPDATE ingestion_runs SET status=${runStatus},search_ready=${state.searchReady ? 1 : 0},
       indexing_status=${state.indexingStatus ?? null},error=${state.error ?? null},
       completed_at=${state.searchReady ? now() : null} WHERE id=${runId}`;
     if (state.searchReady) this.recordStep(runId, "searchable", run.attempt);
@@ -712,7 +774,8 @@ export class KnowledgeAgent extends Agent<Env> {
   @callable() recordAnalysis(runId: string, stage: string, message: string) {
     const id = `${runId}:${stage}:${Date.now()}:${Math.random().toString(36).slice(2, 6)}`;
     const createdAt = now();
-    this.sql`INSERT INTO analysis_logs (id, run_id, stage, message, created_at) VALUES (${id}, ${runId}, ${stage}, ${message}, ${createdAt})`;
+    this
+      .sql`INSERT INTO analysis_logs (id, run_id, stage, message, created_at) VALUES (${id}, ${runId}, ${stage}, ${message}, ${createdAt})`;
     this.broadcastEvent({
       type: "agent_analysis",
       id,
@@ -726,7 +789,8 @@ export class KnowledgeAgent extends Agent<Env> {
 
   @callable() recordConvertedMarkdown(runId: string, markdown: string) {
     const updatedAt = now();
-    this.sql`INSERT OR REPLACE INTO converted_markdown (run_id, markdown, updated_at) VALUES (${runId}, ${markdown}, ${updatedAt})`;
+    this
+      .sql`INSERT OR REPLACE INTO converted_markdown (run_id, markdown, updated_at) VALUES (${runId}, ${markdown}, ${updatedAt})`;
     this.broadcastEvent({
       type: "markdown_converted",
       runId,
@@ -737,14 +801,18 @@ export class KnowledgeAgent extends Agent<Env> {
   }
 
   @callable() getSourceAnalysis() {
-    const logs = [...this.sql<DbRow>`SELECT * FROM analysis_logs ORDER BY created_at`].map((row) => ({
-      id: String(row.id),
-      runId: String(row.run_id),
-      stage: String(row.stage),
-      message: String(row.message),
-      createdAt: String(row.created_at),
-    }));
-    const mdRow = [...this.sql<DbRow>`SELECT markdown FROM converted_markdown ORDER BY updated_at DESC LIMIT 1`][0];
+    const logs = [...this.sql<DbRow>`SELECT * FROM analysis_logs ORDER BY created_at`].map(
+      (row) => ({
+        id: String(row.id),
+        runId: String(row.run_id),
+        stage: String(row.stage),
+        message: String(row.message),
+        createdAt: String(row.created_at),
+      })
+    );
+    const mdRow = [
+      ...this.sql<DbRow>`SELECT markdown FROM converted_markdown ORDER BY updated_at DESC LIMIT 1`,
+    ][0];
     return {
       agentName: this.name,
       logs,
@@ -786,11 +854,7 @@ export class KnowledgeAgent extends Agent<Env> {
       typeof value.generation === "number" &&
       typeof value.stage === "string"
     ) {
-      this.recordRunStage(
-        workflowId,
-        value.generation,
-        value.stage as IngestionRunStatus
-      );
+      this.recordRunStage(workflowId, value.generation, value.stage as IngestionRunStatus);
     }
   }
 
@@ -802,22 +866,15 @@ export class KnowledgeAgent extends Agent<Env> {
     const run = this.findRun(workflowId);
     if (!run || terminalRunStatuses.has(run.status)) return;
     const value = result as { searchReady?: boolean } | undefined;
-    if (value?.searchReady) this.updateIndexState(workflowId, run.generation, { status: "completed" });
+    if (value?.searchReady)
+      this.updateIndexState(workflowId, run.generation, { status: "completed" });
   }
 
-  async onWorkflowError(
-    _workflowName: string,
-    workflowId: string,
-    error: string
-  ): Promise<void> {
+  async onWorkflowError(_workflowName: string, workflowId: string, error: string): Promise<void> {
     this.failRun(workflowId, error, classifyRetry(error));
   }
 
-  async onWorkflowEvent(
-    _workflowName: string,
-    workflowId: string,
-    event: unknown
-  ): Promise<void> {
+  async onWorkflowEvent(_workflowName: string, workflowId: string, event: unknown): Promise<void> {
     if (!event || typeof event !== "object") return;
     const value = event as {
       kind?: string;
@@ -837,19 +894,23 @@ export class KnowledgeAgent extends Agent<Env> {
     if (!this.env.KNOWLEDGE_SEARCH) {
       this.sql`UPDATE sources SET status='searchable',search_ready=1,indexing_status='completed'
         WHERE artifact_ready=1 AND (search_ready=0 OR status!='searchable')`;
-      this.sql`UPDATE ingestion_runs SET status='searchable',search_ready=1,indexing_status='completed',completed_at=COALESCE(completed_at, ${now()})
+      this
+        .sql`UPDATE ingestion_runs SET status='searchable',search_ready=1,indexing_status='completed',completed_at=COALESCE(completed_at, ${now()})
         WHERE artifact_ready=1 AND status NOT IN ('searchable', 'unchanged', 'failed_retryable', 'failed_permanent', 'cancelled', 'superseded')`;
     }
 
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-    this.sql`UPDATE ingestion_runs SET status='failed_permanent',error=COALESCE(error, 'Workflow timed out or completed'),completed_at=COALESCE(completed_at, ${now()})
+    this
+      .sql`UPDATE ingestion_runs SET status='failed_permanent',error=COALESCE(error, 'Workflow timed out or completed'),completed_at=COALESCE(completed_at, ${now()})
       WHERE status NOT IN ('searchable', 'unchanged', 'failed_retryable', 'failed_permanent', 'cancelled', 'superseded')
       AND created_at < ${fiveMinutesAgo}`;
     this.sql`UPDATE sources SET status='failed',error=COALESCE(error, 'Processing timed out')
       WHERE status IN ('accepted', 'running') AND created_at < ${fiveMinutesAgo}`;
 
     if (this.env.KNOWLEDGE_SEARCH) {
-      const pending = this.sources().filter((source) => source.artifactReady && !source.searchReady);
+      const pending = this.sources().filter(
+        (source) => source.artifactReady && !source.searchReady
+      );
       for (const source of pending.slice(0, 10)) {
         if (!source.activeRunId) continue;
         const key = `${userPrefix(this.name)}sources/${source.id}.md`;
@@ -862,17 +923,30 @@ export class KnowledgeAgent extends Agent<Env> {
 }
 
 async function sha256(value: string) {
-  return [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value)))].map((b) => b.toString(16).padStart(2, "0")).join("");
+  return [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value)))]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 async function fetchGithub(env: Env, url: string) {
   const username = new URL(url).pathname.split("/").filter(Boolean)[0];
   if (!username) throw new Error("GitHub profile URL is required");
-  const headers: Record<string, string> = { Accept: "application/vnd.github+json", "User-Agent": "resume-builder-knowledge-agent" };
+  const headers: Record<string, string> = {
+    Accept: "application/vnd.github+json",
+    "User-Agent": "resume-builder-knowledge-agent",
+  };
   if (env.GITHUB_TOKEN) headers.Authorization = `Bearer ${env.GITHUB_TOKEN}`;
-  const get = async (path: string) => { const response = await fetch(`https://api.github.com${path}`, { headers }); if (!response.ok) throw new Error(`GitHub request failed (${response.status})`); return response.json(); };
-  const profile = await get(`/users/${encodeURIComponent(username)}`) as Record<string, unknown>;
-  const repos = (await get(`/users/${encodeURIComponent(username)}/repos?type=owner&sort=updated&per_page=30`) as Record<string, unknown>[]).filter((r) => !r.fork);
+  const get = async (path: string) => {
+    const response = await fetch(`https://api.github.com${path}`, { headers });
+    if (!response.ok) throw new Error(`GitHub request failed (${response.status})`);
+    return response.json();
+  };
+  const profile = (await get(`/users/${encodeURIComponent(username)}`)) as Record<string, unknown>;
+  const repos = (
+    (await get(
+      `/users/${encodeURIComponent(username)}/repos?type=owner&sort=updated&per_page=30`
+    )) as Record<string, unknown>[]
+  ).filter((r) => !r.fork);
   return `# GitHub: ${profile.name || profile.login}\n\n${profile.bio || ""}\n\n## Public repositories\n${repos.map((r) => `- **${r.name}**: ${r.description || ""} (${r.language || "unknown"}; ★ ${r.stargazers_count || 0})`).join("\n")}`;
 }
 
@@ -904,13 +978,15 @@ async function fetchRendered(env: Env, url: string) {
       const body = (await response.json()) as { result?: string; markdown?: string };
       const content = body.result || body.markdown;
       if (typeof content === "string" && content.trim()) {
-        if (new TextEncoder().encode(content).byteLength > MAX_SOURCE_BYTES) throw new Error("Rendered source is too large");
+        if (new TextEncoder().encode(content).byteLength > MAX_SOURCE_BYTES)
+          throw new Error("Rendered source is too large");
         return text(content);
       }
     } else {
       const raw = await response.text();
       if (raw.trim()) {
-        if (new TextEncoder().encode(raw).byteLength > MAX_SOURCE_BYTES) throw new Error("Rendered source is too large");
+        if (new TextEncoder().encode(raw).byteLength > MAX_SOURCE_BYTES)
+          throw new Error("Rendered source is too large");
         return text(raw);
       }
     }
@@ -960,7 +1036,18 @@ async function deletePrefix(bucket: R2Bucket, prefix: string) {
 }
 
 async function rebuildManifest(env: Env, userId: string, sources: SourceRecord[]) {
-  await env.KNOWLEDGE_BUCKET.put(`${userPrefix(userId)}manifest.json`, JSON.stringify({ updatedAt: now(), sources: sources.map(({ content: _, ...source }) => source) }, null, 2), { httpMetadata: { contentType: "application/json" }, customMetadata: { folder: userPrefix(userId).slice(0, -1), userId } });
+  await env.KNOWLEDGE_BUCKET.put(
+    `${userPrefix(userId)}manifest.json`,
+    JSON.stringify(
+      { updatedAt: now(), sources: sources.map(({ content: _, ...source }) => source) },
+      null,
+      2
+    ),
+    {
+      httpMetadata: { contentType: "application/json" },
+      customMetadata: { folder: userPrefix(userId).slice(0, -1), userId },
+    }
+  );
 }
 
 async function rebuildProfile(env: Env, userId: string, sources: SourceRecord[]) {
@@ -1013,7 +1100,10 @@ async function fetchLinkedinAndPortfolio(
     await log("fetching", `Attempting headless browser capture on LinkedIn (${url})...`);
     linkedinRaw = await fetchRendered(env, url);
   } catch (err: any) {
-    await log("fetching", `LinkedIn protected direct unauthenticated bot access: ${err.message || "Authwall (422)"}`);
+    await log(
+      "fetching",
+      `LinkedIn protected direct unauthenticated bot access: ${err.message || "Authwall (422)"}`
+    );
   }
 
   const isAuthwall =
@@ -1030,7 +1120,10 @@ async function fetchLinkedinAndPortfolio(
 
   // 2. Discover verified profile details using user's handle
   if (handle) {
-    await log("fetching", `LinkedIn authwall active for public crawler. Resolving verified profile for @${handle}...`);
+    await log(
+      "fetching",
+      `LinkedIn authwall active for public crawler. Resolving verified profile for @${handle}...`
+    );
 
     let name = handle;
     let bio = "";
@@ -1058,7 +1151,10 @@ async function fetchLinkedinAndPortfolio(
         if (ghUser.location) location = ghUser.location;
         if (ghUser.company) company = ghUser.company;
         if (ghUser.twitter_username) twitter = ghUser.twitter_username;
-        await log("fetching", `Discovered verified identity for ${name} (@${handle}). Scanning portfolio sites...`);
+        await log(
+          "fetching",
+          `Discovered verified identity for ${name} (@${handle}). Scanning portfolio sites...`
+        );
       }
     } catch {
       // ignore
@@ -1213,7 +1309,10 @@ async function fetchSinglePage(
       const title = titleMatch ? titleMatch[1].replace(/\s+/g, " ").trim() : url;
       const md = htmlToMarkdown(html);
       if (md.length > 200) {
-        await log("fetching", `Successfully extracted single page content (${md.length} characters)`);
+        await log(
+          "fetching",
+          `Successfully extracted single page content (${md.length} characters)`
+        );
         return `# Web Page: ${title}\n\n- **URL**: ${url}\n- **Retrieved**: ${now()}\n- **Mode**: Single Page Capture\n\n---\n\n${md}`;
       }
     }
@@ -1333,7 +1432,8 @@ async function fetchPortfolio(
       if (path === "/projects" || path === "/portfolio") return 85;
       if (/\/(certifications?|credentials?|licenses?)\b/.test(path)) return 78;
       if (/\/(skills?|stack|technologies)\b/.test(path)) return 75;
-      if (path === "/blog" || path === "/articles" || path === "/writing" || path === "/posts") return 65;
+      if (path === "/blog" || path === "/articles" || path === "/writing" || path === "/posts")
+        return 65;
       return 20;
     } catch {
       return 0;
@@ -1382,7 +1482,9 @@ async function fetchPortfolio(
 
         let md = "";
         const cleanPath = pagePath.toLowerCase().replace(/\/+$/, "");
-        const isListingPage = /^\/(blog|articles?|writing|posts?|projects?|works?)$/i.test(cleanPath);
+        const isListingPage = /^\/(blog|articles?|writing|posts?|projects?|works?)$/i.test(
+          cleanPath
+        );
 
         if (isListingPage) {
           // Extract only headings, main titles, and reference links
@@ -1436,10 +1538,18 @@ async function fetchPortfolio(
   return doc;
 }
 
-export class KnowledgeIngestionWorkflow extends AgentWorkflow<KnowledgeAgent, IngestionParams, { step: string }, Env> {
+export class KnowledgeIngestionWorkflow extends AgentWorkflow<
+  KnowledgeAgent,
+  IngestionParams,
+  { step: string },
+  Env
+> {
   async run(event: WorkflowEvent<IngestionParams>, step: AgentWorkflowStep) {
     const { source, userId, runId, generation } = event.payload;
-    const sourceAgent = await getAgentByName(this.env.KnowledgeAgent, `source:${userId}:${source.id}`);
+    const sourceAgent = await getAgentByName(
+      this.env.KnowledgeAgent,
+      `source:${userId}:${source.id}`
+    );
 
     const log = async (stageName: string, message: string) => {
       try {
@@ -1455,50 +1565,81 @@ export class KnowledgeIngestionWorkflow extends AgentWorkflow<KnowledgeAgent, In
     };
 
     try {
-      await stage("fetching", `Agent connecting to ${source.type} source (${source.url || source.name || "uploaded document"})...`);
-      const content = await step.do("fetch-source", { retries: { limit: 2, delay: "5 seconds", backoff: "exponential" } }, async () => {
-        if (source.type === "github") {
-          await log("fetching", `Querying GitHub API & scanning repositories for: ${source.url}`);
-          return fetchGithub(this.env, source.url!);
+      await stage(
+        "fetching",
+        `Agent connecting to ${source.type} source (${source.url || source.name || "uploaded document"})...`
+      );
+      const content = await step.do(
+        "fetch-source",
+        { retries: { limit: 2, delay: "5 seconds", backoff: "exponential" } },
+        async () => {
+          if (source.type === "github") {
+            await log("fetching", `Querying GitHub API & scanning repositories for: ${source.url}`);
+            return fetchGithub(this.env, source.url!);
+          }
+          if (source.type === "linkedin") {
+            return fetchLinkedinWithPdf(this.env, source.url!, source.content, log);
+          }
+          if (source.type === "portfolio") {
+            return fetchPortfolio(this.env, source.url!, log);
+          }
+          if (source.type === "website") {
+            return fetchSinglePage(this.env, source.url!, log);
+          }
+          await log(
+            "fetching",
+            `Processing uploaded resume text (${source.mimeType || "text/markdown"})...`
+          );
+          return text(source.content);
         }
-        if (source.type === "linkedin") {
-          return fetchLinkedinWithPdf(this.env, source.url!, source.content, log);
-        }
-        if (source.type === "portfolio") {
-          return fetchPortfolio(this.env, source.url!, log);
-        }
-        if (source.type === "website") {
-          return fetchSinglePage(this.env, source.url!, log);
-        }
-        await log("fetching", `Processing uploaded resume text (${source.mimeType || "text/markdown"})...`);
-        return text(source.content);
-      });
-      await log("fetching", `Raw content acquired (${content.length} characters). Proceeding to validation.`);
+      );
+      await log(
+        "fetching",
+        `Raw content acquired (${content.length} characters). Proceeding to validation.`
+      );
 
-      await stage("validating", "Validating content boundaries, utf-8 integrity, and hash fingerprint...");
+      await stage(
+        "validating",
+        "Validating content boundaries, utf-8 integrity, and hash fingerprint..."
+      );
       if (!content.trim()) throw new Error("Source returned no content");
-      if (new TextEncoder().encode(content).byteLength > MAX_SOURCE_BYTES) throw new Error("Source is too large");
+      if (new TextEncoder().encode(content).byteLength > MAX_SOURCE_BYTES)
+        throw new Error("Source is too large");
       const hash = await step.do("hash-content", () => sha256(content));
       await log("validating", `Content SHA-256 fingerprint verified: ${hash.slice(0, 16)}...`);
 
       if (hash === source.hash && source.artifactReady) {
-        await log("validating", "Content is unchanged from current generation. Preserving existing artifacts.");
-        await step.do("mark-unchanged", () => this.agent.completeUnchanged(runId, generation, hash));
+        await log(
+          "validating",
+          "Content is unchanged from current generation. Preserving existing artifacts."
+        );
+        await step.do("mark-unchanged", () =>
+          this.agent.completeUnchanged(runId, generation, hash)
+        );
         await step.reportComplete({ unchanged: true, searchReady: source.searchReady });
         return { unchanged: true };
       }
 
-      await log("validating", "Agent analyzing career history, technical stack, metrics, and accomplishments...");
+      await log(
+        "validating",
+        "Agent analyzing career history, technical stack, metrics, and accomplishments..."
+      );
       const markdown = `# ${source.name || source.type}\n\n${content}\n\n---\nSource: ${source.url || "first-party upload"}\nRetrieved: ${now()}\nConfidence: high\n`;
 
-      await log("storing", "Agent synthesized clean Markdown representation. Pushing live preview to source channel...");
+      await log(
+        "storing",
+        "Agent synthesized clean Markdown representation. Pushing live preview to source channel..."
+      );
       try {
         await sourceAgent.recordConvertedMarkdown(runId, markdown);
       } catch {
         // Best-effort markdown recording
       }
 
-      await stage("storing", `Storing isolated generation artifact to R2 storage at generations/${source.id}/${generation}/source.md`);
+      await stage(
+        "storing",
+        `Storing isolated generation artifact to R2 storage at generations/${source.id}/${generation}/source.md`
+      );
       const stagedKey = `${userPrefix(userId)}generations/${source.id}/${generation}/source.md`;
       await step.do("store-generation", async () => {
         await this.env.KNOWLEDGE_BUCKET.put(stagedKey, markdown, {
@@ -1509,14 +1650,23 @@ export class KnowledgeIngestionWorkflow extends AgentWorkflow<KnowledgeAgent, In
           const exportKey = `${userPrefix(userId)}generations/${source.id}/${generation}/linkedin_export.txt`;
           await this.env.KNOWLEDGE_BUCKET.put(exportKey, source.content, {
             httpMetadata: { contentType: "text/plain" },
-            customMetadata: { userId, sourceId: source.id, runId, generation: String(generation), type: "linkedin_raw_pdf" },
+            customMetadata: {
+              userId,
+              sourceId: source.id,
+              runId,
+              generation: String(generation),
+              type: "linkedin_raw_pdf",
+            },
           });
         }
         return { stored: true, key: stagedKey };
       });
       await log("storing", "Staged generation saved successfully.");
 
-      await stage("publishing", "Verifying generation fencing & atomically publishing canonical source.md and profile manifest...");
+      await stage(
+        "publishing",
+        "Verifying generation fencing & atomically publishing canonical source.md and profile manifest..."
+      );
       const published = await step.do("publish-artifacts", () =>
         this.agent.publishArtifacts(runId, generation, markdown, hash)
       );
@@ -1534,9 +1684,7 @@ export class KnowledgeIngestionWorkflow extends AgentWorkflow<KnowledgeAgent, In
         const search = this.env.KNOWLEDGE_SEARCH;
         item = await step.do("find-search-item", async () => {
           const found = (await search.items.list({ key, per_page: 1 })).result[0];
-          return found
-            ? { id: found.id, status: found.status, error: found.error }
-            : null;
+          return found ? { id: found.id, status: found.status, error: found.error } : null;
         });
         if (item) {
           const itemId = item.id;
@@ -1555,7 +1703,10 @@ export class KnowledgeIngestionWorkflow extends AgentWorkflow<KnowledgeAgent, In
       const searchReady = await step.do("record-index-state", () =>
         this.agent.updateIndexState(runId, generation, searchItem)
       );
-      await log("searchable", "Source successfully processed, converted to markdown, and indexed into AI knowledge base!");
+      await log(
+        "searchable",
+        "Source successfully processed, converted to markdown, and indexed into AI knowledge base!"
+      );
       await step.reportComplete({ unchanged: false, hash, searchReady });
       return { unchanged: false, hash, searchReady };
     } catch (error) {
@@ -1576,7 +1727,10 @@ export class KnowledgeIngestionWorkflow extends AgentWorkflow<KnowledgeAgent, In
 export async function handleKnowledgeRequest(request: Request, env: Env): Promise<Response> {
   if (!verifyInternalSecret(request.headers.get("x-internal-secret"), env.INTERNAL_SERVICE_KEY)) {
     return json(
-      { error: "Forbidden: Direct public access is disabled. Requests must originate internally from Resume Builder." },
+      {
+        error:
+          "Forbidden: Direct public access is disabled. Requests must originate internally from Resume Builder.",
+      },
       403
     );
   }
@@ -1592,14 +1746,20 @@ export async function handleKnowledgeRequest(request: Request, env: Env): Promis
   // Dedicated per-source WebSocket: /users/:userId/sources/:sourceId/ws
   const sourceWsMatch = path.match(/^\/sources\/([^/]+)\/ws$/);
   if (sourceWsMatch && (request.headers.get("Upgrade") === "websocket" || path.endsWith("/ws"))) {
-    const sourceStub = await getAgentByName(env.KnowledgeAgent, `source:${userId}:${sourceWsMatch[1]}`);
+    const sourceStub = await getAgentByName(
+      env.KnowledgeAgent,
+      `source:${userId}:${sourceWsMatch[1]}`
+    );
     return sourceStub.fetch(request);
   }
 
   // Dedicated per-source analysis REST endpoint: /users/:userId/sources/:sourceId/analysis
   const sourceAnalysisMatch = path.match(/^\/sources\/([^/]+)\/analysis$/);
   if (sourceAnalysisMatch && request.method === "GET") {
-    const sourceStub = await getAgentByName(env.KnowledgeAgent, `source:${userId}:${sourceAnalysisMatch[1]}`);
+    const sourceStub = await getAgentByName(
+      env.KnowledgeAgent,
+      `source:${userId}:${sourceAnalysisMatch[1]}`
+    );
     return json(await sourceStub.getSourceAnalysis());
   }
 
@@ -1610,23 +1770,42 @@ export async function handleKnowledgeRequest(request: Request, env: Env): Promis
   try {
     if (path === "/sources" && request.method === "GET") return json(await stub.listSources());
     const idempotencyKey = request.headers.get("x-idempotency-key") || "";
-    if (path === "/sources" && request.method === "POST") return json(await stub.addSource(await request.json() as SourceInput, idempotencyKey), 202);
+    if (path === "/sources" && request.method === "POST")
+      return json(await stub.addSource((await request.json()) as SourceInput, idempotencyKey), 202);
     if (path === "/status" && request.method === "GET") return json(await stub.reconcileSearch());
-    if (path === "/query" && request.method === "POST") return json(await stub.queryKnowledge(String((await request.json() as { query?: unknown }).query || "")));
-    if (path === "/resumes/sync" && request.method === "POST") return json(await stub.syncResume(validateResumeReference(await request.json())));
-    if (path === "/chat" && request.method === "POST") return json(await stub.chat(String((await request.json() as { message?: unknown }).message || "")));
-    if (path === "/documents" && request.method === "GET") return json(await stub.getDocument(url.searchParams.get("path") || "manifest.json"));
+    if (path === "/query" && request.method === "POST")
+      return json(
+        await stub.queryKnowledge(
+          String(((await request.json()) as { query?: unknown }).query || "")
+        )
+      );
+    if (path === "/resumes/sync" && request.method === "POST")
+      return json(await stub.syncResume(validateResumeReference(await request.json())));
+    if (path === "/chat" && request.method === "POST")
+      return json(
+        await stub.chat(String(((await request.json()) as { message?: unknown }).message || ""))
+      );
+    if (path === "/documents" && request.method === "GET")
+      return json(await stub.getDocument(url.searchParams.get("path") || "manifest.json"));
     const resumeRoute = path.match(/^\/resumes\/([^/]+)$/);
-    if (resumeRoute && request.method === "DELETE") return json({ deleted: await stub.deleteResume(resumeRoute[1]) });
+    if (resumeRoute && request.method === "DELETE")
+      return json({ deleted: await stub.deleteResume(resumeRoute[1]) });
     const sourceRoute = path.match(/^\/sources\/([^/]+)(?:\/(refresh))?$/);
-    if (sourceRoute && request.method === "DELETE") return json({ deleted: await stub.deleteSource(sourceRoute[1]) });
-    if (sourceRoute?.[2] && request.method === "POST") return json(await stub.refreshSource(sourceRoute[1], idempotencyKey), 202);
+    if (sourceRoute && request.method === "DELETE")
+      return json({ deleted: await stub.deleteSource(sourceRoute[1]) });
+    if (sourceRoute?.[2] && request.method === "POST")
+      return json(await stub.refreshSource(sourceRoute[1], idempotencyKey), 202);
     const runRoute = path.match(/^\/runs\/([^/]+)(?:\/(retry|cancel))?$/);
-    if (runRoute && request.method === "GET" && !runRoute[2]) return json(await stub.inspectRun(runRoute[1]));
-    if (runRoute?.[2] === "retry" && request.method === "POST") return json(await stub.retryRun(runRoute[1], idempotencyKey), 202);
-    if (runRoute?.[2] === "cancel" && request.method === "POST") return json(await stub.cancelRun(runRoute[1]));
+    if (runRoute && request.method === "GET" && !runRoute[2])
+      return json(await stub.inspectRun(runRoute[1]));
+    if (runRoute?.[2] === "retry" && request.method === "POST")
+      return json(await stub.retryRun(runRoute[1], idempotencyKey), 202);
+    if (runRoute?.[2] === "cancel" && request.method === "POST")
+      return json(await stub.cancelRun(runRoute[1]));
     return json({ error: "Not found" }, 404);
-  } catch (error) { return json({ error: error instanceof Error ? error.message : "Request failed" }, 400); }
+  } catch (error) {
+    return json({ error: error instanceof Error ? error.message : "Request failed" }, 400);
+  }
 }
 
 export default {
