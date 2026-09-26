@@ -25,6 +25,21 @@ export const ALL: APIRoute = async (ctx) => {
     return Response.redirect(customErrorPage.toString(), 302);
   }
 
+  // Gracefully handle callback when user already has an active session
+  if (url.pathname.includes("/callback/")) {
+    try {
+      const activeSession = await auth.api.getSession({ headers: ctx.request.headers }).catch(() => null);
+      if (activeSession?.user) {
+        console.log(
+          `[AUTH API] User ${activeSession.user.email} already has an active session on callback. Redirecting to /`
+        );
+        return Response.redirect(new URL("/", url.origin).toString(), 302);
+      }
+    } catch (err) {
+      console.warn("[AUTH API] Could not check session before callback:", err);
+    }
+  }
+
   try {
     const res = await auth.handler(ctx.request);
     const loc = res.headers.get("location");
@@ -38,6 +53,20 @@ export const ALL: APIRoute = async (ctx) => {
           console.error(
             `[AUTH API ERROR DETECTED] error=${errorParam} path=${url.pathname}${url.search}`
           );
+
+          // If the user already has an active session (e.g. parallel callback request succeeded),
+          // avoid showing an error screen and redirect cleanly home
+          const existingSession = await auth.api
+            .getSession({ headers: ctx.request.headers })
+            .catch(() => null);
+
+          if (existingSession?.user) {
+            console.log(
+              `[AUTH API] Caught error=${errorParam}, but user already has an active session (${existingSession.user.email}). Redirecting to /`
+            );
+            return Response.redirect(new URL("/", url.origin).toString(), 302);
+          }
+
           // Report error to SSO audit log
           await reportAuthErrorToSso({
             eventType: errorParam === "state_mismatch" ? "oauth_client_error" : "login_failed",
@@ -67,6 +96,15 @@ export const ALL: APIRoute = async (ctx) => {
   } catch (error: unknown) {
     const errObj = error instanceof Error ? error : new Error(String(error));
     console.error("[AUTH API CRITICAL ERROR]", errObj);
+
+    // If session is already valid, do not fail
+    try {
+      const activeSession = await auth.api.getSession({ headers: ctx.request.headers }).catch(() => null);
+      if (activeSession?.user) {
+        return Response.redirect(new URL("/", url.origin).toString(), 302);
+      }
+    } catch {}
+
     await reportAuthErrorToSso({
       eventType: "oauth_client_error",
       error: errObj.message || "internal_auth_error",

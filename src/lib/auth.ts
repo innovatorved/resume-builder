@@ -14,6 +14,24 @@ async function ssoFetch(url: string | URL, init?: RequestInit): Promise<Response
   return fetch(url, init);
 }
 
+// In-memory cache for recent token exchanges to withstand immediate duplicate callbacks
+const tokenExchangeCache = new Map<
+  string,
+  {
+    token: {
+      tokenType: string;
+      accessToken: string;
+      refreshToken?: string;
+      accessTokenExpiresAt?: Date;
+      refreshTokenExpiresAt?: Date;
+      scopes: string[];
+      idToken?: string;
+      raw: Record<string, unknown>;
+    };
+    expiresAt: number;
+  }
+>();
+
 function initAuth() {
   const secret = process.env.BETTER_AUTH_SECRET?.trim();
   if (!secret) throw new Error("BETTER_AUTH_SECRET is required");
@@ -46,6 +64,22 @@ function initAuth() {
         verification: schema.verification,
       },
     }),
+    databaseHooks: {
+      verification: {
+        delete: {
+          before: async (verification) => {
+            // Only allow deleting verification tokens that have actually expired.
+            // Better Auth invokes deleteVerificationByIdentifier immediately upon parsing state.
+            // Preserving the record while valid prevents race conditions (duplicate callbacks,
+            // prefetch, or 2FA bounce) from blowing up with state_mismatch.
+            if (verification.expiresAt && new Date(verification.expiresAt).getTime() < Date.now()) {
+              return true;
+            }
+            return false;
+          },
+        },
+      },
+    },
     account: {
       storeStateStrategy: "database",
       skipStateCookieCheck: true,
@@ -88,6 +122,15 @@ function initAuth() {
                 hasVerifier: Boolean(data.codeVerifier),
                 redirectURI: data.redirectURI,
               });
+
+              if (data.code && tokenExchangeCache.has(data.code)) {
+                const cached = tokenExchangeCache.get(data.code)!;
+                if (cached.expiresAt > Date.now()) {
+                  console.log("[SSO getToken] Returning cached token response for duplicate callback code");
+                  return cached.token;
+                }
+                tokenExchangeCache.delete(data.code);
+              }
 
               const redirectURI = data.redirectURI || `${baseURL}/api/auth/callback/vedgupta-sso`;
               const clientId = (process.env.SSO_CLIENT_ID || "resume-builder-app").trim();
@@ -152,7 +195,7 @@ function initAuth() {
               }
 
               const json = JSON.parse(responseText);
-              return {
+              const tokenResult = {
                 tokenType: json.token_type,
                 accessToken: json.access_token,
                 refreshToken: json.refresh_token,
@@ -170,6 +213,15 @@ function initAuth() {
                 idToken: json.id_token,
                 raw: json,
               };
+
+              if (data.code) {
+                tokenExchangeCache.set(data.code, {
+                  token: tokenResult,
+                  expiresAt: Date.now() + 60_000,
+                });
+              }
+
+              return tokenResult;
             },
             getUserInfo: async (tokens) => {
               console.log("[SSO getUserInfo] Fetching user info with access token");
