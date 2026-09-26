@@ -8,7 +8,9 @@ export const ALL: APIRoute = async (ctx) => {
   // Intercept any direct access to Better Auth default unstyled /api/auth/error page
   if (url.pathname === "/api/auth/error" || url.pathname.endsWith("/auth/error")) {
     const errorParam = url.searchParams.get("error") || "unknown_error";
-    console.warn(`[AUTH API] Intercepted /api/auth/error?error=${errorParam}, redirecting to /auth/error`);
+    console.warn(
+      `[AUTH API] Intercepted /api/auth/error?error=${errorParam}, redirecting to /auth/error`
+    );
     await reportAuthErrorToSso({
       eventType: errorParam === "state_mismatch" ? "oauth_client_error" : "login_failed",
       error: errorParam,
@@ -28,7 +30,9 @@ export const ALL: APIRoute = async (ctx) => {
   // Gracefully handle callback when user already has an active session
   if (url.pathname.includes("/callback/")) {
     try {
-      const activeSession = await auth.api.getSession({ headers: ctx.request.headers }).catch(() => null);
+      const activeSession = await auth.api
+        .getSession({ headers: ctx.request.headers })
+        .catch(() => null);
       if (activeSession?.user) {
         console.log(
           `[AUTH API] User ${activeSession.user.email} already has an active session on callback. Redirecting to /`
@@ -99,7 +103,9 @@ export const ALL: APIRoute = async (ctx) => {
 
     // If session is already valid, do not fail
     try {
-      const activeSession = await auth.api.getSession({ headers: ctx.request.headers }).catch(() => null);
+      const activeSession = await auth.api
+        .getSession({ headers: ctx.request.headers })
+        .catch(() => null);
       if (activeSession?.user) {
         return Response.redirect(new URL("/", url.origin).toString(), 302);
       }

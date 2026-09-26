@@ -55,7 +55,8 @@ const ERROR_MAP: Record<string, ErrorInfo> = {
   },
   invalid_callback: {
     title: "Invalid Authorization Callback",
-    description: "The authentication response returned by the SSO provider contained invalid parameters.",
+    description:
+      "The authentication response returned by the SSO provider contained invalid parameters.",
     recommendation: "Please start the sign-in flow again from the login page.",
     badge: "INVALID_CALLBACK",
   },

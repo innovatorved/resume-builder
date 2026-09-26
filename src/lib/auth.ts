@@ -126,7 +126,9 @@ function initAuth() {
               if (data.code && tokenExchangeCache.has(data.code)) {
                 const cached = tokenExchangeCache.get(data.code)!;
                 if (cached.expiresAt > Date.now()) {
-                  console.log("[SSO getToken] Returning cached token response for duplicate callback code");
+                  console.log(
+                    "[SSO getToken] Returning cached token response for duplicate callback code"
+                  );
                   return cached.token;
                 }
                 tokenExchangeCache.delete(data.code);
