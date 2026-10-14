@@ -52,6 +52,10 @@ function initAuth() {
     )
   );
 
+  const ssoBaseUrl = (
+    process.env.SSO_BASE_URL?.trim() || "https://sso.vedgupta.in"
+  ).replace(/\/+$/, "");
+
   return betterAuth({
     baseURL,
     secret,
@@ -101,10 +105,10 @@ function initAuth() {
           {
             providerId: "vedgupta-sso",
             clientId: process.env.SSO_CLIENT_ID || "resume-builder-app",
-            clientSecret: process.env.SSO_CLIENT_SECRET || "ZRkRBGALUztlpJWabalsHKWdMkvPaUDh",
-            authorizationUrl: "https://sso.vedgupta.in/api/auth/oauth2/authorize",
-            tokenUrl: "https://sso.vedgupta.in/api/auth/oauth2/token",
-            userInfoUrl: "https://sso.vedgupta.in/api/auth/oauth2/userinfo",
+            clientSecret: process.env.SSO_CLIENT_SECRET || "",
+            authorizationUrl: `${ssoBaseUrl}/api/auth/oauth2/authorize`,
+            tokenUrl: `${ssoBaseUrl}/api/auth/oauth2/token`,
+            userInfoUrl: `${ssoBaseUrl}/api/auth/oauth2/userinfo`,
             redirectURI: `${baseURL}/api/auth/callback/vedgupta-sso`,
             scopes: ["openid", "email", "profile", "offline_access"],
             pkce: true,
@@ -136,9 +140,7 @@ function initAuth() {
 
               const redirectURI = data.redirectURI || `${baseURL}/api/auth/callback/vedgupta-sso`;
               const clientId = (process.env.SSO_CLIENT_ID || "resume-builder-app").trim();
-              const clientSecret = (
-                process.env.SSO_CLIENT_SECRET || "ZRkRBGALUztlpJWabalsHKWdMkvPaUDh"
-              ).trim();
+              const clientSecret = (process.env.SSO_CLIENT_SECRET || "").trim();
 
               const body = new URLSearchParams({
                 grant_type: "authorization_code",
@@ -164,7 +166,7 @@ function initAuth() {
                 body.set("client_id", clientId);
               }
 
-              let response = await ssoFetch("https://sso.vedgupta.in/api/auth/oauth2/token", {
+              let response = await ssoFetch(`${ssoBaseUrl}/api/auth/oauth2/token`, {
                 method: "POST",
                 headers,
                 body: body.toString(),
@@ -179,7 +181,7 @@ function initAuth() {
                 const postBody = new URLSearchParams(body);
                 postBody.set("client_id", clientId);
                 postBody.set("client_secret", clientSecret);
-                response = await ssoFetch("https://sso.vedgupta.in/api/auth/oauth2/token", {
+                response = await ssoFetch(`${ssoBaseUrl}/api/auth/oauth2/token`, {
                   method: "POST",
                   headers: {
                     "content-type": "application/x-www-form-urlencoded",
@@ -227,7 +229,7 @@ function initAuth() {
             },
             getUserInfo: async (tokens) => {
               console.log("[SSO getUserInfo] Fetching user info with access token");
-              const response = await ssoFetch("https://sso.vedgupta.in/api/auth/oauth2/userinfo", {
+              const response = await ssoFetch(`${ssoBaseUrl}/api/auth/oauth2/userinfo`, {
                 headers: {
                   authorization: `Bearer ${tokens.accessToken}`,
                   accept: "application/json",
@@ -289,11 +291,12 @@ export async function reportAuthErrorToSso(data: {
 }) {
   try {
     const ssoService = (globalThis as any).__SSO_SERVICE__ || (process.env as any).SSO_SERVICE;
-    const ssoUrl = "https://sso.vedgupta.in/api/auth/audit-log/record";
+    const ssoBaseUrl = (
+      process.env.SSO_BASE_URL?.trim() || "https://sso.vedgupta.in"
+    ).replace(/\/+$/, "");
+    const ssoUrl = `${ssoBaseUrl}/api/auth/audit-log/record`;
     const clientId = (process.env.SSO_CLIENT_ID || "resume-builder-app").trim();
-    const clientSecret = (
-      process.env.SSO_CLIENT_SECRET || "ZRkRBGALUztlpJWabalsHKWdMkvPaUDh"
-    ).trim();
+    const clientSecret = (process.env.SSO_CLIENT_SECRET || "").trim();
 
     const payload = {
       eventType: data.eventType || "oauth_client_error",
