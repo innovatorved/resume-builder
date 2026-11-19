@@ -1,4 +1,5 @@
 import Editor, { type Monaco, type OnMount } from "@monaco-editor/react";
+import { Check, Copy } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type SyntaxMarker, validateLatexSyntax } from "@/lib/latex/validator";
 
@@ -12,6 +13,19 @@ export function MonacoLatexEditor({ value, onChange, readOnly = false }: MonacoL
   const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
   const [syntaxIssues, setSyntaxIssues] = useState<SyntaxMarker[]>([]);
+  const [copied, setCopied] = useState(false);
+
+  const lineCount = value ? value.split("\n").length : 0;
+
+  const handleCopyLatex = async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      // Clipboard unavailable
+    }
+  };
 
   const updateSyntaxMarkers = useCallback((code: string) => {
     const issues = validateLatexSyntax(code);
@@ -305,15 +319,37 @@ export function MonacoLatexEditor({ value, onChange, readOnly = false }: MonacoL
   return (
     <div className="w-full h-full relative flex flex-col bg-neutral-950">
       {/* File Tab Header & Real-time Type Check / Syntax Status */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-neutral-950 border-b border-neutral-800 text-xs select-none">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-neutral-950 border-b border-neutral-800 text-xs select-none shrink-0">
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 text-neutral-200 bg-neutral-900 px-2.5 py-1 rounded border border-neutral-800 font-mono text-[11px]">
+          <div className="flex items-center gap-2 text-neutral-200 bg-neutral-900 px-2.5 py-1 rounded-md border border-neutral-800 font-mono text-[11px]">
             <span>main.tex</span>
           </div>
+          <span className="hidden sm:inline text-[11px] text-neutral-500 font-mono">
+            {lineCount} lines
+          </span>
         </div>
 
-        {/* Real-time Syntax & Type Check Status Indicator */}
+        {/* Real-time Syntax & Type Check Status Indicator + Copy */}
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleCopyLatex}
+            className="inline-flex items-center gap-1 text-[11px] text-neutral-400 hover:text-white bg-neutral-900 border border-neutral-800 hover:border-neutral-700 px-2 py-0.5 rounded-md transition-colors cursor-pointer"
+            title="Copy LaTeX source"
+          >
+            {copied ? (
+              <>
+                <Check className="w-3 h-3 text-emerald-400" />
+                <span className="text-emerald-400">Copied</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3 h-3" />
+                <span className="hidden sm:inline">Copy</span>
+              </>
+            )}
+          </button>
+
           {syntaxIssues.length === 0 ? (
             <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 bg-emerald-950/40 border border-emerald-800/50 px-2.5 py-0.5 rounded-full font-mono">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />

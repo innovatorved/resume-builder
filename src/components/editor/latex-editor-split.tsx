@@ -56,13 +56,16 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
 
   // Layout states
   const [splitRatio, setSplitRatio] = useState<number>(50); // percentage for left editor pane
+  const [isResizing, setIsResizing] = useState<boolean>(false);
   const [mobileTab, setMobileTab] = useState<"editor" | "preview">("editor");
   const [showVersionModal, setShowVersionModal] = useState<boolean>(false);
   const [showTourModal, setShowTourModal] = useState<boolean>(false);
+  const [exportMenuOpen, setExportMenuOpen] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
 
   const isResizingRef = useRef<boolean>(false);
+  const exportMenuRef = useRef<HTMLDivElement>(null);
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latexSourceRef = useRef(latexSource);
 
@@ -331,9 +334,29 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
     URL.revokeObjectURL(url);
   };
 
+  // Close export dropdown on outside click or Escape
+  useEffect(() => {
+    if (!exportMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target as Node)) {
+        setExportMenuOpen(false);
+      }
+    };
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setExportMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [exportMenuOpen]);
+
   // Resizer mouse drag handlers
   const handleMouseDown = () => {
     isResizingRef.current = true;
+    setIsResizing(true);
     document.body.style.cursor = "col-resize";
   };
 
@@ -349,6 +372,7 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
     const handleMouseUp = () => {
       if (isResizingRef.current) {
         isResizingRef.current = false;
+        setIsResizing(false);
         document.body.style.cursor = "default";
       }
     };
@@ -446,42 +470,56 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
             )}
           </Button>
 
-          {/* Export Dropdown */}
-          <div className="relative group">
+          {/* Export Dropdown (click-toggled for reliable desktop & touch use) */}
+          <div className="relative" ref={exportMenuRef}>
             <Button
               variant="outline"
               size="sm"
-              className="h-8 px-2 sm:px-2.5 text-xs text-neutral-200 border-neutral-800 bg-neutral-900 hover:bg-neutral-800 gap-1 rounded-md"
+              aria-expanded={exportMenuOpen}
+              onClick={() => setExportMenuOpen((v) => !v)}
+              className="h-8 px-2 sm:px-2.5 text-xs text-neutral-200 border-neutral-800 bg-neutral-900 hover:bg-neutral-800 gap-1 rounded-md cursor-pointer"
             >
               <Download className="w-3.5 h-3.5 text-neutral-400" />
               <span className="hidden sm:inline">Export</span>
-              <ChevronDown className="w-3 h-3 text-neutral-400" />
+              <ChevronDown
+                className={`w-3 h-3 text-neutral-400 transition-transform ${
+                  exportMenuOpen ? "rotate-180" : ""
+                }`}
+              />
             </Button>
 
-            <div className="absolute right-0 top-full mt-1 w-48 bg-neutral-950 border border-neutral-800 rounded-md shadow-2xl py-1 hidden group-hover:block z-30 animate-in fade-in-50">
-              <button
-                type="button"
-                onClick={handleDownloadPdf}
-                className="w-full text-left px-3 py-1.5 text-xs text-neutral-200 hover:bg-neutral-900 flex items-center gap-2 transition-colors"
-              >
-                <Download className="w-3.5 h-3.5 text-neutral-400" />
-                Download PDF
-              </button>
-              <button
-                type="button"
-                onClick={handleDownloadTex}
-                className="w-full text-left px-3 py-1.5 text-xs text-neutral-200 hover:bg-neutral-900 flex items-center gap-2 transition-colors"
-              >
-                <FileCode className="w-3.5 h-3.5 text-neutral-400" />
-                Download .tex Source
-              </button>
-            </div>
+            {exportMenuOpen && (
+              <div className="absolute right-0 top-full mt-1.5 w-48 bg-neutral-950 border border-neutral-800 rounded-lg shadow-2xl py-1 z-40">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setExportMenuOpen(false);
+                    void handleDownloadPdf();
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs text-neutral-200 hover:bg-neutral-900 flex items-center gap-2 transition-colors cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5 text-neutral-400" />
+                  Download PDF
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setExportMenuOpen(false);
+                    handleDownloadTex();
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs text-neutral-200 hover:bg-neutral-900 flex items-center gap-2 transition-colors cursor-pointer"
+                >
+                  <FileCode className="w-3.5 h-3.5 text-neutral-400" />
+                  Download .tex Source
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>
 
       {/* MOBILE SEGMENTED VIEW SWITCHER (Only rendered on < md screens) */}
-      <div className="flex md:hidden items-center justify-between px-2.5 py-1.5 bg-neutral-950 border-b border-neutral-800 z-10">
+      <div className="flex md:hidden items-center justify-between px-2.5 py-1.5 bg-neutral-950 border-b border-neutral-800 z-10 shrink-0">
         <div className="flex items-center rounded-lg bg-neutral-900 p-0.5 border border-neutral-800 text-xs font-medium w-full">
           <button
             type="button"
@@ -512,7 +550,7 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
       </div>
 
       {/* MAIN BODY: Mobile View (Tabbed) */}
-      <div className="flex-1 flex overflow-hidden md:hidden relative pb-12">
+      <div className="flex-1 min-h-0 flex overflow-hidden md:hidden relative">
         {mobileTab === "editor" ? (
           <div className="w-full h-full flex flex-col overflow-hidden bg-neutral-950">
             <MonacoLatexEditor value={latexSource} onChange={handleLatexChange} />
@@ -533,7 +571,7 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
       </div>
 
       {/* MAIN BODY: Desktop View (Split Panes with Resizer) */}
-      <div className="hidden md:flex flex-1 overflow-hidden relative pb-12">
+      <div className="hidden md:flex flex-1 min-h-0 overflow-hidden relative">
         {/* Left Pane: Monaco Editor */}
         <div
           style={{ width: `${splitRatio}%` }}
@@ -546,12 +584,20 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
         <div
           aria-hidden="true"
           onMouseDown={handleMouseDown}
-          className="w-1 bg-neutral-900 hover:bg-neutral-600 hover:w-1.5 cursor-col-resize transition-all z-10 select-none"
+          className={`w-1.5 flex items-center justify-center cursor-col-resize transition-colors z-10 select-none ${
+            isResizing ? "bg-neutral-500" : "bg-neutral-900 hover:bg-neutral-700"
+          }`}
           title="Drag to resize panes"
-        />
+        >
+          <span className="w-0.5 h-8 rounded-full bg-neutral-600/80" />
+        </div>
 
         {/* Right Pane: Vector PDF Preview */}
-        <div className="flex-1 h-full overflow-hidden bg-neutral-950">
+        <div
+          className={`flex-1 h-full overflow-hidden bg-neutral-950 ${
+            isResizing ? "pointer-events-none select-none" : ""
+          }`}
+        >
           <PdfPreviewPane
             pdfData={pdfData}
             isCompiling={isCompiling}

@@ -101,9 +101,14 @@ export function PdfPreviewPane({
             >
               <ZoomOut className="w-3.5 h-3.5" />
             </Button>
-            <span className="text-[11px] text-neutral-400 min-w-9 text-center font-mono">
+            <button
+              type="button"
+              onClick={() => setZoomLevel(100)}
+              className="text-[11px] text-neutral-400 hover:text-white min-w-9 text-center font-mono rounded px-1 py-0.5 hover:bg-neutral-900 transition-colors cursor-pointer"
+              title="Reset zoom to 100%"
+            >
               {zoomLevel}%
-            </span>
+            </button>
             <Button
               variant="ghost"
               size="icon"
