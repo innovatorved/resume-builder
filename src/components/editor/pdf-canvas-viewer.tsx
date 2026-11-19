@@ -1,11 +1,13 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
+import pdfWorkerUrl from "pdfjs-dist/legacy/build/pdf.worker.min.mjs?url";
 import { useEffect, useRef, useState } from "react";
 
 interface PdfCanvasViewerProps {
   pdfData: Uint8Array;
   zoomLevel?: number;
+  onRenderError?: () => void;
 }
 
 let workerConfigured = false;
@@ -14,16 +16,20 @@ async function getPdfJs() {
   const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
   if (typeof window !== "undefined" && !workerConfigured) {
     try {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+      pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
       workerConfigured = true;
     } catch {
-      // Fall back to workerless mode if external worker fails
+      // Fall back to workerless mode if worker setup fails
     }
   }
   return pdfjsLib;
 }
 
-export function PdfCanvasViewer({ pdfData, zoomLevel = 100 }: PdfCanvasViewerProps) {
+export function PdfCanvasViewer({
+  pdfData,
+  zoomLevel = 100,
+  onRenderError,
+}: PdfCanvasViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [numPages, setNumPages] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -152,6 +158,7 @@ export function PdfCanvasViewer({ pdfData, zoomLevel = 100 }: PdfCanvasViewerPro
           console.error("[PdfCanvasViewer] Render error:", err);
           setError(err instanceof Error ? err.message : "Failed to render PDF canvas");
           setIsLoading(false);
+          onRenderError?.();
         }
       }
     }

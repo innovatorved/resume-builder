@@ -285,21 +285,33 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
     }
   };
 
-  // Download PDF locally
-  const handleDownloadPdf = () => {
-    if (!pdfData) {
-      toast({
-        title: "No PDF compiled",
-        description: "Please wait for LaTeX compilation to complete.",
-        variant: "destructive",
-      });
-      return;
+  // Download PDF locally (compiles on demand if preview bytes are not ready yet)
+  const handleDownloadPdf = async () => {
+    let bytes = pdfData;
+    if (!bytes) {
+      setIsCompiling(true);
+      const result = await latexCompiler.compile(latexSourceRef.current);
+      setIsCompiling(false);
+      setCompileDurationMs(result.durationMs);
+      if (!result.success || !result.pdfData) {
+        setCompileError(result.error || result.log || "Compilation failed");
+        toast({
+          title: "PDF compilation failed",
+          description: result.error || "Could not compile LaTeX to PDF.",
+          variant: "destructive",
+        });
+        return;
+      }
+      bytes = result.pdfData;
+      setPdfData(bytes);
+      setCompileError(undefined);
     }
-    const blob = new Blob([pdfData as BlobPart], { type: "application/pdf" });
+
+    const blob = new Blob([bytes as BlobPart], { type: "application/pdf" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${resumeName.toLowerCase().replace(/[^a-z0-9_-]/g, "-")}.pdf`;
+    a.download = `${resumeName.toLowerCase().replace(/[^a-z0-9_-]/g, "-") || "resume"}.pdf`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

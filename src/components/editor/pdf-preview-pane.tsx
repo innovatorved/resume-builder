@@ -203,7 +203,11 @@ export function PdfPreviewPane({
         )}
 
         {pdfData && viewMode === "canvas" && (
-          <PdfCanvasViewer pdfData={pdfData} zoomLevel={zoomLevel} />
+          <PdfCanvasViewer
+            pdfData={pdfData}
+            zoomLevel={zoomLevel}
+            onRenderError={() => setViewMode("iframe")}
+          />
         )}
 
         {pdfBlobUrl && viewMode === "iframe" && (
