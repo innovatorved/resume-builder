@@ -177,13 +177,11 @@ export function isDeepContentRoute(uStr: string): boolean {
   }
 }
 
-export const DEFAULT_INTERNAL_SECRET = "rb_internal_agent_sec_2026";
-
 export function verifyInternalSecret(
   provided: string | null | undefined,
   expectedSecret?: string
 ): boolean {
-  const target = expectedSecret || DEFAULT_INTERNAL_SECRET;
-  if (!provided || typeof provided !== "string") return false;
+  const target = expectedSecret?.trim();
+  if (!target || !provided || typeof provided !== "string") return false;
   return provided === target;
 }

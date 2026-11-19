@@ -1,29 +1,17 @@
 import { type Tool, Type } from "@google/genai";
 import type { APIRoute } from "astro";
+import { and, eq } from "drizzle-orm";
 import { getGeminiClient, isGeminiConfigured } from "@/lib/ai/gemini-client";
 import { auth } from "@/lib/auth";
 import { getSyncCloudflareEnv } from "@/lib/cloudflare-env";
 import { db } from "@/lib/db";
-import { aiGeneration } from "@/lib/db/schema";
+import { aiGeneration, resume } from "@/lib/db/schema";
 import {
   fetchUserExistingResumeContext,
   fetchUserProfile,
   searchKnowledgeEvidence,
 } from "@/lib/knowledge/retriever";
-
-function cleanJsonText(raw: string): string {
-  const text = raw.trim();
-  const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-  if (codeBlockMatch) {
-    return codeBlockMatch[1].trim();
-  }
-  const firstBrace = text.indexOf("{");
-  const lastBrace = text.lastIndexOf("}");
-  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-    return text.slice(firstBrace, lastBrace + 1).trim();
-  }
-  return text;
-}
+import { cleanJsonText } from "@/lib/utils";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
@@ -272,6 +260,39 @@ Please modify or generate the LaTeX document to fulfill this request using the c
       }
     }
 
+    // If the model spent every tool turn calling functions, request the final JSON response without tools.
+    if (!finalResponseText) {
+      const finalResponse = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [
+          ...currentContents,
+          {
+            role: "user",
+            parts: [
+              {
+                text: "Now return the final response in strictly valid JSON with keys: reply, updatedLatex, suggestedPrompts.",
+              },
+            ],
+          },
+        ],
+        config: {
+          systemInstruction,
+          responseMimeType: "application/json",
+        },
+      });
+      finalResponseText = finalResponse.text || "";
+    }
+
+    if (!finalResponseText) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "AI Copilot did not return a response. Please try again.",
+        }),
+        { status: 502, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
     interface CopilotResponse {
       reply?: string;
       updatedLatex?: string;
@@ -313,12 +334,21 @@ Please modify or generate the LaTeX document to fulfill this request using the c
       }
     }
 
-    // Log AI call in audit table
+    // Log AI call in audit table (only attach resumeId if owned by this user)
     try {
+      let verifiedResumeId: string | null = null;
+      if (resumeId) {
+        const [owned] = await db
+          .select({ id: resume.id })
+          .from(resume)
+          .where(and(eq(resume.id, resumeId), eq(resume.userId, session.user.id)))
+          .limit(1);
+        verifiedResumeId = owned?.id ?? null;
+      }
       await db.insert(aiGeneration).values({
         id: crypto.randomUUID(),
         userId: session.user.id,
-        resumeId: resumeId || null,
+        resumeId: verifiedResumeId,
         kind: "copilot",
         promptSummary: message.slice(0, 100),
         model: "gemini-2.5-flash",

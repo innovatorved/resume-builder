@@ -116,40 +116,43 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
 
-    // Determine the next version number
-    const [latestVersion] = await db
-      .select({ versionNumber: resumeVersion.versionNumber })
-      .from(resumeVersion)
-      .where(eq(resumeVersion.resumeId, resumeId))
-      .orderBy(desc(resumeVersion.versionNumber))
-      .limit(1);
-
-    const nextVersionNumber = (latestVersion?.versionNumber || 0) + 1;
     const versionId = crypto.randomUUID();
     const now = new Date();
 
-    await db.insert(resumeVersion).values({
-      id: versionId,
-      resumeId,
-      versionNumber: nextVersionNumber,
-      sourceKey,
-      pdfKey: pdfKey || null,
-      structuredData: structuredData as ResumeData,
-      rawLatex: rawLatex || null,
-      isLatexCustom: Boolean(isLatexCustom),
-      changeSummary: changeSummary || `Version ${nextVersionNumber}`,
-      createdAt: now,
-    });
+    const nextVersionNumber = await db.transaction(async (tx) => {
+      const [latestVersion] = await tx
+        .select({ versionNumber: resumeVersion.versionNumber })
+        .from(resumeVersion)
+        .where(eq(resumeVersion.resumeId, resumeId))
+        .orderBy(desc(resumeVersion.versionNumber))
+        .limit(1);
 
-    // Update resume with currentVersionId and updatedAt
-    await db
-      .update(resume)
-      .set({
-        currentVersionId: versionId,
-        updatedAt: now,
-        data: structuredData as ResumeData,
-      })
-      .where(eq(resume.id, resumeId));
+      const versionNumber = (latestVersion?.versionNumber || 0) + 1;
+
+      await tx.insert(resumeVersion).values({
+        id: versionId,
+        resumeId,
+        versionNumber,
+        sourceKey,
+        pdfKey: pdfKey || null,
+        structuredData: structuredData as ResumeData,
+        rawLatex: rawLatex || null,
+        isLatexCustom: Boolean(isLatexCustom),
+        changeSummary: changeSummary || `Version ${versionNumber}`,
+        createdAt: now,
+      });
+
+      await tx
+        .update(resume)
+        .set({
+          currentVersionId: versionId,
+          updatedAt: now,
+          data: structuredData as ResumeData,
+        })
+        .where(eq(resume.id, resumeId));
+
+      return versionNumber;
+    });
 
     const env = await getCloudflareEnv(locals);
     const knowledgeService = env.KNOWLEDGE_AGENT;
@@ -158,18 +161,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
         `/users/${encodeURIComponent(session.user.id)}/resumes/sync`,
         "https://knowledge-agent.internal"
       );
-      const internalSecret =
-        env.INTERNAL_SERVICE_KEY ||
-        process.env.INTERNAL_SERVICE_KEY ||
-        "rb_internal_agent_sec_2026";
+      const internalSecret = env.INTERNAL_SERVICE_KEY || process.env.INTERNAL_SERVICE_KEY || "";
+      const syncHeaders: Record<string, string> = { "Content-Type": "application/json" };
+      if (internalSecret) syncHeaders["x-internal-secret"] = internalSecret;
       try {
         const syncResponse = await knowledgeService.fetch(
           new Request(target, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-internal-secret": internalSecret,
-            },
+            headers: syncHeaders,
             body: JSON.stringify({
               resumeId,
               versionId,

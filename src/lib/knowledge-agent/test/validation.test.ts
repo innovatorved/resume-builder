@@ -1,6 +1,5 @@
 import { describe, expect, test } from "bun:test";
 import {
-  DEFAULT_INTERNAL_SECRET,
   extractListingHeadingsAndLinks,
   isDeepContentRoute,
   isPublicHttpsUrl,
@@ -79,10 +78,11 @@ describe("knowledge source validation", () => {
     expect(summary).toContain("https://vedgupta.in/blog/ai-agents");
     expect(summary).toContain("Comprehensive guide");
   });
-  test("authenticates internal secrets and rejects unauthorized or missing callers", () => {
-    expect(verifyInternalSecret(DEFAULT_INTERNAL_SECRET)).toBe(true);
+  test("authenticates internal secrets and fails closed when unconfigured", () => {
     expect(verifyInternalSecret("custom-secret", "custom-secret")).toBe(true);
     expect(verifyInternalSecret("wrong-secret", "custom-secret")).toBe(false);
+    expect(verifyInternalSecret("custom-secret", undefined)).toBe(false);
+    expect(verifyInternalSecret("custom-secret", "")).toBe(false);
     expect(verifyInternalSecret("", "custom-secret")).toBe(false);
     expect(verifyInternalSecret(null, "custom-secret")).toBe(false);
     expect(verifyInternalSecret(undefined, "custom-secret")).toBe(false);

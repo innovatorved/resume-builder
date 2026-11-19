@@ -5,7 +5,6 @@ import Layout from "@/layouts/Layout.astro";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { resume, resumeVersion } from "@/lib/db/schema";
-import { generateCleanModern } from "@/lib/templates";
 import type { ResumeData } from "@/types/resume";
 
 const session = await auth.api.getSession({
@@ -40,101 +39,110 @@ const DEFAULT_RESUME: ResumeData = {
   languages: [],
 };
 
-// If navigating to /resume/new, create a new resume and initial version record, then redirect to its ID
-if (id === "new") {
-  const newId = crypto.randomUUID();
-  const versionId = crypto.randomUUID();
-  const now = new Date();
-  const initialLatex = generateCleanModern(DEFAULT_RESUME);
+const isNewResume = id === "new";
+let initialResume: {
+  id: string;
+  name: string;
+  data: ResumeData;
+  templateId: string | null;
+  currentVersionId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  rawLatex: string | null;
+} | null = null;
 
-  await db.insert(resume).values({
-    id: newId,
-    userId: session.user.id,
-    name: "Untitled Resume",
-    data: DEFAULT_RESUME,
-    templateId: "clean-modern",
-    currentVersionId: versionId,
-    createdAt: now,
-    updatedAt: now,
-  });
-
-  await db.insert(resumeVersion).values({
-    id: versionId,
-    resumeId: newId,
-    versionNumber: 1,
-    sourceKey: `resumes/${session.user.id}/${newId}/source/${versionId}.tex`,
-    pdfKey: null,
-    structuredData: DEFAULT_RESUME,
-    rawLatex: initialLatex,
-    isLatexCustom: false,
-    changeSummary: "Initial version",
-    createdAt: now,
-  });
-
-  return Astro.redirect(`/resume/${newId}`);
-}
-
-const [found] = await db
-  .select({
-    id: resume.id,
-    name: resume.name,
-    data: resume.data,
-    templateId: resume.templateId,
-    currentVersionId: resume.currentVersionId,
-    createdAt: resume.createdAt,
-    updatedAt: resume.updatedAt,
-  })
-  .from(resume)
-  .where(and(eq(resume.id, id), eq(resume.userId, session.user.id)))
-  .limit(1);
-
-if (!found) {
-  return Astro.redirect("/");
-}
-
-// Fetch the version snapshot by currentVersionId first, then fallback to latest by number
-let latestVersion:
-  | { id: string; versionNumber: number; rawLatex: string | null; structuredData: unknown }
-  | undefined;
-
-if (found.currentVersionId) {
-  const [byId] = await db
+if (!isNewResume) {
+  const [found] = await db
     .select({
-      id: resumeVersion.id,
-      versionNumber: resumeVersion.versionNumber,
-      rawLatex: resumeVersion.rawLatex,
-      structuredData: resumeVersion.structuredData,
+      id: resume.id,
+      name: resume.name,
+      data: resume.data,
+      templateId: resume.templateId,
+      currentVersionId: resume.currentVersionId,
+      createdAt: resume.createdAt,
+      updatedAt: resume.updatedAt,
     })
-    .from(resumeVersion)
-    .where(eq(resumeVersion.id, found.currentVersionId))
+    .from(resume)
+    .where(and(eq(resume.id, id), eq(resume.userId, session.user.id)))
     .limit(1);
-  latestVersion = byId;
-}
 
-if (!latestVersion) {
-  const [byNumber] = await db
-    .select({
-      id: resumeVersion.id,
-      versionNumber: resumeVersion.versionNumber,
-      rawLatex: resumeVersion.rawLatex,
-      structuredData: resumeVersion.structuredData,
-    })
-    .from(resumeVersion)
-    .where(eq(resumeVersion.resumeId, id))
-    .orderBy(desc(resumeVersion.versionNumber))
-    .limit(1);
-  latestVersion = byNumber;
-}
+  if (!found) {
+    return Astro.redirect("/");
+  }
 
-const rawData = typeof found.data === "string" ? JSON.parse(found.data) : found.data;
-const initialResume = {
-  ...found,
-  data: (rawData || DEFAULT_RESUME) as ResumeData,
-  rawLatex: latestVersion?.rawLatex || null,
-  currentVersionId: latestVersion?.id || found.currentVersionId,
-};
+  // Fetch the version snapshot by currentVersionId first, then fallback to latest by number
+  let latestVersion:
+    | { id: string; versionNumber: number; rawLatex: string | null; structuredData: unknown }
+    | undefined;
+
+  if (found.currentVersionId) {
+    const [byId] = await db
+      .select({
+        id: resumeVersion.id,
+        versionNumber: resumeVersion.versionNumber,
+        rawLatex: resumeVersion.rawLatex,
+        structuredData: resumeVersion.structuredData,
+      })
+      .from(resumeVersion)
+      .where(eq(resumeVersion.id, found.currentVersionId))
+      .limit(1);
+    latestVersion = byId;
+  }
+
+  if (!latestVersion) {
+    const [byNumber] = await db
+      .select({
+        id: resumeVersion.id,
+        versionNumber: resumeVersion.versionNumber,
+        rawLatex: resumeVersion.rawLatex,
+        structuredData: resumeVersion.structuredData,
+      })
+      .from(resumeVersion)
+      .where(eq(resumeVersion.resumeId, id))
+      .orderBy(desc(resumeVersion.versionNumber))
+      .limit(1);
+    latestVersion = byNumber;
+  }
+
+  const rawData = typeof found.data === "string" ? JSON.parse(found.data) : found.data;
+  initialResume = {
+    ...found,
+    data: (rawData || DEFAULT_RESUME) as ResumeData,
+    rawLatex: latestVersion?.rawLatex || null,
+    currentVersionId: latestVersion?.id || found.currentVersionId,
+  };
+}
 ---
 
-<Layout title={`${initialResume.name} | LaTeX Resume Studio`}>
-  <LatexEditorSplit client:only="react" initialResume={initialResume} />
-</Layout>
+{
+  isNewResume ? (
+    <Layout title="Creating Resume | LaTeX Resume Studio">
+      <div class="min-h-screen flex items-center justify-center bg-black text-neutral-300 text-sm">
+        Creating your new resume...
+      </div>
+      <script is:inline define:vars={{ defaultResume: DEFAULT_RESUME }}>
+        (async () => {
+          try {
+            const res = await fetch("/api/resumes", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name: "Untitled Resume", data: defaultResume }),
+            });
+            const json = await res.json();
+            if (res.ok && json?.success && json?.data?.id) {
+              window.location.replace(`/resume/${json.data.id}`);
+              return;
+            }
+          } catch {}
+          window.location.replace("/");
+        })();
+      </script>
+    </Layout>
+  ) : (
+    initialResume && (
+      <Layout title={`${initialResume.name} | LaTeX Resume Studio`}>
+        <LatexEditorSplit client:only="react" initialResume={initialResume} />
+      </Layout>
+    )
+  )
+}

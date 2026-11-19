@@ -123,10 +123,13 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
     });
   }, []);
 
-  // Compile on mount
+  // Compile once on mount (subsequent edits trigger runCompile directly)
+  const initialCompileRef = useRef(false);
   useEffect(() => {
-    runCompile(latexSource);
-  }, [runCompile, latexSource]);
+    if (initialCompileRef.current) return;
+    initialCompileRef.current = true;
+    runCompile(latexSourceRef.current);
+  }, [runCompile]);
 
   // Handle Monaco code edit
   const handleLatexChange = (newCode: string) => {
@@ -136,7 +139,7 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
   };
 
   // Handle AI Copilot directly modifying the LaTeX source
-  const handleApplyAiLatex = (newLatex: string, summary: string) => {
+  const handleApplyAiLatex = (newLatex: string, _summary: string) => {
     setLatexSource(newLatex);
     runCompile(newLatex);
     triggerAutoSave(newLatex, structuredData, resumeName);
@@ -148,17 +151,22 @@ export function LatexEditorSplit({ initialResume }: LatexEditorSplitProps) {
 
   // Restore past version from modal
   const handleRestoreVersion = (ver: VersionItem) => {
+    const nextData = ver.structuredData
+      ? (ver.structuredData as unknown as ResumeData)
+      : structuredData;
     if (ver.structuredData) {
-      setStructuredData(ver.structuredData as unknown as ResumeData);
+      setStructuredData(nextData);
     }
-    if (ver.rawLatex) {
-      setLatexSource(ver.rawLatex);
-      runCompile(ver.rawLatex);
-    } else if (ver.structuredData) {
-      const generated = generateCleanModern(ver.structuredData as unknown as ResumeData);
-      setLatexSource(generated);
-      runCompile(generated);
-    }
+
+    const nextLatex = ver.rawLatex
+      ? ver.rawLatex
+      : ver.structuredData
+        ? generateCleanModern(nextData)
+        : latexSourceRef.current;
+
+    setLatexSource(nextLatex);
+    runCompile(nextLatex);
+    triggerAutoSave(nextLatex, nextData, resumeName);
     setCurrentVersionId(ver.id);
 
     toast({

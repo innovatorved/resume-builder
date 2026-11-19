@@ -7,6 +7,8 @@ export const personalInfoSchema = z.object({
   phone: z.string().optional().default(""),
   email: z.string().optional().default(""),
   linkedin: z.string().optional().default(""),
+  github: z.string().optional(),
+  website: z.string().optional(),
   location: z.string().optional().default(""),
 });
 
@@ -44,6 +46,8 @@ export const projectSchema = z.object({
   title: z.string().default(""),
   description: z.string().optional().default(""),
   technologies: z.string().optional().default(""),
+  date: z.string().optional(),
+  link: z.string().optional(),
 });
 
 // Language Schema

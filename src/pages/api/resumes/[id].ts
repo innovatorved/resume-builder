@@ -5,18 +5,8 @@ import { getCloudflareEnv } from "@/lib/cloudflare-env";
 import { db } from "@/lib/db";
 import { resume, resumeVersion } from "@/lib/db/schema";
 import { generateCleanModern } from "@/lib/templates";
+import { parseResumeData } from "@/lib/utils";
 import { type ResumeData, updateResumeSchema } from "@/lib/validations/resume";
-
-function parseResumeData(data: unknown): ResumeData {
-  if (typeof data === "string") {
-    try {
-      return JSON.parse(data) as ResumeData;
-    } catch {
-      return data as unknown as ResumeData;
-    }
-  }
-  return data as ResumeData;
-}
 
 export const GET: APIRoute = async ({ params, request }) => {
   try {
@@ -215,14 +205,13 @@ export const DELETE: APIRoute = async ({ params, request, locals }) => {
           `/users/${encodeURIComponent(session.user.id)}/resumes/${encodeURIComponent(id)}`,
           "https://knowledge-agent.internal"
         );
-        const internalSecret =
-          env.INTERNAL_SERVICE_KEY ||
-          process.env.INTERNAL_SERVICE_KEY ||
-          "rb_internal_agent_sec_2026";
+        const internalSecret = env.INTERNAL_SERVICE_KEY || process.env.INTERNAL_SERVICE_KEY || "";
+        const headers: Record<string, string> = {};
+        if (internalSecret) headers["x-internal-secret"] = internalSecret;
         const response = await knowledgeService.fetch(
           new Request(target, {
             method: "DELETE",
-            headers: { "x-internal-secret": internalSecret },
+            headers,
           })
         );
         if (!response.ok)
@@ -299,8 +288,8 @@ export const POST: APIRoute = async ({ params, request }) => {
 
     const parsedData = parseResumeData(existing.data);
     const rawLatex = latestVersion?.rawLatex || generateCleanModern(parsedData);
-    const sourceKey =
-      latestVersion?.sourceKey || `resumes/local/${newId}/source/${newVersionId}.tex`;
+    // Always bind the duplicated version to the new resume's R2 prefix so downloads pass prefix checks.
+    const sourceKey = `resumes/${session.user.id}/${newId}/source/${newVersionId}.tex`;
 
     // 1. Insert duplicated resume
     await db.insert(resume).values({
@@ -320,7 +309,7 @@ export const POST: APIRoute = async ({ params, request }) => {
       resumeId: newId,
       versionNumber: 1,
       sourceKey,
-      pdfKey: latestVersion?.pdfKey || null,
+      pdfKey: null,
       structuredData: parsedData,
       rawLatex,
       isLatexCustom: latestVersion?.isLatexCustom ?? true,

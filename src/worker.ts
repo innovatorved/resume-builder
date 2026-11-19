@@ -1,9 +1,5 @@
 import { handle } from "@astrojs/cloudflare/handler";
-import {
-  handleKnowledgeRequest,
-  KnowledgeAgent,
-  KnowledgeIngestionWorkflow,
-} from "./lib/knowledge-agent";
+import { KnowledgeAgent, KnowledgeIngestionWorkflow } from "./lib/knowledge-agent";
 import type { Env } from "./lib/knowledge-agent/types";
 
 export { KnowledgeAgent, KnowledgeIngestionWorkflow };
@@ -12,19 +8,17 @@ export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
     if (env && typeof env === "object") {
       for (const [key, value] of Object.entries(env)) {
-        if (value !== undefined && value !== "") {
-          process.env[key] = value as string;
+        if (typeof value === "string" && value !== "") {
+          process.env[key] = value;
         }
       }
-      if ((env as any).SSO_SERVICE) {
-        (globalThis as any).__SSO_SERVICE__ = (env as any).SSO_SERVICE;
+      if ((env as unknown as Record<string, unknown>).SSO_SERVICE) {
+        (globalThis as unknown as Record<string, unknown>).__SSO_SERVICE__ = (
+          env as unknown as Record<string, unknown>
+        ).SSO_SERVICE;
       }
     }
 
-    const url = new URL(request.url);
-    if (url.pathname.startsWith("/users/")) {
-      return handleKnowledgeRequest(request, env);
-    }
     return handle(request, env, ctx);
   },
 };

@@ -14,7 +14,8 @@ async function ssoFetch(url: string | URL, init?: RequestInit): Promise<Response
   return fetch(url, init);
 }
 
-// In-memory cache for recent token exchanges to withstand immediate duplicate callbacks
+// Bounded in-memory cache for recent token exchanges to withstand immediate duplicate callbacks
+const MAX_TOKEN_CACHE_ENTRIES = 100;
 const tokenExchangeCache = new Map<
   string,
   {
@@ -31,6 +32,19 @@ const tokenExchangeCache = new Map<
     expiresAt: number;
   }
 >();
+
+function pruneTokenExchangeCache(nowMs: number) {
+  for (const [key, entry] of tokenExchangeCache) {
+    if (entry.expiresAt <= nowMs) {
+      tokenExchangeCache.delete(key);
+    }
+  }
+  while (tokenExchangeCache.size >= MAX_TOKEN_CACHE_ENTRIES) {
+    const oldestKey = tokenExchangeCache.keys().next().value;
+    if (!oldestKey) break;
+    tokenExchangeCache.delete(oldestKey);
+  }
+}
 
 function initAuth() {
   const secret = process.env.BETTER_AUTH_SECRET?.trim();
@@ -68,22 +82,6 @@ function initAuth() {
         verification: schema.verification,
       },
     }),
-    databaseHooks: {
-      verification: {
-        delete: {
-          before: async (verification) => {
-            // Only allow deleting verification tokens that have actually expired.
-            // Better Auth invokes deleteVerificationByIdentifier immediately upon parsing state.
-            // Preserving the record while valid prevents race conditions (duplicate callbacks,
-            // prefetch, or 2FA bounce) from blowing up with state_mismatch.
-            if (verification.expiresAt && new Date(verification.expiresAt).getTime() < Date.now()) {
-              return true;
-            }
-            return false;
-          },
-        },
-      },
-    },
     account: {
       storeStateStrategy: "database",
       skipStateCookieCheck: true,
@@ -173,7 +171,7 @@ function initAuth() {
               });
 
               let responseText = await response.text();
-              console.log(`[SSO getToken] Token response ${response.status}:`, responseText);
+              console.log(`[SSO getToken] Token response status=${response.status}`);
 
               // If the server failed due to method mismatch expecting client_secret_post, fallback and retry
               if (!response.ok && responseText.includes("client_secret_post") && clientSecret) {
@@ -190,12 +188,12 @@ function initAuth() {
                   body: postBody.toString(),
                 });
                 responseText = await response.text();
-                console.log(`[SSO getToken retry] Response ${response.status}:`, responseText);
+                console.log(`[SSO getToken retry] Response status=${response.status}`);
               }
 
               if (!response.ok) {
-                console.error(`[SSO getToken ERROR] Status ${response.status}: ${responseText}`);
-                throw new Error(`SSO token exchange failed: ${responseText}`);
+                console.error(`[SSO getToken ERROR] Status ${response.status}`);
+                throw new Error(`SSO token exchange failed with status ${response.status}`);
               }
 
               const json = JSON.parse(responseText);
@@ -219,9 +217,11 @@ function initAuth() {
               };
 
               if (data.code) {
+                const nowMs = Date.now();
+                pruneTokenExchangeCache(nowMs);
                 tokenExchangeCache.set(data.code, {
                   token: tokenResult,
-                  expiresAt: Date.now() + 60_000,
+                  expiresAt: nowMs + 60_000,
                 });
               }
 
@@ -237,11 +237,11 @@ function initAuth() {
               });
 
               const responseText = await response.text();
-              console.log(`[SSO getUserInfo] Response ${response.status}:`, responseText);
+              console.log(`[SSO getUserInfo] Response status=${response.status}`);
 
               if (!response.ok) {
-                console.error(`[SSO getUserInfo ERROR] Status ${response.status}: ${responseText}`);
-                throw new Error(`SSO userinfo fetch failed: ${responseText}`);
+                console.error(`[SSO getUserInfo ERROR] Status ${response.status}`);
+                throw new Error(`SSO userinfo fetch failed with status ${response.status}`);
               }
 
               return JSON.parse(responseText);

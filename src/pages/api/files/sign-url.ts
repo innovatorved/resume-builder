@@ -4,7 +4,12 @@ import { auth } from "@/lib/auth";
 import { getSyncCloudflareEnv } from "@/lib/cloudflare-env";
 import { db } from "@/lib/db";
 import { resume } from "@/lib/db/schema";
-import { createPresignedUploadUrl, isR2Configured } from "@/lib/r2/presigned";
+import {
+  createPresignedUploadUrl,
+  isR2Configured,
+  isValidStorageExtension,
+  isValidStorageId,
+} from "@/lib/r2/presigned";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
@@ -43,6 +48,20 @@ export const POST: APIRoute = async ({ request, locals }) => {
         JSON.stringify({ success: false, error: "Invalid type. Must be source, pdf, or uploads" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
+    }
+
+    if (!isValidStorageId(resumeId) || !isValidStorageId(versionId)) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Invalid resumeId or versionId format" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    if (extension !== undefined && !isValidStorageExtension(extension)) {
+      return new Response(JSON.stringify({ success: false, error: "Invalid file extension" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Verify ownership of the resume if it's not a newly assigned ID

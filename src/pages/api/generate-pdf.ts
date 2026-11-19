@@ -3,6 +3,8 @@ import { sanitizeRawLatex } from "@/lib/latex/escape";
 import { generateLatex } from "@/lib/latex-generator";
 import type { ResumeData } from "@/types/resume";
 
+const MAX_LATEX_BYTES = 500_000;
+
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = (await request.json()) as { rawLatex?: string } & Partial<ResumeData>;
@@ -18,12 +20,19 @@ export const POST: APIRoute = async ({ request }) => {
     let resumeName = "resume";
 
     if (body.rawLatex && typeof body.rawLatex === "string") {
+      if (body.rawLatex.length > MAX_LATEX_BYTES) {
+        return new Response(JSON.stringify({ error: "LaTeX source exceeds 500 KB limit" }), {
+          status: 413,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
       texContent = sanitizeRawLatex(body.rawLatex);
     } else {
       const data = body as ResumeData;
       texContent = generateLatex(data);
       if (data.personalInfo?.name) {
-        resumeName = data.personalInfo.name.toLowerCase().replace(/\s+/g, "-");
+        resumeName =
+          data.personalInfo.name.toLowerCase().replace(/[^a-z0-9_-]/g, "-") || "resume";
       }
     }
 

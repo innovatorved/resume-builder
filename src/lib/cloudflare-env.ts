@@ -7,7 +7,7 @@ function createKnowledgeFetcher(env: Record<string, any>): Fetcher {
     fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
       const req = new Request(input, init);
       const { handleKnowledgeRequest } = await import("./knowledge-agent");
-      return handleKnowledgeRequest(req, env as any);
+      return handleKnowledgeRequest(req, env as any, { trustedInternal: true });
     },
   } as Fetcher;
 }

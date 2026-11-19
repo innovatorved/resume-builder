@@ -24,6 +24,17 @@ export interface PresignedUploadOptions {
   env?: Record<string, string | undefined>;
 }
 
+const SAFE_STORAGE_ID = /^[a-zA-Z0-9_-]{1,200}$/;
+const ALLOWED_EXTENSIONS = new Set(["tex", "pdf", "bin"]);
+
+export function isValidStorageId(value: string): boolean {
+  return SAFE_STORAGE_ID.test(value);
+}
+
+export function isValidStorageExtension(value: string): boolean {
+  return ALLOWED_EXTENSIONS.has(value);
+}
+
 export async function createPresignedUploadUrl({
   userId,
   resumeId,
@@ -34,10 +45,17 @@ export async function createPresignedUploadUrl({
   expiresInSeconds = 180, // 3 minutes default
   env,
 }: PresignedUploadOptions) {
-  const s3 = getR2Client(env);
-  const bucket = getR2BucketName(env);
+  if (!isValidStorageId(userId) || !isValidStorageId(resumeId) || !isValidStorageId(versionId)) {
+    throw new Error("Invalid storage identifier");
+  }
 
   const fileExt = extension || (type === "pdf" ? "pdf" : type === "source" ? "tex" : "bin");
+  if (!isValidStorageExtension(fileExt)) {
+    throw new Error("Invalid file extension");
+  }
+
+  const s3 = getR2Client(env);
+  const bucket = getR2BucketName(env);
 
   // Strict key prefix format: resumes/{userId}/{resumeId}/{type}/{versionId}.{ext}
   const key = `resumes/${userId}/${resumeId}/${type}/${versionId}.${fileExt}`;

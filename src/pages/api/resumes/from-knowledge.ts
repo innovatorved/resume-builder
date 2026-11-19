@@ -9,21 +9,8 @@ import {
   searchKnowledgeEvidence,
 } from "@/lib/knowledge/retriever";
 import { generateCleanModern } from "@/lib/templates";
+import { cleanJsonText } from "@/lib/utils";
 import type { ResumeData } from "@/types/resume";
-
-function cleanJsonText(raw: string): string {
-  const text = raw.trim();
-  const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-  if (codeBlockMatch) {
-    return codeBlockMatch[1].trim();
-  }
-  const firstBrace = text.indexOf("{");
-  const lastBrace = text.lastIndexOf("}");
-  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-    return text.slice(firstBrace, lastBrace + 1).trim();
-  }
-  return text;
-}
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
@@ -103,9 +90,20 @@ export const POST: APIRoute = async ({ request, locals }) => {
     let finalLatex = "";
 
     // 3. AI Generation via Gemini
-    if (isGeminiConfigured(locals)) {
-      try {
-        const client = getGeminiClient(locals);
+    if (!isGeminiConfigured(locals)) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error:
+            "Gemini AI is not configured on this instance. Set GEMINI_API_KEY to generate a resume from knowledge.",
+          notConfigured: true,
+        }),
+        { status: 503, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    try {
+      const client = getGeminiClient(locals);
 
         const systemInstruction = `You are a world-class executive resume architect and Silicon Valley technical career strategist.
 Your objective is to transform raw candidate background and evidence into an extraordinary, high-converting ATS resume.
@@ -121,9 +119,9 @@ CORE WRITING STANDARDS:
    - Structure: "Accomplished [X] as measured by [Y], by doing [Z]".
    - Lead with power action verbs: Architected, Engineered, Orchestrated, Automated, Spearheaded, Optimized, Scaled, Deployed, Accelerated.
    - Quantify achievements and highlight key metrics in markdown bold (e.g., "**40% latency reduction**", "**99.9% availability**", "**426+ GitHub stars**", "**60% faster CI/CD cycles**", "**10k+ requests/sec**").
-2. CONTEXTUAL REASONING & METRIC INFERENCE:
-   - Ground all technologies, companies, roles, and project domains strictly in the verified evidence.
-   - If exact percentages or metrics were not explicitly recorded in the raw notes, synthesize realistic, industry-standard engineering impact benchmarks (e.g., latency cuts, automated provisioning time, throughput, uptime) that reflect the candidate's actual architecture and scale, highlighting the metrics in **bold**.
+2. STRICT FACTUAL GROUNDING:
+   - Ground all technologies, companies, roles, dates, metrics, and project domains strictly in the verified evidence.
+   - NEVER fabricate percentages, latency numbers, user counts, or impact metrics that are not supported by the candidate's evidence. Only bold metrics that actually appear in the evidence.
 3. TECHNICAL DEPTH & ATS KEYWORDS:
    - Weave specific tools, frameworks, and protocols (e.g., Azure IaaS, Terraform, Docker, Kubernetes, Azure OpenAI, Whisper ASR, Python, GitHub Actions) directly into the accomplishment bullets.
 4. INTELLIGENT CURATION:
@@ -321,36 +319,28 @@ ${contextText}`;
         structuredResumeData = data;
         if (parsed.name) generatedName = parsed.name;
         finalLatex = generateCleanModern(structuredResumeData);
-      } catch (aiErr) {
-        console.warn(
-          "[from-knowledge] Gemini generation failed, falling back to deterministic template:",
-          aiErr
-        );
-      }
+    } catch (aiErr) {
+      console.error("[from-knowledge] Gemini generation failed:", aiErr);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error:
+            aiErr instanceof Error
+              ? `AI resume generation failed: ${aiErr.message}`
+              : "AI resume generation failed. Please try again.",
+        }),
+        { status: 503, headers: { "Content-Type": "application/json" } }
+      );
     }
 
-    // 4. Fallback if AI was unavailable or invalid
-    if (!structuredResumeData) {
-      structuredResumeData = {
-        personalInfo: {
-          name: userName || "Professional Candidate",
-          title: "Cloud & Software Engineer",
-          email: userEmail,
-          phone: "",
-          location: "",
-        },
-        summary: profileMarkdown ? profileMarkdown.slice(0, 300).replace(/#+/g, "").trim() : "",
-        skills: ["Cloud Architecture", "DevOps & CI/CD", "TypeScript", "Python", "Docker", "Git"],
-        experience: [],
-        projects: [],
-        education: [],
-        certifications: [],
-        languages: [],
-      };
-    }
-
-    if (!finalLatex) {
-      finalLatex = generateCleanModern(structuredResumeData);
+    if (!structuredResumeData || !finalLatex) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "AI returned an empty resume. Please try again.",
+        }),
+        { status: 502, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     // 5. Create new resume in database

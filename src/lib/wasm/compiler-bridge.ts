@@ -15,12 +15,14 @@ export interface CompileResult {
 export class LatexCompilerBridge {
   public isCompiling = false;
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private abortController: AbortController | null = null;
+  private latestRequestId = 0;
   private cache = new Map<string, { pdfData: Uint8Array; log: string }>();
 
   /**
    * Compiles LaTeX source code into a high-quality PDF Uint8Array.
    */
-  async compile(texSource: string): Promise<CompileResult> {
+  async compile(texSource: string, signal?: AbortSignal): Promise<CompileResult> {
     const startTime = performance.now();
     this.isCompiling = true;
 
@@ -42,6 +44,7 @@ export class LatexCompilerBridge {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rawLatex: texSource }),
+        signal,
       });
 
       const durationMs = Math.round(performance.now() - startTime);
@@ -98,7 +101,8 @@ export class LatexCompilerBridge {
   }
 
   /**
-   * Debounces compile calls so user typing is not interrupted.
+   * Debounces compile calls and cancels superseded in-flight requests so stale previews
+   * never overwrite newer edits.
    */
   debounceCompile(
     texSource: string,
@@ -109,8 +113,19 @@ export class LatexCompilerBridge {
       clearTimeout(this.debounceTimer);
     }
 
+    const requestId = ++this.latestRequestId;
+
     this.debounceTimer = setTimeout(async () => {
-      const result = await this.compile(texSource);
+      if (this.abortController) {
+        this.abortController.abort();
+      }
+      const controller = new AbortController();
+      this.abortController = controller;
+
+      const result = await this.compile(texSource, controller.signal);
+      if (requestId !== this.latestRequestId || controller.signal.aborted) {
+        return;
+      }
       callback(result);
     }, delayMs);
   }

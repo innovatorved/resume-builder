@@ -3,7 +3,7 @@ import { auth, reportAuthErrorToSso } from "@/lib/auth";
 
 export const ALL: APIRoute = async (ctx) => {
   const url = new URL(ctx.request.url);
-  console.log(`[AUTH API] ${ctx.request.method} ${url.pathname}${url.search}`);
+  console.log(`[AUTH API] ${ctx.request.method} ${url.pathname}`);
 
   // Intercept any direct access to Better Auth default unstyled /api/auth/error page
   if (url.pathname === "/api/auth/error" || url.pathname.endsWith("/auth/error")) {
@@ -47,16 +47,15 @@ export const ALL: APIRoute = async (ctx) => {
   try {
     const res = await auth.handler(ctx.request);
     const loc = res.headers.get("location");
-    console.log(`[AUTH API] status=${res.status}${loc ? ` location=${loc}` : ""}`);
+    const safeLocPath = loc ? new URL(loc, url.origin).pathname : "";
+    console.log(`[AUTH API] status=${res.status}${safeLocPath ? ` location=${safeLocPath}` : ""}`);
 
     if (loc) {
       try {
         const locUrl = new URL(loc, url.origin);
         const errorParam = locUrl.searchParams.get("error");
         if (errorParam) {
-          console.error(
-            `[AUTH API ERROR DETECTED] error=${errorParam} path=${url.pathname}${url.search}`
-          );
+          console.error(`[AUTH API ERROR DETECTED] error=${errorParam} path=${url.pathname}`);
 
           // If the user already has an active session (e.g. parallel callback request succeeded),
           // avoid showing an error screen and redirect cleanly home

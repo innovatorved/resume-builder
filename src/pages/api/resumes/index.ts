@@ -4,18 +4,8 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { resume, resumeVersion } from "@/lib/db/schema";
 import { generateCleanModern } from "@/lib/templates";
-import { createResumeSchema, type ResumeData } from "@/lib/validations/resume";
-
-function parseResumeData(data: unknown): ResumeData {
-  if (typeof data === "string") {
-    try {
-      return JSON.parse(data) as ResumeData;
-    } catch {
-      return data as unknown as ResumeData;
-    }
-  }
-  return data as ResumeData;
-}
+import { parseResumeData } from "@/lib/utils";
+import { createResumeSchema } from "@/lib/validations/resume";
 
 export const GET: APIRoute = async ({ request }) => {
   try {

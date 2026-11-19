@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),
@@ -127,6 +127,10 @@ export const resumeVersion = sqliteTable(
   (table) => [
     index("resume_version_resumeId_idx").on(table.resumeId),
     index("resume_version_createdAt_idx").on(table.createdAt),
+    uniqueIndex("resume_version_resumeId_versionNumber_uidx").on(
+      table.resumeId,
+      table.versionNumber
+    ),
   ]
 );
 

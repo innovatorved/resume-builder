@@ -16,12 +16,10 @@ export interface UserCareerContext {
 
 import { getCloudflareEnv, getSyncCloudflareEnv } from "@/lib/cloudflare-env";
 
-export const DEFAULT_INTERNAL_SECRET = "rb_internal_agent_sec_2026";
-
 // biome-ignore lint/suspicious/noExplicitAny: env bindings can come from multiple runtime contexts
 export function getInternalServiceKey(locals?: any): string {
   const env = getSyncCloudflareEnv(locals);
-  return env?.INTERNAL_SERVICE_KEY || process.env.INTERNAL_SERVICE_KEY || DEFAULT_INTERNAL_SECRET;
+  return env?.INTERNAL_SERVICE_KEY || process.env.INTERNAL_SERVICE_KEY || "";
 }
 
 // biome-ignore lint/suspicious/noExplicitAny: env bindings can come from multiple runtime contexts
@@ -44,11 +42,12 @@ export async function callKnowledgeAgent(
   const env = await getCloudflareEnv(locals);
   const service = env.KNOWLEDGE_AGENT;
   const cleanSubPath = subPath.replace(/^\/+/, "");
-  const internalSecret =
-    env.INTERNAL_SERVICE_KEY || process.env.INTERNAL_SERVICE_KEY || DEFAULT_INTERNAL_SECRET;
+  const internalSecret = env.INTERNAL_SERVICE_KEY || process.env.INTERNAL_SERVICE_KEY || "";
 
   const headers = new Headers(options.headers || {});
-  headers.set("x-internal-secret", internalSecret);
+  if (internalSecret) {
+    headers.set("x-internal-secret", internalSecret);
+  }
   const optionsWithSecret: RequestInit = { ...options, headers };
 
   if (service) {

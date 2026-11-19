@@ -75,7 +75,6 @@
     }
   },
   "vars": {
-    "INTERNAL_SERVICE_KEY": "rb_internal_agent_sec_2026",
     "NEXT_PUBLIC_BETTER_AUTH_URL": "https://resume.vedgupta.in",
     "BETTER_AUTH_URL": "https://resume.vedgupta.in",
     "TURSO_DATABASE_URL": "libsql://resume-builder-innovatorved.aws-ap-south-1.turso.io",
